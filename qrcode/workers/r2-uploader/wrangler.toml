@@ -1,0 +1,12 @@
+name = "wifi-qr-r2-uploader"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[r2_buckets]]
+binding = "QR_BUCKET"
+bucket_name = "wifi-qr-codes"
+
+[vars]
+ENVIRONMENT = "production"
+
+# WORKER_SECRET은 wrangler secret put WORKER_SECRET 으로 설정
