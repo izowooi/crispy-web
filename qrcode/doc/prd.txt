@@ -1,15 +1,14 @@
-# WiFi QR 코드 생성기 - 상세 PRD (Product Requirements Document)
+# WiFi QR 코드 생성기 - PRD (Product Requirements Document)
 
 ## 1. 프로젝트 개요
 
 ### 1.1 목적
-WiFi SSID와 비밀번호를 입력하면 QR 코드를 생성하고, 인증된 사용자의 경우 클라우드에 저장하는 웹 애플리케이션
+WiFi SSID와 비밀번호를 입력하면 QR 코드를 생성하는 웹 애플리케이션
 
 ### 1.2 핵심 기능
-- Google OAuth 로그인 (필수 - 로그인 후에만 QR 생성 가능)
 - WiFi QR 코드 생성 (WPA/WPA2 지원)
-- QR 코드 출력 (프린터, PDF, WebP 다운로드)
-- QR 코드 이미지 R2 저장 + 메타데이터 Supabase DB 저장
+- QR 코드 출력 (프린터, PDF, 이미지 다운로드)
+- Google 로그인 (선택적, 관리자 모드용)
 
 ---
 
@@ -17,298 +16,52 @@ WiFi SSID와 비밀번호를 입력하면 QR 코드를 생성하고, 인증된 �
 
 | 구분 | 기술 | 용도 |
 |------|------|------|
-| 프레임워크 | Next.js 15 | 풀스택 웹 애플리케이션 |
-| 배포 | Vercel | 호스팅 및 서버리스 함수 |
+| 프레임워크 | Next.js 15 | 웹 애플리케이션 |
+| 배포 | Vercel | 호스팅 |
 | 인증 | Supabase Auth | Google OAuth 로그인 |
-| 데이터베이스 | Supabase PostgreSQL | QR 코드 메타데이터 저장 |
-| 파일 저장 | Cloudflare R2 | QR 코드 이미지 저장 |
-| R2 접근 | Cloudflare Workers | 서버사이드 R2 업로드 |
-| API 보안 | Firebase App Check | 봇/악성 요청 방지 |
+| QR 생성 | qrcode 라이브러리 | 클라이언트 QR 이미지 생성 |
+| PDF 생성 | jsPDF | PDF 다운로드 |
 | 스타일링 | Tailwind CSS | UI 스타일링 |
 
 ---
 
-## 3. 보안 아키텍처
-
-### 3.1 전체 흐름
+## 3. 아키텍처
 
 ```
-[Browser] ─(1)─► [Supabase Auth] ───► Google OAuth
-    │
-    ├─(2)─► [Firebase App Check] ───► reCAPTCHA Enterprise
-    │
-    └─(3)─► [Next.js API] ─(JWT+AppCheck 검증)─► [CF Workers] ──► [R2]
-                    │
-                    └──► [Supabase DB]
+[Browser] → WiFi 정보 입력 (SSID, 비밀번호, 암호화 방식)
+         → QR 코드 생성 (클라이언트, qrcode 라이브러리)
+         → 출력 (프린터/PDF/이미지 다운로드)
+
+[선택적] → Google 로그인 (Supabase Auth)
+        → 관리자 모드 활성화
 ```
 
-### 3.2 보안 질문에 대한 답변
-
-> Q: R2 버킷에 프론트엔드에서 직접 올려도 안전한지?
-
-**A: 안전하지 않습니다.**
-
-프론트엔드에서 R2에 직접 업로드하면:
-- API 키가 클라이언트에 노출됨
-- 누구나 버킷에 파일을 업로드할 수 있음
-- 악성 파일 업로드 가능
-
-**해결책:**
-- Next.js API Route → Cloudflare Workers → R2 경로로 서버사이드 업로드
-- R2 API 키는 Cloudflare Workers의 Secret에만 저장
-- Next.js와 Workers 간에는 HMAC 서명으로 요청 검증
-
-### 3.3 핵심 보안 원칙
-1. R2 API 키는 절대 프론트엔드에 노출하지 않음
-2. 모든 업로드는 서버(Next.js API → CF Workers)를 통해 처리
-3. Supabase RLS로 사용자별 데이터 격리
-4. Firebase App Check로 봇/스크립트 요청 차단
+### 3.1 설계 원칙
+- **클라이언트 전용**: 모든 QR 생성 로직은 브라우저에서 실행
+- **서버 최소화**: 인증만 서버 사용, DB/파일 저장 없음
+- **프라이버시 보장**: WiFi 비밀번호가 서버로 전송되지 않음
 
 ---
 
-## 4. 데이터베이스 스키마
+## 4. 인증 및 관리자 모드
 
-### 4.1 wifi_qr_codes 테이블
+### 4.1 Google 로그인
+- Supabase Auth를 통한 Google OAuth
+- 로그인 없이도 QR 생성 가능 (선택적 기능)
 
-```sql
-CREATE TABLE wifi_qr_codes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    ssid TEXT NOT NULL,
-    encryption_type TEXT DEFAULT 'WPA' CHECK (encryption_type IN ('WPA', 'WPA2')),
-    r2_object_key TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+### 4.2 관리자 판단 방식 (향후 구현)
+- **환경변수 기반** (권장): `ADMIN_EMAILS` 환경변수에 관리자 이메일 저장
+- 서버 API Route에서만 검증 → 클라이언트 조작 불가
+- 보안 원칙: 실제 관리자 기능은 서버에서 검증
+
 ```
-
-### 4.2 RLS (Row Level Security) 정책
-
-```sql
-ALTER TABLE wifi_qr_codes ENABLE ROW LEVEL SECURITY;
-
--- INSERT: 인증된 사용자만 자신의 레코드 생성
-CREATE POLICY "Users can insert own QR codes" ON wifi_qr_codes
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- SELECT: 자신의 레코드만 조회
-CREATE POLICY "Users can view own QR codes" ON wifi_qr_codes
-    FOR SELECT USING (auth.uid() = user_id);
-
--- DELETE: 자신의 레코드만 삭제
-CREATE POLICY "Users can delete own QR codes" ON wifi_qr_codes
-    FOR DELETE USING (auth.uid() = user_id);
-```
-
-### 4.3 비밀번호 저장 정책
-- **비밀번호는 DB에 저장하지 않음**
-- QR 코드 이미지만 R2에 보관
-- SSID는 참조용으로 DB에 저장
-
----
-
-## 5. 환경 변수 설정
-
-### 5.1 Next.js (.env.local)
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...  # 서버 전용
-
-# Firebase App Check (클라이언트)
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project
-NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
-NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN=  # 개발용 (선택)
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=  # reCAPTCHA Enterprise 사이트 키
-
-# Firebase Admin (서버)
-FIREBASE_PROJECT_ID=your-project
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project.iam.gserviceaccount.com
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-
-# Cloudflare Workers
-CLOUDFLARE_WORKER_URL=https://wifi-qr-r2.your-subdomain.workers.dev
-CLOUDFLARE_WORKER_SECRET=your-shared-secret-for-hmac  # openssl rand -hex 32
-```
-
-### 5.2 Cloudflare Workers (wrangler.toml + Secrets)
-
-```toml
-# wrangler.toml
-name = "wifi-qr-r2-uploader"
-main = "src/index.ts"
-compatibility_date = "2024-01-01"
-
-[[r2_buckets]]
-binding = "QR_BUCKET"
-bucket_name = "wifi-qr-codes"
-```
-
-```bash
-# Secrets (터미널에서 설정)
-wrangler secret put WORKER_SECRET
-# Next.js의 CLOUDFLARE_WORKER_SECRET과 동일한 값 입력
+# .env.local (서버 전용)
+ADMIN_EMAILS=admin@example.com
 ```
 
 ---
 
-## 6. 콘솔 설정 가이드
-
-### 6.1 Google Cloud Console - OAuth 설정
-
-1. **프로젝트 생성**
-   - https://console.cloud.google.com 접속
-   - 새 프로젝트 생성: "wifi-qr-generator"
-
-2. **OAuth 동의 화면 설정**
-   - API 및 서비스 > OAuth 동의 화면
-   - User Type: "외부" 선택
-   - 앱 이름: "WiFi QR Generator"
-   - 범위: email, profile, openid
-
-3. **OAuth 2.0 클라이언트 ID 생성**
-   - 사용자 인증 정보 > OAuth 클라이언트 ID
-   - 애플리케이션 유형: "웹 애플리케이션"
-   - 승인된 JavaScript 원본:
-     - http://localhost:3000
-     - https://your-app.vercel.app
-   - 승인된 리디렉션 URI:
-     - https://[project-ref].supabase.co/auth/v1/callback
-
-### 6.2 Supabase 설정
-
-1. **프로젝트 생성**
-   - https://supabase.com > Dashboard > New Project
-   - Region: Northeast Asia (Seoul)
-
-2. **Google OAuth Provider 활성화**
-   - Authentication > Providers > Google
-   - Client ID/Secret 입력 (Google Cloud Console에서 복사)
-
-3. **데이터베이스 테이블 생성**
-   - SQL Editor에서 섹션 4의 SQL 실행
-
-4. **API 키 복사**
-   - Settings > API
-   - URL, anon key, service_role key 복사
-
-### 6.3 Cloudflare R2 + Workers 설정
-
-1. **R2 버킷 생성**
-   - Cloudflare Dashboard > R2 > Create bucket
-   - 버킷 이름: "wifi-qr-codes"
-
-2. **Workers 생성**
-   - Workers & Pages > Create application > Create Worker
-   - Worker 이름: "wifi-qr-r2-uploader"
-
-3. **R2 바인딩**
-   - Worker > Settings > Bindings > R2 bucket
-   - Variable name: QR_BUCKET
-   - R2 bucket: wifi-qr-codes
-
-4. **Secret 설정**
-   - Worker > Settings > Variables and Secrets
-   - WORKER_SECRET 추가
-
-5. **Worker 코드 배포**
-   ```bash
-   cd workers/r2-uploader
-   wrangler deploy
-   ```
-
-### 6.4 Firebase App Check 설정
-
-1. **Firebase 프로젝트 생성**
-   - https://console.firebase.google.com
-   - 프로젝트 추가: "wifi-qr-generator"
-
-2. **웹 앱 등록**
-   - 프로젝트 대시보드 > 웹 아이콘 클릭
-   - 앱 닉네임: "wifi-qr-web"
-
-3. **App Check 활성화**
-   - 빌드 > App Check > 시작하기
-   - reCAPTCHA Enterprise 선택
-
-4. **reCAPTCHA Enterprise 키 생성**
-   - Google Cloud Console > reCAPTCHA Enterprise
-   - 키 만들기 (웹사이트, 도메인 목록 입력)
-
-5. **서비스 계정 키 생성**
-   - Firebase Console > 프로젝트 설정 > 서비스 계정
-   - 새 비공개 키 생성 > JSON 다운로드
-
----
-
-## 7. TDD 테스트 페이지 구조
-
-### 7.1 테스트 페이지 목록
-
-| 경로 | 기능 | 테스트 항목 |
-|------|------|------------|
-| /test | 대시보드 | 모든 테스트 링크 |
-| /test/qr | QR 코드 | WiFi 포맷, 이미지 생성, WebP 변환 |
-| /test/auth | 인증 | Supabase 초기화, Google 로그인, 세션 |
-| /test/appcheck | App Check | Firebase 초기화, 토큰 획득/검증 |
-| /test/upload | R2 업로드 | API 호출, 인증 포함 업로드 |
-| /test/database | DB | 연결, RLS 검증, 데이터 삽입/조회 |
-| /test/print | 출력 | 프린터, PDF, WebP 다운로드 |
-
-### 7.2 테스트 순서
-1. /test/qr - QR 생성 기본 기능 (환경변수 없이 테스트 가능)
-2. /test/auth - Supabase + Google OAuth (환경변수 필요)
-3. /test/database - DB 연결 및 RLS (로그인 필요)
-4. /test/appcheck - Firebase App Check (환경변수 필요)
-5. /test/upload - 전체 업로드 플로우 (모든 설정 필요)
-6. /test/print - 출력 기능 (환경변수 없이 테스트 가능)
-
----
-
-## 8. 구현 순서
-
-### Phase 1: 프로젝트 설정
-- [x] Next.js 프로젝트 생성
-- [x] 패키지 설치
-- [x] 프로젝트 구조 생성
-- [x] 환경변수 파일 생성
-
-### Phase 2: 콘솔 설정
-- [ ] Google Cloud OAuth 설정
-- [ ] Supabase 프로젝트 생성
-- [ ] Cloudflare R2 버킷 생성
-- [ ] Firebase 프로젝트 생성
-
-### Phase 3: 인증 구현
-- [ ] Supabase Auth + Google OAuth
-- [ ] Firebase App Check
-
-### Phase 4: QR 코드 생성
-- [x] WiFi 문자열 포맷
-- [x] QR 이미지 생성 + WebP 변환
-
-### Phase 5: R2 업로드
-- [ ] Cloudflare Workers 배포
-- [ ] Next.js API + Workers 연동
-
-### Phase 6: 데이터베이스
-- [ ] Supabase 테이블/RLS 생성
-- [ ] DB 저장 로직
-
-### Phase 7: 출력 기능
-- [x] 프린터, PDF, WebP 다운로드
-
-### Phase 8: 메인 UI 통합
-- [ ] 메인 페이지 UI
-- [ ] 전체 플로우 통합
-- [ ] Vercel 배포
-
----
-
-## 9. 파일 구조
+## 5. 파일 구조
 
 ```
 src/
@@ -317,87 +70,84 @@ src/
 │   ├── layout.tsx                  # 루트 레이아웃
 │   ├── globals.css                 # 전역 스타일
 │   ├── api/
-│   │   ├── qr/generate/route.ts    # QR 생성 API
-│   │   ├── appcheck/verify/route.ts # App Check 검증
 │   │   └── health/route.ts         # 헬스 체크
 │   └── test/
 │       ├── page.tsx                # 테스트 대시보드
-│       ├── qr/page.tsx             # QR 테스트
 │       ├── auth/page.tsx           # 인증 테스트
-│       ├── appcheck/page.tsx       # App Check 테스트
-│       ├── upload/page.tsx         # 업로드 테스트
-│       ├── database/page.tsx       # DB 테스트
+│       ├── qr/page.tsx             # QR 테스트
 │       └── print/page.tsx          # 출력 테스트
-├── components/                     # 재사용 컴포넌트
 ├── lib/
 │   ├── supabase/
-│   │   ├── client.ts               # 브라우저 클라이언트
-│   │   └── server.ts               # 서버 클라이언트
-│   ├── firebase/
-│   │   ├── client.ts               # App Check 클라이언트
-│   │   └── admin.ts                # Admin SDK
-│   ├── cloudflare/
-│   │   └── r2-client.ts            # Workers 호출
+│   │   └── client.ts               # Supabase 브라우저 클라이언트
 │   └── qr/
 │       ├── generator.ts            # QR 생성 로직
 │       └── wifi-format.ts          # WiFi 문자열 포맷
 └── types/
     └── index.ts                    # 타입 정의
-
-workers/r2-uploader/                # Cloudflare Workers
-├── src/index.ts
-├── wrangler.toml
-└── package.json
 ```
 
 ---
 
-## 10. API 명세
+## 6. 환경변수
 
-### POST /api/qr/generate
+```bash
+# .env.local
 
-QR 코드 생성 및 저장
+# Supabase (필수)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-**Request:**
-```
-Headers:
-  Authorization: Bearer <supabase_jwt>
-  X-Firebase-AppCheck: <app_check_token> (선택)
-  Content-Type: multipart/form-data
-
-Body (FormData):
-  file: Blob (WebP 이미지)
-  ssid: string
-  encryptionType: "WPA" | "WPA2"
-```
-
-**Response (성공):**
-```json
-{
-  "success": true,
-  "data": {
-    "qrId": "uuid",
-    "qrDataUrl": "",
-    "r2Url": "qr-codes/user-id/timestamp.webp",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
-
-**Response (에러):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "인증이 필요합니다."
-  }
-}
+# 관리자 이메일 (서버 전용, 선택적)
+ADMIN_EMAILS=admin@example.com
 ```
 
 ---
 
-## 11. 개발 실행 방법
+## 7. WiFi QR 코드 포맷
+
+```
+WIFI:T:<encryption>;S:<ssid>;P:<password>;;
+```
+
+- `T`: 암호화 방식 (WPA, WPA2, WEP, nopass)
+- `S`: SSID (네트워크 이름)
+- `P`: 비밀번호
+
+예시:
+```
+WIFI:T:WPA;S:MyNetwork;P:MyPassword123;;
+```
+
+---
+
+## 8. 테스트 페이지
+
+| 경로 | 기능 | 테스트 항목 |
+|------|------|------------|
+| /test | 대시보드 | 테스트 페이지 링크 |
+| /test/auth | 인증 | Google 로그인/로그아웃 |
+| /test/qr | QR 코드 | WiFi 포맷, 이미지 생성 |
+| /test/print | 출력 | 프린터, PDF, 이미지 다운로드 |
+
+---
+
+## 9. 구현 상태
+
+### 완료
+- [x] Next.js 프로젝트 설정
+- [x] WiFi 문자열 포맷
+- [x] QR 이미지 생성
+- [x] 출력 기능 (프린터, PDF, 이미지)
+- [x] Google 로그인 (Supabase Auth)
+
+### 진행 예정
+- [ ] 메인 페이지 UI 완성
+- [ ] 관리자 모드 구현
+- [ ] Vercel 배포
+
+---
+
+## 10. 개발 실행 방법
 
 ```bash
 # 의존성 설치
@@ -413,17 +163,10 @@ npm run dev
 
 ---
 
-## 12. 배포
+## 11. 배포
 
 ### Vercel 배포
 1. GitHub에 코드 푸시
 2. Vercel에서 프로젝트 import
-3. 환경변수 설정 (Settings > Environment Variables)
+3. 환경변수 설정 (Supabase URL, Anon Key)
 4. 배포
-
-### Cloudflare Workers 배포
-```bash
-cd workers/r2-uploader
-wrangler login
-wrangler deploy
-```
