@@ -15,6 +15,17 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // 저장된 테마 불러오기 (기본: 라이트)
+    const savedTheme = localStorage.getItem("theme");
+    const isDarkMode = savedTheme === "dark";
+    setIsDark(isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -31,6 +42,18 @@ export default function Home() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  function toggleDarkMode() {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    if (newIsDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }
 
   async function handleGenerate() {
     if (!ssid.trim()) return;
@@ -89,7 +112,24 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8 max-w-lg">
         {/* 헤더 */}
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 relative">
+          {/* 다크모드 토글 버튼 */}
+          <button
+            onClick={toggleDarkMode}
+            className="absolute right-0 top-0 p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            aria-label={isDark ? "라이트 모드로 전환" : "다크 모드로 전환"}
+          >
+            {isDark ? (
+              <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
+
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
@@ -229,17 +269,42 @@ export default function Home() {
           </div>
         )}
 
-        {/* 푸터 - 히든 관리자 메뉴 */}
-        <footer className="mt-8 text-center">
+        {/* 푸터 */}
+        <footer className="mt-8 text-center space-y-3">
+          {/* Copyright & Links */}
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="mb-1">Copyright (C) 2025 saemi</p>
+            <p>
+              <a
+                href="https://github.com/izowooi/crispy-web/tree/main/qrcode"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                소스 코드 보기
+              </a>
+              <span className="mx-2">/</span>
+              <a
+                href="https://github.com/izowooi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                izowooi
+              </a>
+            </p>
+          </div>
+
+          {/* 히든 관리자 메뉴 */}
           <button
             onClick={() => setShowAdminMenu(!showAdminMenu)}
-            className="text-xs text-gray-400 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-500 transition-colors"
+            className="text-xs text-gray-300 dark:text-gray-700 hover:text-gray-400 dark:hover:text-gray-600 transition-colors"
           >
             {showAdminMenu ? "▲" : "▼"}
           </button>
 
           {showAdminMenu && (
-            <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
               {user ? (
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <p className="mb-2">{user.email}</p>
