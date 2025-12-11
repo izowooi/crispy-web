@@ -163,10 +163,226 @@ npm run dev
 
 ---
 
-## 11. 배포
+## 11. Vercel 배포 가이드
 
-### Vercel 배포
-1. GitHub에 코드 푸시
-2. Vercel에서 프로젝트 import
-3. 환경변수 설정 (Supabase URL, Anon Key)
-4. 배포
+Vercel은 Next.js를 만든 회사에서 운영하는 호스팅 플랫폼입니다.
+Next.js 앱을 가장 쉽고 최적화된 방식으로 배포할 수 있습니다.
+
+### 11.1 사전 준비
+
+#### 필수 조건
+- GitHub 계정 (GitLab, Bitbucket도 가능)
+- Node.js 20.x 이상 (로컬 개발용)
+- 프로젝트 코드가 Git 저장소에 푸시되어 있어야 함
+
+#### GitHub에 코드 푸시 (아직 안 했다면)
+```bash
+# 1. Git 저장소 초기화 (이미 했다면 건너뛰기)
+git init
+
+# 2. 모든 파일 스테이징
+git add .
+
+# 3. 커밋
+git commit -m "Initial commit"
+
+# 4. GitHub에서 새 저장소 생성 후 연결
+git remote add origin https://github.com/your-username/wifi-qr-generator.git
+
+# 5. 푸시
+git push -u origin main
+```
+
+### 11.2 Vercel 계정 생성
+
+1. **https://vercel.com 접속**
+
+2. **"Sign Up" 클릭**
+   - GitHub으로 가입하는 것을 **강력 추천** (나중에 저장소 연결이 쉬움)
+   - "Continue with GitHub" 선택
+   - GitHub 로그인 및 권한 허용
+
+3. **Hobby (무료) 플랜 선택**
+   - 개인 프로젝트는 무료로 충분
+   - 월 100GB 대역폭, 무제한 배포
+
+### 11.3 프로젝트 배포하기
+
+#### Step 1: 새 프로젝트 생성
+1. Vercel 대시보드에서 **"Add New..." → "Project"** 클릭
+2. 또는 **"New Project"** 버튼 클릭
+
+#### Step 2: Git 저장소 연결
+1. **"Import Git Repository"** 섹션에서 GitHub 저장소 목록 확인
+2. 배포할 저장소 옆의 **"Import"** 클릭
+3. 저장소가 안 보이면:
+   - "Adjust GitHub App Permissions" 클릭
+   - 해당 저장소에 접근 권한 부여
+
+#### Step 3: 프로젝트 설정
+Vercel이 Next.js 프로젝트를 자동 감지합니다.
+
+```
+┌─────────────────────────────────────────────┐
+│ Configure Project                           │
+├─────────────────────────────────────────────┤
+│ Project Name: wifi-qr-generator             │
+│ Framework Preset: Next.js (자동 감지)        │
+│ Root Directory: ./ (기본값)                  │
+│ Build Command: next build (자동)            │
+│ Output Directory: (자동)                    │
+│ Install Command: npm install (자동)         │
+└─────────────────────────────────────────────┘
+```
+
+**대부분 기본값 그대로 사용하면 됩니다.**
+
+#### Step 4: 환경변수 설정 ⚠️ 중요!
+"Environment Variables" 섹션을 펼치고 다음 변수들을 추가합니다:
+
+| Name | Value | 설명 |
+|------|-------|------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://xxx.supabase.co` | Supabase 프로젝트 URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGci...` | Supabase 공개 키 |
+| `ADMIN_EMAILS` | `your@email.com` | 관리자 이메일 (선택) |
+
+**환경변수 추가 방법:**
+1. "Name" 필드에 변수 이름 입력
+2. "Value" 필드에 값 입력
+3. "Add" 버튼 클릭
+4. 모든 변수에 대해 반복
+
+**주의사항:**
+- `NEXT_PUBLIC_` 접두사가 붙은 변수는 클라이언트(브라우저)에서 접근 가능
+- `ADMIN_EMAILS`처럼 접두사가 없는 변수는 서버에서만 접근 가능
+
+#### Step 5: 배포 실행
+1. **"Deploy"** 버튼 클릭
+2. 배포 과정 모니터링 (보통 1-2분 소요):
+   - Installing dependencies...
+   - Building...
+   - Deploying...
+3. **"Congratulations!"** 메시지와 함께 배포 완료
+
+#### Step 6: 배포된 사이트 확인
+- 배포 완료 후 **`https://your-project-name.vercel.app`** 형태의 URL 제공
+- "Visit" 버튼 클릭하여 사이트 확인
+
+### 11.4 Supabase OAuth 리디렉션 URL 설정 ⚠️ 필수!
+
+Google 로그인이 작동하려면 Supabase에 Vercel 도메인을 등록해야 합니다.
+
+1. **Supabase Dashboard 접속** (https://supabase.com/dashboard)
+2. **프로젝트 선택**
+3. **Authentication → URL Configuration**
+4. **"Redirect URLs"** 섹션에 추가:
+   ```
+   https://your-project-name.vercel.app/**
+   ```
+5. **"Save"** 클릭
+
+### 11.5 자동 배포 (CI/CD)
+
+Vercel의 강력한 기능 중 하나입니다:
+
+- **main 브랜치에 푸시** → 자동으로 프로덕션 배포
+- **다른 브랜치에 푸시** → Preview 배포 (테스트용 URL 생성)
+- **Pull Request 생성** → Preview 배포 + 댓글로 URL 알림
+
+```bash
+# 코드 수정 후 푸시하면 자동 배포
+git add .
+git commit -m "Update feature"
+git push origin main
+# → Vercel이 자동으로 감지하여 재배포
+```
+
+### 11.6 커스텀 도메인 연결 (선택)
+
+기본 `.vercel.app` 도메인 대신 자신의 도메인 사용하기:
+
+1. **Vercel 대시보드 → 프로젝트 선택**
+2. **"Settings" → "Domains"**
+3. **도메인 입력** (예: `wifi-qr.yourdomain.com`)
+4. **DNS 설정 안내에 따라 도메인 등록 업체에서 설정:**
+   - A 레코드: `76.76.21.21`
+   - 또는 CNAME: `cname.vercel-dns.com`
+5. **SSL 인증서 자동 발급** (무료, Let's Encrypt)
+
+### 11.7 환경변수 수정하기
+
+배포 후 환경변수를 변경해야 할 때:
+
+1. **Vercel 대시보드 → 프로젝트 선택**
+2. **"Settings" → "Environment Variables"**
+3. **변수 수정/추가/삭제**
+4. **⚠️ 중요: "Redeploy" 필요!**
+   - "Deployments" 탭으로 이동
+   - 최신 배포 옆 "..." 메뉴 → "Redeploy" 클릭
+
+### 11.8 배포 로그 확인하기
+
+배포가 실패하거나 문제가 있을 때:
+
+1. **Vercel 대시보드 → 프로젝트 선택**
+2. **"Deployments" 탭**
+3. **해당 배포 클릭**
+4. **"Building" 로그 확인** - 빌드 오류 확인
+5. **"Functions" 로그 확인** - 런타임 오류 확인
+
+### 11.9 유용한 Vercel CLI 명령어 (선택)
+
+터미널에서 직접 배포하고 싶다면:
+
+```bash
+# Vercel CLI 설치
+npm install -g vercel
+
+# 로그인
+vercel login
+
+# 프로젝트 연결 및 배포
+vercel
+
+# 프로덕션 배포
+vercel --prod
+
+# 환경변수 추가
+vercel env add NEXT_PUBLIC_SUPABASE_URL
+
+# 로그 확인
+vercel logs
+```
+
+### 11.10 요금 안내
+
+| 플랜 | 가격 | 대역폭 | 빌드 시간 |
+|------|------|--------|----------|
+| Hobby | 무료 | 100GB/월 | 100시간/월 |
+| Pro | $20/월 | 1TB/월 | 400시간/월 |
+| Enterprise | 문의 | 무제한 | 무제한 |
+
+**Hobby 플랜으로 개인 프로젝트는 충분합니다.**
+
+### 11.11 배포 체크리스트
+
+```
+□ GitHub에 코드 푸시 완료
+□ Vercel 계정 생성 (GitHub 연동)
+□ 프로젝트 Import
+□ 환경변수 설정:
+  □ NEXT_PUBLIC_SUPABASE_URL
+  □ NEXT_PUBLIC_SUPABASE_ANON_KEY
+  □ ADMIN_EMAILS (선택)
+□ 배포 실행
+□ Supabase Redirect URL 설정
+□ 배포된 사이트에서 Google 로그인 테스트
+```
+
+---
+
+## 12. 참고 자료
+
+- [Next.js on Vercel 공식 문서](https://vercel.com/docs/frameworks/full-stack/nextjs)
+- [Vercel 환경변수 설정](https://vercel.com/docs/environment-variables)
+- [Supabase Auth 설정](https://supabase.com/docs/guides/auth)
