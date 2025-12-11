@@ -1,4 +1,4 @@
-export type EncryptionType = "WPA" | "WPA2";
+export type EncryptionType = "WPA" | "WPA2" | "nopass";
 
 export interface WifiQRData {
   ssid: string;
@@ -21,8 +21,10 @@ export function generateWifiString(data: WifiQRData): string {
   const password = escapeSpecialChars(data.password);
   const hidden = data.hidden ? "H:true;" : "";
 
-  // WPA와 WPA2는 동일하게 WPA로 표시 (QR 표준)
-  return `WIFI:T:WPA;S:${ssid};P:${password};${hidden};`;
+  // nopass인 경우 비밀번호 없이 생성
+  const securityType = data.encryptionType === "nopass" ? "nopass" : "WPA";
+  const passwordPart = data.encryptionType === "nopass" ? "" : `P:${password};`;
+  return `WIFI:T:${securityType};S:${ssid};${passwordPart}${hidden};`;
 }
 
 /**
