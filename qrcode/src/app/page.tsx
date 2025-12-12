@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { generateQRDataURL } from "@/lib/qr/generator";
 import { EncryptionType } from "@/lib/qr/wifi-format";
-import { getSupabaseClient, signInWithGoogle, signOut } from "@/lib/supabase/client";
-import { User, AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 export default function Home() {
   const [ssid, setSsid] = useState("");
@@ -13,8 +11,6 @@ export default function Home() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -25,22 +21,6 @@ export default function Home() {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
     }
-  }, []);
-
-  useEffect(() => {
-    const supabase = getSupabaseClient();
-
-    async function initAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    }
-    initAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   function toggleDarkMode() {
@@ -269,9 +249,25 @@ export default function Home() {
           </div>
         )}
 
+        {/* 개인정보 안내 */}
+        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div className="text-xs text-green-800 dark:text-green-300">
+              <p className="font-medium mb-1">안심하고 사용하세요</p>
+              <p className="text-green-700 dark:text-green-400">
+                입력하신 WiFi 이름과 비밀번호는 <strong>서버로 전송되지 않습니다.</strong> 모든 QR 코드 생성은 브라우저에서만 처리되며, 어떠한 정보도 저장하거나 수집하지 않습니다. 소스 코드를 공개하여 투명하게 운영하고 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* 푸터 */}
-        <footer className="mt-8 text-center space-y-3">
-          {/* Copyright & Links */}
+        <footer className="mt-6 text-center">
           <div className="text-xs text-gray-500 dark:text-gray-400">
             <p className="mb-1">Copyright (C) 2025 saemi</p>
             <p>
@@ -294,37 +290,6 @@ export default function Home() {
               </a>
             </p>
           </div>
-
-          {/* 히든 관리자 메뉴 */}
-          <button
-            onClick={() => setShowAdminMenu(!showAdminMenu)}
-            className="text-xs text-gray-300 dark:text-gray-700 hover:text-gray-400 dark:hover:text-gray-600 transition-colors"
-          >
-            {showAdminMenu ? "▲" : "▼"}
-          </button>
-
-          {showAdminMenu && (
-            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              {user ? (
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  <p className="mb-2">{user.email}</p>
-                  <button
-                    onClick={() => signOut()}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => signInWithGoogle()}
-                  className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                >
-                  관리자 로그인
-                </button>
-              )}
-            </div>
-          )}
         </footer>
       </div>
     </main>
