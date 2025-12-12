@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { generateQRDataURL } from "@/lib/qr/generator";
 import { EncryptionType } from "@/lib/qr/wifi-format";
+import InstallPrompt from "@/components/InstallPrompt";
 
 export default function Home() {
   const [ssid, setSsid] = useState("");
@@ -292,6 +293,9 @@ export default function Home() {
           </div>
         </footer>
       </div>
+
+      {/* PWA 설치 유도 */}
+      <InstallPrompt />
     </main>
   );
 }

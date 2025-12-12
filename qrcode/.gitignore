@@ -33,3 +33,9 @@ next-env.d.ts
 # IDE
 .idea/
 .vscode/
+
+# PWA (auto-generated)
+public/sw.js
+public/workbox-*.js
+public/sw.js.map
+public/workbox-*.js.map
