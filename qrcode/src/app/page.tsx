@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { generateQRDataURL } from "@/lib/qr/generator";
 import { EncryptionType } from "@/lib/qr/wifi-format";
 import InstallPrompt from "@/components/InstallPrompt";
+import AppDrawer from "@/components/AppDrawer";
+import { getOtherApps } from "@/components/AppDrawer/apps";
 
 export default function Home() {
   const [ssid, setSsid] = useState("");
@@ -296,6 +298,9 @@ export default function Home() {
 
       {/* PWA 설치 유도 */}
       <InstallPrompt />
+
+      {/* 다른 앱 드로워 */}
+      <AppDrawer apps={getOtherApps("qrcode")} />
     </main>
   );
 }
