@@ -1,9 +1,15 @@
+export type AppType = 'web' | 'app';
+
 export interface AppInfo {
   id: string;
   name: string;
   description: string;
+  type: AppType;
   url: string;
+  appStoreUrl?: string;
+  playStoreUrl?: string;
   icon: string;
+  imageUrl?: string;
   color?: string;
 }
 

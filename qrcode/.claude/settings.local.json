@@ -6,7 +6,8 @@
       "Bash(npm run build:*)",
       "WebSearch",
       "Bash(rm:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(cp:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

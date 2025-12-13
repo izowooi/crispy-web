@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppDrawerProps } from './types';
+import { AppDrawerProps, AppInfo } from './types';
 import FloatingButton from './FloatingButton';
 import AppCard from './AppCard';
 
@@ -31,8 +31,16 @@ export default function AppDrawer({ apps, defaultOpen = false }: AppDrawerProps)
     };
   }, [isOpen]);
 
-  const handleAppClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handleAppClick = (app: AppInfo) => {
+    // 네이티브 앱인 경우 플랫폼에 따라 다른 스토어로 연결
+    if (app.type === 'app') {
+      // Apple 기기 감지: iOS (iPhone, iPad, iPod) 또는 macOS
+      const isApple = /iPhone|iPad|iPod|Macintosh|Mac OS/.test(navigator.userAgent);
+      const url = isApple ? (app.appStoreUrl || app.url) : (app.playStoreUrl || app.url);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(app.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -94,7 +102,7 @@ export default function AppDrawer({ apps, defaultOpen = false }: AppDrawerProps)
           {/* App List */}
           <div className="flex-1 overflow-y-auto space-y-3">
             {apps.map((app) => (
-              <AppCard key={app.id} app={app} onClick={() => handleAppClick(app.url)} />
+              <AppCard key={app.id} app={app} onClick={() => handleAppClick(app)} />
             ))}
           </div>
 
