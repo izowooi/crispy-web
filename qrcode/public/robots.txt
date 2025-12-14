@@ -1,0 +1,14 @@
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Naver search bot
+User-agent: Yeti
+Allow: /
+
+# Google search bot
+User-agent: Googlebot
+Allow: /
+
+# Sitemap location (optional - update with your actual sitemap URL)
+# Sitemap: https://yourdomain.com/sitemap.xml
