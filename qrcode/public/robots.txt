@@ -10,5 +10,5 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
-# Sitemap location (optional - update with your actual sitemap URL)
-# Sitemap: https://yourdomain.com/sitemap.xml
+# Sitemap location
+Sitemap: https://qrcodei.vercel.app/sitemap.xml
