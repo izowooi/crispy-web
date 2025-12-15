@@ -1,0 +1,220 @@
+# PRD: Podcast Player Web App
+
+## 1. 개요
+
+LM Studio로 생성한 팟캐스트 콘텐츠를 관리하고 재생할 수 있는 웹 애플리케이션이다. 사용자는 별도의 로그인 없이 팟캐스트를 청취할 수 있으며, 지정된 관리자만 콘텐츠를 업로드할 수 있다.
+
+---
+
+## 2. 목표
+
+- 누구나 접근 가능한 팟캐스트 재생 환경 제공
+- 차량 내 네비게이션 사용 중에도 끊김 없는 백그라운드 재생 지원
+- PWA를 통한 네이티브 앱 수준의 사용자 경험 제공
+- Google Keep 스타일의 직관적인 반응형 그리드 UI
+- 백엔드 없이 Cloudflare 생태계만으로 완결되는 심플한 아키텍처
+
+---
+
+## 3. 사용자 스토리
+
+### 3.1 청취자
+
+- 로그인 없이 팟캐스트 목록을 보고 원하는 에피소드를 재생할 수 있다.
+- 카테고리별로 팟캐스트를 필터링하고 검색할 수 있다.
+- 차량에서 네비게이션으로 전환해도 오디오가 끊기지 않고 백그라운드에서 계속 재생된다.
+- 모바일에서 PWA로 설치하여 네이티브 앱처럼 사용할 수 있다.
+- 잠금 화면이나 알림 센터에서 재생 컨트롤을 사용할 수 있다.
+
+### 3.2 관리자
+
+- Google 계정으로 로그인하여 관리자 페이지에 접근할 수 있다.
+- 새로운 팟캐스트 에피소드를 업로드하고 메타데이터(제목, 설명, 이모지, 카테고리, 태그)를 입력할 수 있다.
+- 기존 에피소드의 정보를 수정하거나 삭제할 수 있다.
+
+---
+
+## 4. 기능 요구사항
+
+### 4.1 팟캐스트 목록 및 재생
+
+- 반응형 그리드 레이아웃: 모바일 1열, 태블릿 2열, 데스크탑 3~4열
+- 카드 형태로 에피소드 표시 (이모지 썸네일, 제목, 설명 미리보기)
+- 오디오 플레이어: 재생/일시정지, 탐색바, 볼륨 조절, 재생 속도 조절
+- 지원 포맷: MP3, M4A, MP4 (오디오 트랙)
+- 카테고리 필터링 및 텍스트 검색 기능
+
+### 4.2 PWA 및 백그라운드 재생
+
+- Service Worker를 통한 오프라인 캐싱 (앱 셸, 정적 자산)
+- Web App Manifest: 홈 화면 추가, 전체 화면 모드, 앱 아이콘
+- Media Session API: 잠금 화면/알림 센터 미디어 컨트롤
+- 백그라운드 오디오 재생 지원 (Android Chrome 기준)
+
+### 4.3 관리자 기능
+
+- Google OAuth 2.0 로그인
+- 허용된 이메일 목록 기반 접근 제어 (3명)
+- 파일 업로드 폼: 오디오 파일, 제목(필수), 설명(선택), 이모지(선택), 카테고리(필수), 태그(선택)
+- 기존 에피소드 수정 및 삭제
+- 업로드 진행률 표시
+
+---
+
+## 5. 기술 아키텍처
+
+### 5.1 기술 스택
+
+| 레이어 | 기술 | 비고 |
+|--------|------|------|
+| Frontend | Next.js (App Router) | React, TypeScript |
+| Styling | Tailwind CSS | 반응형 그리드 구현 |
+| Backend | Cloudflare Pages Functions | Edge Runtime, R2 바인딩 |
+| Storage | Cloudflare R2 | 오디오 파일 + 메타데이터 JSON |
+| Auth | Google OAuth 2.0 | 관리자 전용 |
+| Hosting | Cloudflare Pages | `*.pages.dev` 서브도메인 |
+| PWA | next-pwa / Workbox | Service Worker, Manifest |
+
+### 5.2 시스템 아키텍처
+
+**전체 흐름:**
+```
+[브라우저/PWA] → [Cloudflare Pages] → [Pages Functions (Edge)] → [R2 Bucket]
+```
+
+**청취자 흐름:**
+1. 사용자가 웹앱 접속
+2. Next.js 정적 페이지 + CSR로 팟캐스트 목록 로드
+3. R2 Public URL에서 `metadata.json` 직접 fetch
+4. 오디오 재생 시 R2 버킷에서 직접 스트리밍
+
+**관리자 흐름:**
+1. Google OAuth 로그인
+2. Pages Function에서 ID Token 검증 + 이메일 화이트리스트 확인
+3. 인증 성공 시 관리자 페이지 접근 허용
+4. 파일 업로드 → Pages Function → R2 버킷 저장
+5. 메타데이터 업데이트 → `metadata.json` 갱신
+
+### 5.3 데이터 구조
+
+**R2 버킷 구조:**
+```
+podcasts/
+├── metadata.json          # 메타데이터 + 허용 업로더 목록
+└── audio/
+    ├── {id}.mp3
+    ├── {id}.m4a
+    └── ...
+```
+
+**metadata.json 스키마:**
+```json
+{
+  "podcasts": [
+    {
+      "id": "uuid-string",
+      "title": "에피소드 제목",
+      "description": "설명 (optional)",
+      "emoji": "🎙️",
+      "category": "기술",
+      "tags": ["AI", "개발"],
+      "fileKey": "audio/uuid.mp3",
+      "fileSize": 15000000,
+      "duration": 1800,
+      "createdAt": "2025-01-15T10:00:00Z",
+      "updatedAt": "2025-01-15T10:00:00Z"
+    }
+  ],
+  "categories": ["기술", "일상", "뉴스"],
+  "allowedUploaders": [
+    "admin1@gmail.com",
+    "admin2@gmail.com",
+    "admin3@gmail.com"
+  ]
+}
+```
+
+---
+
+## 6. 보안
+
+### 6.1 인증 및 인가
+
+- Google OAuth 2.0을 통한 관리자 인증
+- ID Token 검증은 Cloudflare Pages Functions(Edge)에서 수행
+- 허용된 이메일 목록은 R2의 `metadata.json`에 저장 (코드에 하드코딩하지 않음)
+- R2 API 키는 Cloudflare 환경변수에 저장, 프론트엔드에 노출되지 않음
+
+### 6.2 보안 체크리스트
+
+- R2 버킷의 오디오 파일과 `metadata.json`은 Public Read 허용 (읽기 전용)
+- 쓰기 작업은 Cloudflare 바인딩으로만 접근 (Pages Functions 경유)
+- 업로드 API는 인증된 관리자만 호출 가능
+- CORS 설정으로 허용된 도메인만 API 호출 가능
+
+---
+
+## 7. UI/UX 설계
+
+### 7.1 화면 구성
+
+| 화면 | 설명 |
+|------|------|
+| 메인 (홈) | 팟캐스트 그리드, 검색바, 카테고리 필터, 하단 미니 플레이어 |
+| 상세/재생 | 에피소드 정보, 전체 플레이어 UI (선택적) |
+| 관리자 로그인 | Google 로그인 버튼 |
+| 관리자 대시보드 | 에피소드 목록, 업로드 버튼 |
+| 업로드 폼 | 파일 선택, 메타데이터 입력 폼 |
+
+### 7.2 반응형 브레이크포인트
+
+| 디바이스 | 너비 | 그리드 열 |
+|----------|------|-----------|
+| Mobile | < 640px | 1열 |
+| Tablet | 640px ~ 1024px | 2열 |
+| Desktop | 1024px ~ 1280px | 3열 |
+| Wide Desktop | > 1280px | 4열 |
+
+---
+
+## 8. API 명세
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| POST | `/api/admin/upload` | Google OAuth | 오디오 파일 업로드 |
+| PUT | `/api/admin/podcasts/[id]` | Google OAuth | 메타데이터 수정 |
+| DELETE | `/api/admin/podcasts/[id]` | Google OAuth | 에피소드 삭제 |
+| GET | `/api/auth/callback` | - | OAuth 콜백 처리 |
+
+> **Note:** 팟캐스트 목록 및 단일 에피소드 조회는 R2의 `metadata.json`을 클라이언트에서 직접 fetch한다. 읽기 전용 데이터이므로 별도 API 레이어가 불필요하다.
+
+---
+
+## 9. 마일스톤
+
+| Phase | 작업 내용 | 산출물 |
+|-------|----------|--------|
+| 1 | 프로젝트 셋업, R2 버킷 생성, 기본 UI | Next.js 프로젝트, R2 연동 확인 |
+| 2 | 팟캐스트 목록/재생 기능 구현 | 메인 페이지, 오디오 플레이어 |
+| 3 | Google OAuth + 관리자 페이지 | 로그인, 업로드 폼 |
+| 4 | PWA 구현 (Service Worker, Manifest) | 오프라인 지원, 설치 가능 |
+| 5 | 백그라운드 재생 + Media Session API | 잠금화면 컨트롤 |
+| 6 | 테스트 및 배포 | Cloudflare Pages 배포 완료 |
+
+---
+
+## 10. 리스크 및 제약사항
+
+| 리스크 | 영향 | 대응 방안 |
+|--------|------|----------|
+| iOS 백그라운드 재생 제한 | iOS Safari에서 화면 꺼짐 시 재생 중단 가능 | 주 사용 환경이 Android이므로 수용 |
+| Next.js + Cloudflare 호환성 | 일부 Node.js API 미지원 | Edge Runtime 호환 코드 작성 |
+
+---
+
+## 11. 성공 지표
+
+- 모든 주요 브라우저에서 정상 재생
+- Android Chrome에서 백그라운드 재생 성공률 100%
+- Lighthouse PWA 점수 90점 이상
+- 관리자 업로드 성공률 99% 이상
