@@ -26,6 +26,21 @@ export const metadata: Metadata = {
     icon: "/icons/icon-192x192.svg",
     apple: "/icons/icon-192x192.svg",
   },
+  openGraph: {
+    title: "Podplay - LM Studio 팟캐스트",
+    description: "LM Studio로 생성한 팟캐스트를 들어보세요",
+    url: "https://podplay.pages.dev",
+    siteName: "Podplay",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
