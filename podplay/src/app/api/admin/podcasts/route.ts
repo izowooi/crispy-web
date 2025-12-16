@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromCookies } from '@/lib/auth/google';
 import { getMetadataFromR2 } from '@/lib/r2/upload';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     // Check authentication

@@ -6,6 +6,8 @@ import {
   deleteFileFromR2,
 } from '@/lib/r2/upload';
 
+export const runtime = 'edge';
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }

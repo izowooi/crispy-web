@@ -7,6 +7,8 @@ import {
 } from '@/lib/r2/upload';
 import { Category } from '@/types';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
