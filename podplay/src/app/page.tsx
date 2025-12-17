@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { usePodcasts } from '@/hooks/usePodcasts';
 import { PodcastGrid, CategoryFilter, SearchBar } from '@/components/podcast';
 import { MiniPlayer } from '@/components/player';
@@ -27,15 +26,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-foreground">
               Podplay
             </h1>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/test"
-                className="px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
-              >
-                테스트
-              </Link>
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
           </div>
 
           {/* Search */}
