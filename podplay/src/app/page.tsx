@@ -6,6 +6,7 @@ import { usePodcasts } from '@/hooks/usePodcasts';
 import { PodcastGrid, CategoryFilter, SearchBar } from '@/components/podcast';
 import { MiniPlayer } from '@/components/player';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { InstallPrompt } from '@/components/ui/InstallPrompt';
 
 export default function Home() {
   const [showAdmin, setShowAdmin] = useState(false);
@@ -93,6 +94,9 @@ export default function Home() {
           )}
         </div>
       </main>
+
+      {/* PWA Install prompt */}
+      <InstallPrompt />
 
       {/* Mini player */}
       <MiniPlayer />
