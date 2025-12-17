@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://podplay.pages.dev'),
   title: "Podplay - LM Studio 팟캐스트",
   description: "LM Studio로 생성한 팟캐스트를 들어보세요",
   manifest: "/manifest.json",
