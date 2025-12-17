@@ -24,8 +24,8 @@ export const metadata: Metadata = {
     title: "Podplay",
   },
   icons: {
-    icon: "/icons/icon-192x192.svg",
-    apple: "/icons/icon-192x192.svg",
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
   },
   openGraph: {
     title: "Podplay - LM Studio 팟캐스트",
