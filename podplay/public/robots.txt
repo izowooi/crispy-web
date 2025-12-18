@@ -10,5 +10,10 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
+# Disallow admin and test pages
+User-agent: *
+Disallow: /admin/
+Disallow: /test/
+
 # Sitemap location
-Sitemap: https://qrcodei.vercel.app/sitemap.xml
+Sitemap: https://podplay.pages.dev/sitemap.xml
