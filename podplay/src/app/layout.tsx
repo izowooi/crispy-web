@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { ServiceWorkerRegistration } from "@/components/ui/ServiceWorkerRegistration";
+import { MiniPlayer } from "@/components/player";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,6 +66,7 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         <PlayerProvider>
           {children}
+          <MiniPlayer />
         </PlayerProvider>
       </body>
     </html>

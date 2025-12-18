@@ -5,12 +5,14 @@ import { PlayButton } from './PlayButton';
 import { ProgressBar } from './ProgressBar';
 import { VolumeControl } from './VolumeControl';
 import { SpeedControl } from './SpeedControl';
+import { Podcast } from '@/types';
 
 interface AudioPlayerProps {
   className?: string;
+  podcast?: Podcast;
 }
 
-export function AudioPlayer({ className = '' }: AudioPlayerProps) {
+export function AudioPlayer({ className = '', podcast }: AudioPlayerProps) {
   const { state, actions } = usePlayer();
   const {
     currentPodcast,
@@ -23,7 +25,13 @@ export function AudioPlayer({ className = '' }: AudioPlayerProps) {
     error,
   } = state;
 
-  if (!currentPodcast) {
+  // 표시할 podcast 결정: prop으로 전달된 podcast 또는 현재 재생 중인 podcast
+  const displayPodcast = podcast || currentPodcast;
+
+  // 현재 페이지의 podcast가 재생 중인지 확인
+  const isCurrentPodcastPlaying = isPlaying && currentPodcast?.id === displayPodcast?.id;
+
+  if (!displayPodcast) {
     return (
       <div className={`p-8 text-center text-foreground/50 ${className}`}>
         재생할 에피소드를 선택해주세요.
@@ -33,10 +41,10 @@ export function AudioPlayer({ className = '' }: AudioPlayerProps) {
 
   const handlePlayPause = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isPlaying) {
+    if (isCurrentPodcastPlaying) {
       actions.pause();
-    } else {
-      actions.play();
+    } else if (displayPodcast) {
+      actions.play(displayPodcast);
     }
   };
 
@@ -48,12 +56,12 @@ export function AudioPlayer({ className = '' }: AudioPlayerProps) {
     <div className={`bg-card-bg rounded-2xl p-6 ${className}`}>
       {/* Podcast info */}
       <div className="text-center mb-6">
-        <span className="text-6xl mb-4 block">{currentPodcast.emoji}</span>
-        <h2 className="text-xl font-bold text-foreground mb-1">{currentPodcast.title}</h2>
-        <p className="text-foreground/60">{currentPodcast.category}</p>
-        {currentPodcast.description && (
+        <span className="text-6xl mb-4 block">{displayPodcast.emoji}</span>
+        <h2 className="text-xl font-bold text-foreground mb-1">{displayPodcast.title}</h2>
+        <p className="text-foreground/60">{displayPodcast.category}</p>
+        {displayPodcast.description && (
           <p className="text-sm text-foreground/50 mt-2 line-clamp-2">
-            {currentPodcast.description}
+            {displayPodcast.description}
           </p>
         )}
       </div>
@@ -88,12 +96,12 @@ export function AudioPlayer({ className = '' }: AudioPlayerProps) {
         </button>
 
         {/* Play/Pause */}
-        {isLoading ? (
+        {isLoading && isCurrentPodcastPlaying ? (
           <div className="w-16 h-16 flex items-center justify-center">
             <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <PlayButton isPlaying={isPlaying} onClick={handlePlayPause} size="lg" />
+          <PlayButton isPlaying={isCurrentPodcastPlaying} onClick={handlePlayPause} size="lg" />
         )}
 
         {/* Skip forward */}

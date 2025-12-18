@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePodcasts } from '@/hooks/usePodcasts';
 import { PodcastGrid, CategoryFilter, SearchBar } from '@/components/podcast';
-import { MiniPlayer } from '@/components/player';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { InstallPrompt } from '@/components/ui/InstallPrompt';
 
@@ -97,9 +96,6 @@ export default function Home() {
 
       {/* PWA Install prompt */}
       <InstallPrompt />
-
-      {/* Mini player */}
-      <MiniPlayer />
     </div>
   );
 }

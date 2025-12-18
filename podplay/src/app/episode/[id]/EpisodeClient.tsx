@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePodcasts } from '@/hooks/usePodcasts';
-import { usePlayer } from '@/context/PlayerContext';
 import { AudioPlayer } from '@/components/player';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { formatDuration, formatFileSize } from '@/lib/r2/client';
@@ -13,7 +12,6 @@ interface EpisodeClientProps {
 
 export function EpisodeClient({ id }: EpisodeClientProps) {
   const { getPodcastById, isLoading } = usePodcasts();
-  const { actions } = usePlayer();
 
   const podcast = getPodcastById(id);
 
@@ -38,10 +36,6 @@ export function EpisodeClient({ id }: EpisodeClientProps) {
       </div>
     );
   }
-
-  const handlePlay = () => {
-    actions.play(podcast);
-  };
 
   return (
     <div className="min-h-screen">
@@ -102,7 +96,7 @@ export function EpisodeClient({ id }: EpisodeClientProps) {
         </div>
 
         {/* Player */}
-        <AudioPlayer className="max-w-md mx-auto" />
+        <AudioPlayer podcast={podcast} className="max-w-md mx-auto" />
 
         {/* Share button */}
         <div className="text-center mt-8">
