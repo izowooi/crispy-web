@@ -20,6 +20,7 @@ export default function UploadTestPage() {
   const [emoji, setEmoji] = useState('🎙️');
   const [category, setCategory] = useState<Category>('기술');
   const [tags, setTags] = useState('');
+  const [duration, setDuration] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -58,6 +59,14 @@ export default function UploadTestPage() {
 
       setFile(selectedFile);
       setError(null);
+
+      // Get actual duration using Audio API
+      const audio = new Audio();
+      audio.src = URL.createObjectURL(selectedFile);
+      audio.onloadedmetadata = () => {
+        setDuration(Math.round(audio.duration));
+        URL.revokeObjectURL(audio.src);
+      };
     }
   };
 
@@ -84,6 +93,9 @@ export default function UploadTestPage() {
       formData.append('emoji', emoji);
       formData.append('category', category);
       formData.append('tags', tags);
+      if (duration !== null) {
+        formData.append('duration', duration.toString());
+      }
 
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
@@ -106,6 +118,7 @@ export default function UploadTestPage() {
 
   const handleReset = () => {
     setFile(null);
+    setDuration(null);
     setTitle('');
     setDescription('');
     setEmoji('🎙️');

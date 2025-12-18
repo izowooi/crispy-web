@@ -21,6 +21,7 @@ export default function AdminUploadPage() {
     tags: '',
   });
   const [file, setFile] = useState<File | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +54,14 @@ export default function AdminUploadPage() {
       }
       setFile(selectedFile);
       setError(null);
+
+      // Get actual duration using Audio API
+      const audio = new Audio();
+      audio.src = URL.createObjectURL(selectedFile);
+      audio.onloadedmetadata = () => {
+        setDuration(Math.round(audio.duration));
+        URL.revokeObjectURL(audio.src);
+      };
     }
   };
 
@@ -81,6 +90,9 @@ export default function AdminUploadPage() {
       uploadFormData.append('emoji', formData.emoji);
       uploadFormData.append('category', formData.category);
       uploadFormData.append('tags', formData.tags);
+      if (duration !== null) {
+        uploadFormData.append('duration', duration.toString());
+      }
 
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
@@ -101,6 +113,7 @@ export default function AdminUploadPage() {
         tags: '',
       });
       setFile(null);
+      setDuration(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }

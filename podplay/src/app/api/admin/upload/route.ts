@@ -63,9 +63,10 @@ export async function POST(request: NextRequest) {
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
-    // Get audio duration (approximate based on file size for now)
-    // In production, you'd want to use a proper audio parsing library
-    const duration = Math.round(file.size / 16000); // Rough estimate
+    // Get audio duration from client (measured via Audio API)
+    // Falls back to file size estimate if not provided
+    const durationStr = formData.get('duration') as string;
+    const duration = durationStr ? parseInt(durationStr, 10) : Math.round(file.size / 32000);
 
     // Create podcast entry
     const podcast = {
