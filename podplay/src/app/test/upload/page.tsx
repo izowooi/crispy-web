@@ -46,8 +46,8 @@ export default function UploadTestPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size > 50 * 1024 * 1024) {
-        setError('파일 크기는 50MB를 초과할 수 없습니다.');
+      if (selectedFile.size > 70 * 1024 * 1024) {
+        setError('파일 크기는 70MB를 초과할 수 없습니다.');
         return;
       }
 
@@ -178,7 +178,7 @@ export default function UploadTestPage() {
             ) : (
               <div>
                 <p className="text-foreground/60">클릭하여 파일 선택</p>
-                <p className="text-foreground/40 text-sm">오디오 파일 (최대 50MB)</p>
+                <p className="text-foreground/40 text-sm">오디오 파일 (최대 70MB)</p>
               </div>
             )}
           </div>

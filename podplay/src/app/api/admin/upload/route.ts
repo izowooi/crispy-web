@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only audio files are allowed' }, { status: 400 });
     }
 
-    // Validate file size (50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size exceeds 50MB limit' }, { status: 400 });
+    // Validate file size (70MB)
+    if (file.size > 70 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size exceeds 70MB limit' }, { status: 400 });
     }
 
     // Generate unique ID and file key

@@ -43,8 +43,8 @@ export default function AdminUploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size > 50 * 1024 * 1024) {
-        setError('파일 크기는 50MB를 초과할 수 없습니다.');
+      if (selectedFile.size > 70 * 1024 * 1024) {
+        setError('파일 크기는 70MB를 초과할 수 없습니다.');
         return;
       }
       if (!selectedFile.type.startsWith('audio/')) {
@@ -162,7 +162,7 @@ export default function AdminUploadPage() {
               </p>
             )}
             <p className="mt-2 text-xs text-foreground/40">
-              최대 50MB, 오디오 파일만 가능
+              최대 70MB, 오디오 파일만 가능
             </p>
           </div>
 
