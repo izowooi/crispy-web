@@ -9,6 +9,20 @@ import { Category, CATEGORIES } from '@/types';
 
 const EMOJI_OPTIONS = ['🎙️', '💡', '🚀', '🎯', '💻', '🌟', '🎵', '📚', '🎬', '🌈'];
 
+// 단일 이모지 검증 함수
+function isValidSingleEmoji(str: string): boolean {
+  if (!str) return false;
+  const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*$/u;
+  return emojiRegex.test(str);
+}
+
+// 문자열에서 첫 번째 이모지만 추출
+function extractFirstEmoji(str: string): string | null {
+  const emojiRegex = /(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*/u;
+  const match = str.match(emojiRegex);
+  return match ? match[0] : null;
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -32,6 +46,8 @@ export default function EditEpisodePage({ params }: PageProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showCustomEmoji, setShowCustomEmoji] = useState(false);
+  const [customEmojiInput, setCustomEmojiInput] = useState('');
 
   // Load podcast data into form
   useEffect(() => {
@@ -207,14 +223,18 @@ export default function EditEpisodePage({ params }: PageProps) {
             <label className="block text-sm font-medium text-foreground mb-2">
               이모지
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {EMOJI_OPTIONS.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
-                  onClick={() => setFormData({ ...formData, emoji })}
+                  onClick={() => {
+                    setFormData({ ...formData, emoji });
+                    setShowCustomEmoji(false);
+                    setCustomEmojiInput('');
+                  }}
                   className={`w-12 h-12 text-2xl rounded-lg border transition-colors ${
-                    formData.emoji === emoji
+                    formData.emoji === emoji && !showCustomEmoji
                       ? 'border-primary bg-primary/10'
                       : 'border-card-border bg-card-bg hover:border-primary/50'
                   }`}
@@ -222,7 +242,46 @@ export default function EditEpisodePage({ params }: PageProps) {
                   {emoji}
                 </button>
               ))}
+              {/* Custom emoji button */}
+              <button
+                type="button"
+                onClick={() => setShowCustomEmoji(!showCustomEmoji)}
+                className={`w-12 h-12 text-lg rounded-lg border transition-colors ${
+                  showCustomEmoji
+                    ? 'border-primary bg-primary/10'
+                    : 'border-card-border bg-card-bg hover:border-primary/50'
+                }`}
+                title="직접 입력"
+              >
+                ✏️
+              </button>
             </div>
+            {/* Custom emoji input */}
+            {showCustomEmoji && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={customEmojiInput}
+                  onChange={(e) => {
+                    const input = e.target.value;
+                    const emoji = extractFirstEmoji(input);
+                    if (emoji) {
+                      setCustomEmojiInput(emoji);
+                      setFormData({ ...formData, emoji });
+                    } else if (input === '') {
+                      setCustomEmojiInput('');
+                    }
+                  }}
+                  className="w-20 h-12 text-2xl text-center bg-card-bg border border-card-border rounded-lg focus:outline-none focus:border-primary"
+                  placeholder="🎉"
+                  maxLength={4}
+                />
+                {customEmojiInput && isValidSingleEmoji(customEmojiInput) && (
+                  <span className="text-green-500 text-sm">✓ 유효한 이모지</span>
+                )}
+                <span className="text-xs text-foreground/50">이모지 1개만 입력</span>
+              </div>
+            )}
           </div>
 
           {/* Category */}
