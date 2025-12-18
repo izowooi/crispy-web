@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 import { usePodcasts } from '@/hooks/usePodcasts';
 import { AudioPlayer } from '@/components/player';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -66,9 +67,27 @@ export function EpisodeClient({ id }: EpisodeClientProps) {
           <p className="text-foreground/60 mb-4">{podcast.category}</p>
 
           {podcast.description && (
-            <p className="text-foreground/70 max-w-lg mx-auto mb-6">
-              {podcast.description}
-            </p>
+            <div className="text-foreground/70 max-w-lg mx-auto mb-6">
+              <ReactMarkdown
+                components={{
+                  a: ({ href, children }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {children}
+                    </a>
+                  ),
+                  p: ({ children }) => (
+                    <p className="mb-2 last:mb-0">{children}</p>
+                  ),
+                }}
+              >
+                {podcast.description}
+              </ReactMarkdown>
+            </div>
           )}
 
           {/* Tags */}
