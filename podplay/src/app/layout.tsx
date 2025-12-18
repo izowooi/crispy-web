@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PlayerProvider } from "@/context/PlayerContext";
+import { ServiceWorkerRegistration } from "@/components/ui/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
+        <ServiceWorkerRegistration />
         <PlayerProvider>
           {children}
         </PlayerProvider>
