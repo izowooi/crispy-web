@@ -137,6 +137,10 @@ export default function Home() {
           {/* Admin panel */}
           {showAdmin && (
             <div className="fixed top-16 right-4 z-50 bg-card-bg border border-card-border rounded-lg p-3 shadow-lg">
+              <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-card-border">
+                <span className="text-sm text-foreground/80">테마</span>
+                <ThemeToggle />
+              </div>
               <Link
                 href="/admin"
                 className="flex items-center gap-2 text-sm text-foreground/80 hover:text-foreground transition-colors"
