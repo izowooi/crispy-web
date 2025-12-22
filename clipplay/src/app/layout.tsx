@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PlayerProvider } from "@/context/PlayerContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { ServiceWorkerRegistration } from "@/components/ui/ServiceWorkerRegistration";
 
 const geistSans = Geist({
@@ -63,9 +64,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
         <ServiceWorkerRegistration />
-        <PlayerProvider>
-          {children}
-        </PlayerProvider>
+        <AuthProvider>
+          <PlayerProvider>
+            {children}
+          </PlayerProvider>
+        </AuthProvider>
       </body>
     </html>
   );
