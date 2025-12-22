@@ -1,0 +1,75 @@
+// Clip entity (video clip)
+export interface Clip {
+  id: string;
+  title: string;
+  description?: string;
+  emoji: string;
+  fileKey: string; // videos/uuid.mp4
+  fileSize: number; // bytes
+  duration: number; // seconds
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
+}
+
+// R2 metadata.json schema
+export interface Metadata {
+  clips: Clip[];
+  allowedUploaders: string[];
+}
+
+// Video player state
+export interface PlayerState {
+  currentClip: Clip | null;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  isMuted: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// Player actions
+export interface PlayerActions {
+  play: (clip?: Clip) => void;
+  pause: () => void;
+  seek: (time: number) => void;
+  toggleMute: () => void;
+}
+
+// Auth state
+export interface AuthState {
+  user: GoogleUser | null;
+  isAdmin: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// Google user info
+export interface GoogleUser {
+  email: string;
+  name: string;
+  picture: string;
+}
+
+// Upload form data
+export interface UploadFormData {
+  file: File;
+  title: string;
+  description?: string;
+  emoji: string;
+}
+
+// API response types
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+// Filter/Search state
+export interface FilterState {
+  searchQuery: string;
+}
+
+// Theme
+export type Theme = 'light' | 'dark' | 'system';

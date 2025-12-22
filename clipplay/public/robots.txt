@@ -1,0 +1,19 @@
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Naver search bot
+User-agent: Yeti
+Allow: /
+
+# Google search bot
+User-agent: Googlebot
+Allow: /
+
+# Disallow admin and test pages
+User-agent: *
+Disallow: /admin/
+Disallow: /test/
+
+# Sitemap location
+Sitemap: https://clipplay.pages.dev/sitemap.xml
