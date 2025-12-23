@@ -112,8 +112,15 @@ export default function AdminUploadPage() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || '업로드에 실패했습니다.');
+        let errorMessage = '업로드에 실패했습니다.';
+        try {
+          const data = await response.json();
+          errorMessage = data.error || errorMessage;
+        } catch {
+          // JSON 파싱 실패 시 (빈 응답, 타임아웃 등)
+          errorMessage = `업로드 실패 (${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
       setSuccess(true);
