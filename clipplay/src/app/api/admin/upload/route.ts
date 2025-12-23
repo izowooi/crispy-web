@@ -5,6 +5,7 @@ import {
   addClipToMetadata,
   generateClipId,
 } from '@/lib/r2/upload';
+import { Clip } from '@/types';
 
 export const runtime = 'edge';
 
@@ -22,6 +23,8 @@ export async function POST(request: NextRequest) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string || '';
     const emoji = formData.get('emoji') as string || '🎬';
+    const thumbnail = formData.get('thumbnail') as File | null;
+    const thumbnailTimestampStr = formData.get('thumbnailTimestamp') as string | null;
 
     // Validate required fields
     if (!file) {
@@ -51,16 +54,15 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to R2
+    // Upload video to R2
     await uploadFileToR2(buffer, fileKey, file.type);
 
     // Get video duration from client (measured via Video API)
-    // Falls back to estimate if not provided
     const durationStr = formData.get('duration') as string;
     const duration = durationStr ? parseInt(durationStr, 10) : 60;
 
     // Create clip entry
-    const clip = {
+    const clip: Clip = {
       id: clipId,
       title: title.trim(),
       description: description.trim(),
@@ -71,6 +73,23 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    // Upload thumbnail if provided
+    if (thumbnail && thumbnail.size > 0) {
+      try {
+        const thumbnailKey = `thumbnails/${clipId}.jpg`;
+        const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
+        await uploadFileToR2(thumbnailBuffer, thumbnailKey, 'image/jpeg');
+
+        clip.thumbnailKey = thumbnailKey;
+        if (thumbnailTimestampStr) {
+          clip.thumbnailTimestamp = parseFloat(thumbnailTimestampStr);
+        }
+      } catch (thumbnailError) {
+        console.error('Thumbnail upload failed:', thumbnailError);
+        // Continue without thumbnail - not a critical error
+      }
+    }
 
     // Add to metadata
     await addClipToMetadata(clip);

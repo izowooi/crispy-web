@@ -7,6 +7,8 @@ export interface Clip {
   fileKey: string; // videos/uuid.mp4
   fileSize: number; // bytes
   duration: number; // seconds
+  thumbnailKey?: string; // thumbnails/uuid.jpg (optional)
+  thumbnailTimestamp?: number; // timestamp in seconds where thumbnail was captured
   createdAt: string; // ISO 8601
   updatedAt: string; // ISO 8601
 }
