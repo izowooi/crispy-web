@@ -23,7 +23,7 @@ function getR2Client(): S3Client {
  * Upload file to R2
  */
 export async function uploadFileToR2(
-  file: Buffer,
+  file: Buffer | Uint8Array,
   key: string,
   contentType: string
 ): Promise<void> {

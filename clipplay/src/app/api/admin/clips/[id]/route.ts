@@ -7,7 +7,7 @@ import {
   uploadFileToR2,
 } from '@/lib/r2/upload';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -37,9 +37,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
       // 썸네일 업로드
       if (thumbnail && thumbnail.size > 0) {
-        const buffer = Buffer.from(await thumbnail.arrayBuffer());
+        const uint8Array = new Uint8Array(await thumbnail.arrayBuffer());
         const thumbnailKey = `thumbnails/${id}.jpg`;
-        await uploadFileToR2(buffer, thumbnailKey, 'image/jpeg');
+        await uploadFileToR2(uint8Array, thumbnailKey, 'image/jpeg');
         updates.thumbnailKey = thumbnailKey;
         if (thumbnailTimestamp) {
           updates.thumbnailTimestamp = parseFloat(thumbnailTimestamp);
