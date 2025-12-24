@@ -7,7 +7,8 @@ import {
 } from '@/lib/r2/upload';
 import { Clip } from '@/types';
 
-export const runtime = 'edge';
+// Node.js runtime for large file uploads (Edge has body size limits)
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {

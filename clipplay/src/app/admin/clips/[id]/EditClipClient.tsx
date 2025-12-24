@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthContext } from '@/context/AuthContext';
 import { useClips } from '@/hooks/useClips';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { captureVideoFrame, blobToFile, formatTime } from '@/lib/thumbnail/capture';
 
 const EMOJI_OPTIONS = ['🎬', '🎥', '📹', '🎞️', '🌟', '💕', '🎉', '🏠', '✨', '🌈'];
 
@@ -44,6 +45,20 @@ export function EditClipClient({ id }: EditClipClientProps) {
   const [success, setSuccess] = useState(false);
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
+
+  // 썸네일 수정 관련 상태
+  const [showThumbnailEdit, setShowThumbnailEdit] = useState(false);
+  const [thumbnailMode, setThumbnailMode] = useState<'upload' | 'capture'>('upload');
+  const [newThumbnailFile, setNewThumbnailFile] = useState<File | null>(null);
+  const [newThumbnailPreview, setNewThumbnailPreview] = useState<string | null>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  // 동영상 캡처 모드용 상태
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [thumbnailTime, setThumbnailTime] = useState(0);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   // Load clip data into form
   useEffect(() => {
@@ -98,19 +113,39 @@ export function EditClipClient({ id }: EditClipClientProps) {
     try {
       setSaving(true);
 
-      const response = await fetch(`/api/admin/clips/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          emoji: formData.emoji,
-          duration: formData.duration,
-          updatedAt: new Date().toISOString(),
-        }),
-      });
+      const metadata = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        emoji: formData.emoji,
+        duration: formData.duration,
+        updatedAt: new Date().toISOString(),
+      };
+
+      let response: Response;
+
+      // 썸네일이 변경된 경우 FormData로 전송
+      if (newThumbnailFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('thumbnail', newThumbnailFile);
+        uploadFormData.append('metadata', JSON.stringify(metadata));
+        if (thumbnailTime > 0) {
+          uploadFormData.append('thumbnailTimestamp', thumbnailTime.toString());
+        }
+
+        response = await fetch(`/api/admin/clips/${id}`, {
+          method: 'PATCH',
+          body: uploadFormData,
+        });
+      } else {
+        // 썸네일 변경 없이 메타데이터만 전송
+        response = await fetch(`/api/admin/clips/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(metadata),
+        });
+      }
 
       if (!response.ok) {
         const data = await response.json();
@@ -119,6 +154,14 @@ export function EditClipClient({ id }: EditClipClientProps) {
 
       setSuccess(true);
       await refetch();
+
+      // 상태 초기화
+      setShowThumbnailEdit(false);
+      setNewThumbnailFile(null);
+      if (newThumbnailPreview) {
+        URL.revokeObjectURL(newThumbnailPreview);
+        setNewThumbnailPreview(null);
+      }
 
       setTimeout(() => {
         setSuccess(false);
@@ -286,6 +329,243 @@ export function EditClipClient({ id }: EditClipClientProps) {
             <p className="mt-1 text-xs text-foreground/50">
               총 {formData.duration}초
             </p>
+          </div>
+
+          {/* Thumbnail */}
+          <div className="bg-card-bg border border-card-border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-foreground">썸네일</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowThumbnailEdit(!showThumbnailEdit);
+                  if (!showThumbnailEdit) {
+                    // 초기화
+                    setNewThumbnailFile(null);
+                    setNewThumbnailPreview(null);
+                    setVideoLoaded(false);
+                    setVideoLoading(false);
+                  }
+                }}
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  showThumbnailEdit
+                    ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                    : 'bg-primary/10 text-primary hover:bg-primary/20'
+                }`}
+              >
+                {showThumbnailEdit ? '취소' : '썸네일 변경'}
+              </button>
+            </div>
+
+            {/* 현재 썸네일 미리보기 */}
+            <div className="flex gap-4">
+              <div className="w-24 h-32 bg-card-border rounded-lg overflow-hidden flex items-center justify-center">
+                {newThumbnailPreview ? (
+                  <img
+                    src={newThumbnailPreview}
+                    alt="새 썸네일"
+                    className="w-full h-full object-cover"
+                  />
+                ) : clip.thumbnailKey ? (
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${clip.thumbnailKey}`}
+                    alt="현재 썸네일"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center text-foreground/40 text-xs p-2">
+                    썸네일 없음
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 text-sm text-foreground/60">
+                {newThumbnailPreview ? (
+                  <p className="text-green-500">새 썸네일이 선택되었습니다</p>
+                ) : clip.thumbnailKey ? (
+                  <p>현재 썸네일: {clip.thumbnailKey}</p>
+                ) : (
+                  <p>썸네일이 설정되지 않았습니다</p>
+                )}
+              </div>
+            </div>
+
+            {/* 썸네일 변경 UI */}
+            {showThumbnailEdit && (
+              <div className="mt-4 pt-4 border-t border-card-border">
+                {/* 모드 선택 */}
+                <div className="flex gap-4 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="thumbnailMode"
+                      checked={thumbnailMode === 'upload'}
+                      onChange={() => setThumbnailMode('upload')}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-sm text-foreground">이미지 업로드</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="thumbnailMode"
+                      checked={thumbnailMode === 'capture'}
+                      onChange={() => setThumbnailMode('capture')}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-sm text-foreground">동영상에서 캡처</span>
+                  </label>
+                </div>
+
+                {/* 이미지 업로드 모드 */}
+                {thumbnailMode === 'upload' && (
+                  <div>
+                    <input
+                      ref={thumbnailInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setNewThumbnailFile(file);
+                          // 미리보기 생성
+                          if (newThumbnailPreview) {
+                            URL.revokeObjectURL(newThumbnailPreview);
+                          }
+                          setNewThumbnailPreview(URL.createObjectURL(file));
+                        }
+                      }}
+                      className="w-full text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:cursor-pointer hover:file:bg-primary/90"
+                    />
+                    <p className="mt-2 text-xs text-foreground/40">
+                      JPG, PNG 형식 권장
+                    </p>
+                  </div>
+                )}
+
+                {/* 동영상 캡처 모드 */}
+                {thumbnailMode === 'capture' && (
+                  <div>
+                    {!videoLoaded && !videoLoading && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVideoLoading(true);
+                          // 비디오 로드는 video 요소의 onLoadedMetadata에서 처리
+                        }}
+                        className="w-full py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                      >
+                        동영상 로드
+                      </button>
+                    )}
+
+                    {(videoLoading || videoLoaded) && (
+                      <div className="space-y-4">
+                        <div className="aspect-[9/16] max-h-[300px] bg-black rounded-lg overflow-hidden">
+                          <video
+                            ref={videoRef}
+                            src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${clip.fileKey}`}
+                            className="w-full h-full object-contain"
+                            onLoadedMetadata={() => {
+                              setVideoLoading(false);
+                              setVideoLoaded(true);
+                              if (videoRef.current) {
+                                setThumbnailTime(Math.min(1, videoRef.current.duration / 2));
+                              }
+                            }}
+                            onError={() => {
+                              setVideoLoading(false);
+                              setError('동영상을 로드할 수 없습니다.');
+                            }}
+                            muted
+                            playsInline
+                            crossOrigin="anonymous"
+                          />
+                        </div>
+
+                        {videoLoading && (
+                          <div className="flex items-center justify-center gap-2 text-foreground/60">
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            <span className="text-sm">동영상 로딩 중...</span>
+                          </div>
+                        )}
+
+                        {videoLoaded && videoRef.current && (
+                          <>
+                            {/* 타임라인 슬라이더 */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm text-foreground/60">
+                                <span>0:00</span>
+                                <span className="font-medium text-foreground">{formatTime(thumbnailTime)}</span>
+                                <span>{formatTime(videoRef.current.duration)}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min={0}
+                                max={videoRef.current.duration}
+                                step={0.1}
+                                value={thumbnailTime}
+                                onChange={(e) => {
+                                  const time = parseFloat(e.target.value);
+                                  setThumbnailTime(time);
+                                  if (videoRef.current) {
+                                    videoRef.current.currentTime = time;
+                                  }
+                                }}
+                                className="w-full h-2 bg-card-border rounded-lg appearance-none cursor-pointer accent-primary"
+                              />
+                            </div>
+
+                            {/* 캡처 버튼 */}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!videoRef.current) return;
+                                setIsCapturing(true);
+                                try {
+                                  const blob = await captureVideoFrame(videoRef.current, thumbnailTime);
+                                  const file = blobToFile(blob, 'thumbnail.jpg');
+                                  setNewThumbnailFile(file);
+                                  if (newThumbnailPreview) {
+                                    URL.revokeObjectURL(newThumbnailPreview);
+                                  }
+                                  setNewThumbnailPreview(URL.createObjectURL(blob));
+                                } catch (err) {
+                                  setError('썸네일 캡처에 실패했습니다.');
+                                  console.error('Capture error:', err);
+                                } finally {
+                                  setIsCapturing(false);
+                                }
+                              }}
+                              disabled={isCapturing}
+                              className="w-full py-2 bg-card-border text-foreground rounded-lg font-medium hover:bg-card-border/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                              {isCapturing ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+                                  캡처 중...
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  현재 프레임 캡처
+                                </>
+                              )}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    <p className="mt-2 text-xs text-foreground/40">
+                      동영상을 로드한 후 원하는 장면에서 캡처하세요
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* File info (read-only) */}

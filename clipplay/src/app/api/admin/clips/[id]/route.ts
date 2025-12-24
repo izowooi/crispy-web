@@ -4,9 +4,10 @@ import {
   updateClipInMetadata,
   deleteClipFromMetadata,
   deleteFileFromR2,
+  uploadFileToR2,
 } from '@/lib/r2/upload';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -21,7 +22,33 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const updates = await request.json();
+    const contentType = request.headers.get('content-type') || '';
+
+    let updates: Record<string, unknown>;
+
+    // multipart/form-data 처리 (썸네일 포함)
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      const thumbnail = formData.get('thumbnail') as File | null;
+      const metadataStr = formData.get('metadata') as string;
+      const thumbnailTimestamp = formData.get('thumbnailTimestamp') as string | null;
+
+      updates = metadataStr ? JSON.parse(metadataStr) : {};
+
+      // 썸네일 업로드
+      if (thumbnail && thumbnail.size > 0) {
+        const buffer = Buffer.from(await thumbnail.arrayBuffer());
+        const thumbnailKey = `thumbnails/${id}.jpg`;
+        await uploadFileToR2(buffer, thumbnailKey, 'image/jpeg');
+        updates.thumbnailKey = thumbnailKey;
+        if (thumbnailTimestamp) {
+          updates.thumbnailTimestamp = parseFloat(thumbnailTimestamp);
+        }
+      }
+    } else {
+      // JSON 처리 (기존 방식)
+      updates = await request.json();
+    }
 
     // Don't allow updating certain fields
     delete updates.id;
