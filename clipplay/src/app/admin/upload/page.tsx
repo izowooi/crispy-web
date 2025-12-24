@@ -45,10 +45,12 @@ export default function AdminUploadPage() {
   const [success, setSuccess] = useState(false);
 
   // Thumbnail states
+  const [thumbnailMode, setThumbnailMode] = useState<'capture' | 'upload'>('capture');
   const [thumbnailTime, setThumbnailTime] = useState(1);
   const [thumbnailBlob, setThumbnailBlob] = useState<Blob | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const thumbnailFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
@@ -285,92 +287,191 @@ export default function AdminUploadPage() {
                 썸네일 선택
               </label>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Video Preview */}
-                <div className="aspect-[9/16] bg-black rounded-lg overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    src={videoUrl}
-                    className="w-full h-full object-contain"
-                    onLoadedMetadata={handleVideoLoaded}
-                    muted
-                    playsInline
+              {/* Mode Selection */}
+              <div className="flex gap-4 mb-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="thumbnailMode"
+                    checked={thumbnailMode === 'capture'}
+                    onChange={() => {
+                      setThumbnailMode('capture');
+                      // 모드 변경 시 썸네일 초기화
+                      if (thumbnailPreview) {
+                        URL.revokeObjectURL(thumbnailPreview);
+                      }
+                      setThumbnailBlob(null);
+                      setThumbnailPreview(null);
+                    }}
+                    className="w-4 h-4 text-primary"
                   />
-                </div>
-
-                {/* Thumbnail Preview */}
-                <div className="space-y-4">
-                  <div className="aspect-[9/16] bg-card-border rounded-lg overflow-hidden flex items-center justify-center">
-                    {thumbnailPreview ? (
-                      <img
-                        src={thumbnailPreview}
-                        alt="Thumbnail preview"
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="text-center text-foreground/40">
-                        <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p className="text-sm">썸네일 미리보기</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {thumbnailPreview && (
-                    <p className="text-xs text-green-500 text-center">
-                      ✓ 썸네일이 캡처되었습니다
-                    </p>
-                  )}
-                </div>
+                  <span className="text-sm text-foreground">동영상에서 캡처</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="thumbnailMode"
+                    checked={thumbnailMode === 'upload'}
+                    onChange={() => {
+                      setThumbnailMode('upload');
+                      // 모드 변경 시 썸네일 초기화
+                      if (thumbnailPreview) {
+                        URL.revokeObjectURL(thumbnailPreview);
+                      }
+                      setThumbnailBlob(null);
+                      setThumbnailPreview(null);
+                    }}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm text-foreground">이미지 업로드</span>
+                </label>
               </div>
 
-              {/* Time Slider */}
-              {duration && (
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between text-sm text-foreground/60">
-                    <span>0:00</span>
-                    <span className="font-medium text-foreground">{formatTime(thumbnailTime)}</span>
-                    <span>{formatTime(duration)}</span>
+              {/* Capture Mode */}
+              {thumbnailMode === 'capture' && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Video Preview */}
+                    <div className="aspect-[9/16] bg-black rounded-lg overflow-hidden">
+                      <video
+                        ref={videoRef}
+                        src={videoUrl}
+                        className="w-full h-full object-contain"
+                        onLoadedMetadata={handleVideoLoaded}
+                        muted
+                        playsInline
+                      />
+                    </div>
+
+                    {/* Thumbnail Preview */}
+                    <div className="space-y-4">
+                      <div className="aspect-[9/16] bg-card-border rounded-lg overflow-hidden flex items-center justify-center">
+                        {thumbnailPreview ? (
+                          <img
+                            src={thumbnailPreview}
+                            alt="Thumbnail preview"
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="text-center text-foreground/40">
+                            <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-sm">썸네일 미리보기</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {thumbnailPreview && (
+                        <p className="text-xs text-green-500 text-center">
+                          ✓ 썸네일이 캡처되었습니다
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={duration}
-                    step={0.1}
-                    value={thumbnailTime}
-                    onChange={handleSliderChange}
-                    className="w-full h-2 bg-card-border rounded-lg appearance-none cursor-pointer accent-primary"
-                  />
-                </div>
+
+                  {/* Time Slider */}
+                  {duration && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center justify-between text-sm text-foreground/60">
+                        <span>0:00</span>
+                        <span className="font-medium text-foreground">{formatTime(thumbnailTime)}</span>
+                        <span>{formatTime(duration)}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={duration}
+                        step={0.1}
+                        value={thumbnailTime}
+                        onChange={handleSliderChange}
+                        className="w-full h-2 bg-card-border rounded-lg appearance-none cursor-pointer accent-primary"
+                      />
+                    </div>
+                  )}
+
+                  {/* Capture Button */}
+                  <button
+                    type="button"
+                    onClick={handleCaptureThumbnail}
+                    disabled={isCapturing || !duration}
+                    className="mt-4 w-full py-2 bg-card-border text-foreground rounded-lg font-medium hover:bg-card-border/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isCapturing ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+                        캡처 중...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        현재 프레임 캡처
+                      </>
+                    )}
+                  </button>
+
+                  <p className="mt-2 text-xs text-foreground/40 text-center">
+                    슬라이더를 움직여 원하는 장면을 선택한 후 캡처하세요
+                  </p>
+                </>
               )}
 
-              {/* Capture Button */}
-              <button
-                type="button"
-                onClick={handleCaptureThumbnail}
-                disabled={isCapturing || !duration}
-                className="mt-4 w-full py-2 bg-card-border text-foreground rounded-lg font-medium hover:bg-card-border/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isCapturing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
-                    캡처 중...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    현재 프레임 캡처
-                  </>
-                )}
-              </button>
+              {/* Upload Mode */}
+              {thumbnailMode === 'upload' && (
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    {/* Thumbnail Preview */}
+                    <div className="w-32 h-44 bg-card-border rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                      {thumbnailPreview ? (
+                        <img
+                          src={thumbnailPreview}
+                          alt="Thumbnail preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center text-foreground/40 p-2">
+                          <svg className="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-xs">미리보기</p>
+                        </div>
+                      )}
+                    </div>
 
-              <p className="mt-2 text-xs text-foreground/40 text-center">
-                슬라이더를 움직여 원하는 장면을 선택한 후 캡처하세요
-              </p>
+                    {/* File Input */}
+                    <div className="flex-1">
+                      <input
+                        ref={thumbnailFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            // 이전 미리보기 URL 정리
+                            if (thumbnailPreview) {
+                              URL.revokeObjectURL(thumbnailPreview);
+                            }
+                            setThumbnailBlob(file);
+                            setThumbnailPreview(URL.createObjectURL(file));
+                          }
+                        }}
+                        className="w-full text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:cursor-pointer hover:file:bg-primary/90"
+                      />
+                      <p className="mt-2 text-xs text-foreground/40">
+                        JPG, PNG 형식 권장
+                      </p>
+                      {thumbnailPreview && (
+                        <p className="mt-2 text-xs text-green-500">
+                          ✓ 썸네일 이미지가 선택되었습니다
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
