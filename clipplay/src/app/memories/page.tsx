@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useClips } from '@/hooks/useClips';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { BottomTabNav } from '@/components/ui/BottomTabNav';
 import {
   filterByMonthDay,
   filterByYear,
@@ -13,6 +13,8 @@ import {
 } from '@/lib/clips/filter';
 
 type MemoryMode = 'date' | 'timeline' | 'year';
+
+/* eslint-disable @next/next/no-img-element */
 
 export default function MemoriesPage() {
   const { clips, isLoading } = useClips();
@@ -106,16 +108,10 @@ export default function MemoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="bg-card-bg border-b border-card-border">
-        <div className="max-w-screen-xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            href="/"
-            className="text-foreground/60 hover:text-foreground transition-colors"
-          >
-            ← 뒤로
-          </Link>
+        <div className="max-w-screen-xl mx-auto px-4 py-4">
           <h1 className="text-xl font-bold text-foreground">추억 모음</h1>
         </div>
       </header>
@@ -329,6 +325,9 @@ export default function MemoriesPage() {
           재생하기
         </button>
       </main>
+
+      {/* Bottom Tab Navigation */}
+      <BottomTabNav activeTab="memories" />
     </div>
   );
 }

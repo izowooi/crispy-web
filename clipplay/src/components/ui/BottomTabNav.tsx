@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
+
 interface BottomTabNavProps {
-  activeTab: 'feed' | 'grid';
-  onTabChange: (tab: 'feed' | 'grid') => void;
+  activeTab: 'feed' | 'grid' | 'memories';
+  onTabChange?: (tab: 'feed' | 'grid') => void;
 }
 
 export function BottomTabNav({ activeTab, onTabChange }: BottomTabNavProps) {
@@ -10,8 +12,14 @@ export function BottomTabNav({ activeTab, onTabChange }: BottomTabNavProps) {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card-bg/95 backdrop-blur-sm border-t border-card-border safe-area-bottom">
       <div className="flex items-center justify-center gap-2 px-4 py-2">
         {/* Feed Tab */}
-        <button
-          onClick={() => onTabChange('feed')}
+        <Link
+          href="/"
+          onClick={(e) => {
+            if (onTabChange && activeTab !== 'memories') {
+              e.preventDefault();
+              onTabChange('feed');
+            }
+          }}
           className={`flex-1 flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
             activeTab === 'feed'
               ? 'bg-primary/10 text-primary'
@@ -27,11 +35,37 @@ export function BottomTabNav({ activeTab, onTabChange }: BottomTabNavProps) {
             />
           </svg>
           <span className="text-xs font-medium">피드</span>
-        </button>
+        </Link>
+
+        {/* Memories Tab */}
+        <Link
+          href="/memories"
+          className={`flex-1 flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+            activeTab === 'memories'
+              ? 'bg-primary/10 text-primary'
+              : 'text-foreground/60 hover:text-foreground'
+          }`}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+          <span className="text-xs font-medium">추억</span>
+        </Link>
 
         {/* Grid Tab */}
-        <button
-          onClick={() => onTabChange('grid')}
+        <Link
+          href="/"
+          onClick={(e) => {
+            if (onTabChange && activeTab !== 'memories') {
+              e.preventDefault();
+              onTabChange('grid');
+            }
+          }}
           className={`flex-1 flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
             activeTab === 'grid'
               ? 'bg-primary/10 text-primary'
@@ -47,7 +81,7 @@ export function BottomTabNav({ activeTab, onTabChange }: BottomTabNavProps) {
             />
           </svg>
           <span className="text-xs font-medium">그리드</span>
-        </button>
+        </Link>
       </div>
     </nav>
   );
