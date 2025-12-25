@@ -1,24 +1,14 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+/**
+ * R2 Upload Utilities
+ * Uses lightweight AWS Signature V4 implementation (no AWS SDK)
+ */
+import {
+  generatePresignedUploadUrl as generatePresignedUrl,
+  uploadToR2,
+  getFromR2,
+  deleteFromR2,
+} from './signer';
 import { Metadata, Clip } from '@/types';
-
-// R2 configuration
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
-
-// Create S3 client for R2
-function getR2Client(): S3Client {
-  return new S3Client({
-    region: 'auto',
-    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: R2_ACCESS_KEY_ID,
-      secretAccessKey: R2_SECRET_ACCESS_KEY,
-    },
-  });
-}
 
 /**
  * Generate presigned URL for direct upload to R2
@@ -28,15 +18,7 @@ export async function generatePresignedUploadUrl(
   contentType: string,
   expiresIn: number = 3600
 ): Promise<string> {
-  const client = getR2Client();
-
-  const command = new PutObjectCommand({
-    Bucket: R2_BUCKET_NAME,
-    Key: key,
-    ContentType: contentType,
-  });
-
-  return await getSignedUrl(client, command, { expiresIn });
+  return generatePresignedUrl(key, contentType, expiresIn);
 }
 
 /**
@@ -47,78 +29,38 @@ export async function uploadFileToR2(
   key: string,
   contentType: string
 ): Promise<void> {
-  const client = getR2Client();
-
-  await client.send(
-    new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
-      Body: file,
-      ContentType: contentType,
-    })
-  );
+  await uploadToR2(key, file, contentType);
 }
 
 /**
  * Delete file from R2
  */
 export async function deleteFileFromR2(key: string): Promise<void> {
-  const client = getR2Client();
-
-  await client.send(
-    new DeleteObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
-    })
-  );
+  await deleteFromR2(key);
 }
 
 /**
  * Get metadata.json from R2
  */
 export async function getMetadataFromR2(): Promise<Metadata> {
-  const client = getR2Client();
+  const body = await getFromR2('metadata.json');
 
-  try {
-    const response = await client.send(
-      new GetObjectCommand({
-        Bucket: R2_BUCKET_NAME,
-        Key: 'metadata.json',
-      })
-    );
-
-    const body = await response.Body?.transformToString();
-    if (!body) {
-      throw new Error('Empty metadata');
-    }
-
-    return JSON.parse(body);
-  } catch (error) {
+  if (!body) {
     // Return default metadata if file doesn't exist
-    if ((error as { name?: string }).name === 'NoSuchKey') {
-      return {
-        clips: [],
-        allowedUploaders: [],
-      };
-    }
-    throw error;
+    return {
+      clips: [],
+      allowedUploaders: [],
+    };
   }
+
+  return JSON.parse(body);
 }
 
 /**
  * Save metadata.json to R2
  */
 export async function saveMetadataToR2(metadata: Metadata): Promise<void> {
-  const client = getR2Client();
-
-  await client.send(
-    new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: 'metadata.json',
-      Body: JSON.stringify(metadata, null, 2),
-      ContentType: 'application/json',
-    })
-  );
+  await uploadToR2('metadata.json', JSON.stringify(metadata, null, 2), 'application/json');
 }
 
 /**
