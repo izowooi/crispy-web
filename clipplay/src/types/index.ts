@@ -9,6 +9,7 @@ export interface Clip {
   duration: number; // seconds
   thumbnailKey?: string; // thumbnails/uuid.jpg (optional)
   thumbnailTimestamp?: number; // timestamp in seconds where thumbnail was captured
+  filmingDate?: string; // ISO 8601 date (e.g., "2024-12-25") - when the video was filmed
   createdAt: string; // ISO 8601
   updatedAt: string; // ISO 8601
 }

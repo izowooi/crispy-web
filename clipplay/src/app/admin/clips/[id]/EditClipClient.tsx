@@ -39,6 +39,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
     description: '',
     emoji: '🎬',
     duration: 0,
+    filmingDate: '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +69,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
         description: clip.description || '',
         emoji: clip.emoji,
         duration: clip.duration,
+        filmingDate: clip.filmingDate || '',
       });
     }
   }, [clip]);
@@ -113,13 +115,20 @@ export function EditClipClient({ id }: EditClipClientProps) {
     try {
       setSaving(true);
 
-      const metadata = {
+      const metadata: Record<string, unknown> = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         emoji: formData.emoji,
         duration: formData.duration,
         updatedAt: new Date().toISOString(),
       };
+
+      // filmingDate가 있으면 추가, 없으면 undefined로 설정 (삭제)
+      if (formData.filmingDate) {
+        metadata.filmingDate = formData.filmingDate;
+      } else {
+        metadata.filmingDate = undefined;
+      }
 
       let response: Response;
 
@@ -328,6 +337,22 @@ export function EditClipClient({ id }: EditClipClientProps) {
             />
             <p className="mt-1 text-xs text-foreground/50">
               총 {formData.duration}초
+            </p>
+          </div>
+
+          {/* Filming Date */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              촬영일
+            </label>
+            <input
+              type="date"
+              value={formData.filmingDate}
+              onChange={(e) => setFormData({ ...formData, filmingDate: e.target.value })}
+              className="w-full px-4 py-3 bg-card-bg border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+            />
+            <p className="mt-2 text-xs text-foreground/40">
+              동영상을 촬영한 날짜입니다. 추억 모음 기능에서 사용됩니다.
             </p>
           </div>
 

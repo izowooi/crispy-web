@@ -35,6 +35,8 @@ export default function AdminUploadPage() {
     emoji: '🎬',
   });
   const [file, setFile] = useState<File | null>(null);
+  const [filmingDate, setFilmingDate] = useState<string>('');
+  const [isFilmingDateAutoDetected, setIsFilmingDateAutoDetected] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -103,6 +105,12 @@ export default function AdminUploadPage() {
       setThumbnailBlob(null);
       setThumbnailPreview(null);
       setThumbnailTime(1);
+
+      // Auto-extract filming date from file's lastModified
+      const lastModifiedDate = new Date(selectedFile.lastModified);
+      const dateStr = lastModifiedDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+      setFilmingDate(dateStr);
+      setIsFilmingDateAutoDetected(true);
 
       // Create video URL for preview
       const url = URL.createObjectURL(selectedFile);
@@ -175,6 +183,9 @@ export default function AdminUploadPage() {
       if (duration !== null) {
         uploadFormData.append('duration', duration.toString());
       }
+      if (filmingDate) {
+        uploadFormData.append('filmingDate', filmingDate);
+      }
 
       // Add thumbnail if captured
       if (thumbnailBlob) {
@@ -207,6 +218,8 @@ export default function AdminUploadPage() {
       });
       setFile(null);
       setDuration(null);
+      setFilmingDate('');
+      setIsFilmingDateAutoDetected(false);
       setThumbnailBlob(null);
       setThumbnailPreview(null);
       setThumbnailTime(1);
@@ -501,6 +514,32 @@ export default function AdminUploadPage() {
               className="w-full px-4 py-3 bg-card-bg border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary resize-none"
               placeholder="클립에 대한 설명을 입력하세요"
             />
+          </div>
+
+          {/* Filming Date */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              촬영일
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={filmingDate}
+                onChange={(e) => {
+                  setFilmingDate(e.target.value);
+                  setIsFilmingDateAutoDetected(false);
+                }}
+                className="px-4 py-3 bg-card-bg border border-card-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              />
+              {isFilmingDateAutoDetected && filmingDate && (
+                <span className="text-xs text-foreground/50 bg-card-border px-2 py-1 rounded">
+                  파일 수정일 기준
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-foreground/40">
+              동영상을 촬영한 날짜입니다. 추억 모음 기능에서 사용됩니다.
+            </p>
           </div>
 
           {/* Emoji */}

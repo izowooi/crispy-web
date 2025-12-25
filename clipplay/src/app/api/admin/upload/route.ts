@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     const emoji = formData.get('emoji') as string || '🎬';
     const thumbnail = formData.get('thumbnail') as File | null;
     const thumbnailTimestampStr = formData.get('thumbnailTimestamp') as string | null;
+    const filmingDate = formData.get('filmingDate') as string | null;
 
     // Validate required fields
     if (!file) {
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
       fileKey,
       fileSize: file.size,
       duration,
+      filmingDate: filmingDate || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
