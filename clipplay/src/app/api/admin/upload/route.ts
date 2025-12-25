@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only video files are allowed' }, { status: 400 });
     }
 
-    // Validate file size (50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size exceeds 50MB limit' }, { status: 400 });
+    // Validate file size (200MB)
+    if (file.size > 200 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size exceeds 200MB limit' }, { status: 400 });
     }
 
     // Generate unique ID and file key

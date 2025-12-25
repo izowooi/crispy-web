@@ -83,8 +83,8 @@ export default function AdminUploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size > 50 * 1024 * 1024) {
-        setError('파일 크기는 50MB를 초과할 수 없습니다.');
+      if (selectedFile.size > 200 * 1024 * 1024) {
+        setError('파일 크기는 200MB를 초과할 수 없습니다.');
         return;
       }
       if (!selectedFile.type.startsWith('video/')) {
@@ -289,7 +289,7 @@ export default function AdminUploadPage() {
               </p>
             )}
             <p className="mt-2 text-xs text-foreground/40">
-              최대 50MB, MP4 권장 (세로 동영상)
+              최대 200MB, MP4 권장 (세로 동영상)
             </p>
           </div>
 
