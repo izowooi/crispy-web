@@ -157,6 +157,40 @@ export default function AdminUploadPage() {
     }
   };
 
+  // Upload file using XMLHttpRequest with progress tracking
+  const uploadWithProgress = (
+    url: string,
+    file: File | Blob,
+    contentType: string,
+    onProgress: (percent: number) => void
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          onProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.ontimeout = () => reject(new Error('Upload timeout'));
+
+      xhr.open('PUT', url);
+      xhr.setRequestHeader('Content-Type', contentType);
+      xhr.send(file);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -175,41 +209,75 @@ export default function AdminUploadPage() {
       setUploading(true);
       setUploadProgress(0);
 
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-      uploadFormData.append('title', formData.title);
-      uploadFormData.append('description', formData.description);
-      uploadFormData.append('emoji', formData.emoji);
-      if (duration !== null) {
-        uploadFormData.append('duration', duration.toString());
-      }
-      if (filmingDate) {
-        uploadFormData.append('filmingDate', filmingDate);
-      }
-
-      // Add thumbnail if captured
-      if (thumbnailBlob) {
-        const thumbnailFile = blobToFile(thumbnailBlob, 'thumbnail.jpg');
-        uploadFormData.append('thumbnail', thumbnailFile);
-        uploadFormData.append('thumbnailTimestamp', thumbnailTime.toString());
-      }
-
-      const response = await fetch('/api/admin/upload', {
+      // Step 1: Get presigned URLs
+      const presignResponse = await fetch('/api/admin/presign', {
         method: 'POST',
-        body: uploadFormData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+          fileSize: file.size,
+          thumbnailContentType: thumbnailBlob ? 'image/jpeg' : undefined,
+        }),
       });
 
-      if (!response.ok) {
-        let errorMessage = '업로드에 실패했습니다.';
-        try {
-          const data = await response.json();
-          errorMessage = data.error || errorMessage;
-        } catch {
-          errorMessage = `업로드 실패 (${response.status})`;
-        }
-        throw new Error(errorMessage);
+      if (!presignResponse.ok) {
+        const data = await presignResponse.json();
+        throw new Error(data.error || 'Presigned URL 발급 실패');
       }
 
+      const presignData = await presignResponse.json();
+      const { clipId, videoKey, videoUploadUrl, thumbnailKey, thumbnailUploadUrl } = presignData;
+
+      // Step 2: Upload video directly to R2 with progress
+      await uploadWithProgress(
+        videoUploadUrl,
+        file,
+        file.type,
+        (percent) => {
+          // If we have thumbnail, video is 90% of total progress
+          const adjustedPercent = thumbnailBlob ? Math.round(percent * 0.9) : percent;
+          setUploadProgress(adjustedPercent);
+        }
+      );
+
+      // Step 3: Upload thumbnail if exists
+      if (thumbnailBlob && thumbnailUploadUrl) {
+        await uploadWithProgress(
+          thumbnailUploadUrl,
+          thumbnailBlob,
+          'image/jpeg',
+          (percent) => {
+            // Thumbnail is last 10% of progress
+            setUploadProgress(90 + Math.round(percent * 0.1));
+          }
+        );
+      }
+
+      // Step 4: Save metadata
+      const metadataResponse = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clipId,
+          videoKey,
+          title: formData.title,
+          description: formData.description,
+          emoji: formData.emoji,
+          duration: duration || 60,
+          fileSize: file.size,
+          filmingDate: filmingDate || undefined,
+          thumbnailKey: thumbnailBlob ? thumbnailKey : undefined,
+          thumbnailTimestamp: thumbnailBlob ? thumbnailTime : undefined,
+        }),
+      });
+
+      if (!metadataResponse.ok) {
+        const data = await metadataResponse.json();
+        throw new Error(data.error || '메타데이터 저장 실패');
+      }
+
+      setUploadProgress(100);
       setSuccess(true);
       setFormData({
         title: '',
@@ -609,6 +677,31 @@ export default function AdminUploadPage() {
           </div>
 
           {/* Submit */}
+          {uploading && (
+            <div className="bg-card-bg border border-card-border rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">
+                  업로드 중...
+                </span>
+                <span className="text-sm font-bold text-primary">
+                  {uploadProgress}%
+                </span>
+              </div>
+              <div className="w-full h-3 bg-card-border rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-foreground/50 text-center">
+                {file && (
+                  <>
+                    {((file.size * uploadProgress) / 100 / (1024 * 1024)).toFixed(1)} MB / {(file.size / (1024 * 1024)).toFixed(1)} MB
+                  </>
+                )}
+              </p>
+            </div>
+          )}
           <button
             type="submit"
             disabled={uploading}
@@ -617,7 +710,7 @@ export default function AdminUploadPage() {
             {uploading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                업로드 중... {uploadProgress > 0 && `(${uploadProgress}%)`}
+                업로드 중...
               </span>
             ) : (
               '업로드'
