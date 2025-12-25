@@ -63,13 +63,20 @@ export function getVideoUrl(baseUrl: string, fileKey: string): string {
 /**
  * Fetch metadata.json from R2 public URL
  */
-export async function fetchMetadata(): Promise<Metadata> {
+export async function fetchMetadata(skipCache: boolean = false): Promise<Metadata> {
   if (!R2_PUBLIC_URL) {
     throw new Error('R2_PUBLIC_URL is not configured');
   }
 
-  const response = await fetch(`${R2_PUBLIC_URL}/metadata.json`, {
-    next: { revalidate: 60 }, // Cache for 60 seconds
+  // Add cache-busting parameter when skipping cache
+  const url = skipCache
+    ? `${R2_PUBLIC_URL}/metadata.json?t=${Date.now()}`
+    : `${R2_PUBLIC_URL}/metadata.json`;
+
+  const response = await fetch(url, {
+    ...(skipCache
+      ? { cache: 'no-store' }
+      : { next: { revalidate: 60 } }), // Cache for 60 seconds
   });
 
   if (!response.ok) {

@@ -81,7 +81,7 @@ export default function VideoTestPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-foreground">Video Player</h2>
             <button
-              onClick={refetch}
+              onClick={() => refetch()}
               disabled={isLoading}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
             >
