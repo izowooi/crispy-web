@@ -7,8 +7,8 @@ import {
 } from '@/lib/r2/upload';
 import { Clip } from '@/types';
 
-// Node.js runtime for large file uploads (Edge has body size limits)
-export const runtime = 'nodejs';
+// Edge runtime for Cloudflare Pages compatibility
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,12 +52,12 @@ export async function POST(request: NextRequest) {
     const fileExtension = file.name.split('.').pop() || 'mp4';
     const fileKey = `videos/${clipId}.${fileExtension}`;
 
-    // Convert file to buffer
+    // Convert file to Uint8Array (Edge runtime compatible)
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const uint8Array = new Uint8Array(arrayBuffer);
 
     // Upload video to R2
-    await uploadFileToR2(buffer, fileKey, file.type);
+    await uploadFileToR2(uint8Array, fileKey, file.type);
 
     // Get video duration from client (measured via Video API)
     const durationStr = formData.get('duration') as string;
@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
     if (thumbnail && thumbnail.size > 0) {
       try {
         const thumbnailKey = `thumbnails/${clipId}.jpg`;
-        const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
-        await uploadFileToR2(thumbnailBuffer, thumbnailKey, 'image/jpeg');
+        const thumbnailUint8Array = new Uint8Array(await thumbnail.arrayBuffer());
+        await uploadFileToR2(thumbnailUint8Array, thumbnailKey, 'image/jpeg');
 
         clip.thumbnailKey = thumbnailKey;
         if (thumbnailTimestampStr) {
