@@ -66,6 +66,7 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
   // Touch handlers for swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
+    touchEndY.current = e.touches[0].clientY;  // 탭 시 diff=0 보장
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
