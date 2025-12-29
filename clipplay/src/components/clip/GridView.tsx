@@ -6,12 +6,21 @@ import { GridCard } from './GridCard';
 interface GridViewProps {
   clips: (Clip & { thumbnailKey?: string })[];
   isLoading?: boolean;
+  columns?: 2 | 3 | 4;
 }
 
-export function GridView({ clips, isLoading }: GridViewProps) {
+const gridClasses: Record<2 | 3 | 4, string> = {
+  2: 'grid-cols-2 sm:grid-cols-2',
+  3: 'grid-cols-2 sm:grid-cols-3',
+  4: 'grid-cols-3 sm:grid-cols-4',
+};
+
+export function GridView({ clips, isLoading, columns = 4 }: GridViewProps) {
+  const gridClass = gridClasses[columns];
+
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4">
+      <div className={`grid ${gridClass} gap-3 p-4`}>
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
@@ -45,7 +54,7 @@ export function GridView({ clips, isLoading }: GridViewProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4">
+    <div className={`grid ${gridClass} gap-3 p-4`}>
       {clips.map((clip) => (
         <GridCard key={clip.id} clip={clip} />
       ))}

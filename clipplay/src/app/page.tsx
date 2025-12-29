@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useClips } from '@/hooks/useClips';
 import { VerticalSwipeFeed, SearchBar, GridView } from '@/components/clip';
@@ -20,6 +20,20 @@ export default function Home() {
     refresh,
   } = useClips();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [gridColumns, setGridColumns] = useState<2 | 3 | 4>(4);
+
+  // localStorage에서 그리드 열 설정 로드
+  useEffect(() => {
+    const saved = localStorage.getItem('gridColumns');
+    if (saved && ['2', '3', '4'].includes(saved)) {
+      setGridColumns(Number(saved) as 2 | 3 | 4);
+    }
+  }, []);
+
+  const handleColumnsChange = (cols: 2 | 3 | 4) => {
+    setGridColumns(cols);
+    localStorage.setItem('gridColumns', String(cols));
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -78,6 +92,24 @@ export default function Home() {
                 <span className="text-sm text-foreground/80">테마</span>
                 <ThemeToggle />
               </div>
+              <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-card-border">
+                <span className="text-sm text-foreground/80">그리드 열</span>
+                <div className="flex gap-1">
+                  {([2, 3, 4] as const).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => handleColumnsChange(n)}
+                      className={`w-8 h-8 text-sm rounded transition-colors ${
+                        gridColumns === n
+                          ? 'bg-primary text-white'
+                          : 'bg-card-border text-foreground/60 hover:text-foreground'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Link
                 href="/admin"
                 className="flex items-center gap-2 text-sm text-foreground/80 hover:text-foreground transition-colors"
@@ -97,7 +129,7 @@ export default function Home() {
             )}
 
             {/* Grid view */}
-            <GridView clips={filteredClips} isLoading={isLoading} />
+            <GridView clips={filteredClips} isLoading={isLoading} columns={gridColumns} />
           </main>
         </>
       ) : (
@@ -138,6 +170,24 @@ export default function Home() {
               <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-card-border">
                 <span className="text-sm text-foreground/80">테마</span>
                 <ThemeToggle />
+              </div>
+              <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-card-border">
+                <span className="text-sm text-foreground/80">그리드 열</span>
+                <div className="flex gap-1">
+                  {([2, 3, 4] as const).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => handleColumnsChange(n)}
+                      className={`w-8 h-8 text-sm rounded transition-colors ${
+                        gridColumns === n
+                          ? 'bg-primary text-white'
+                          : 'bg-card-border text-foreground/60 hover:text-foreground'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
               </div>
               <Link
                 href="/admin"
