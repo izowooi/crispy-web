@@ -93,19 +93,23 @@ export default function Home() {
                 <ThemeToggle />
               </div>
               <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-card-border">
-                <span className="text-sm text-foreground/80">그리드 열</span>
+                <span className="text-sm text-foreground/80">썸네일</span>
                 <div className="flex gap-1">
-                  {([2, 3, 4] as const).map((n) => (
+                  {([
+                    { value: 2, label: '크게' },
+                    { value: 3, label: '보통' },
+                    { value: 4, label: '작게' },
+                  ] as const).map(({ value, label }) => (
                     <button
-                      key={n}
-                      onClick={() => handleColumnsChange(n)}
-                      className={`w-8 h-8 text-sm rounded transition-colors ${
-                        gridColumns === n
+                      key={value}
+                      onClick={() => handleColumnsChange(value)}
+                      className={`px-2 h-8 text-xs rounded transition-colors ${
+                        gridColumns === value
                           ? 'bg-primary text-white'
                           : 'bg-card-border text-foreground/60 hover:text-foreground'
                       }`}
                     >
-                      {n}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -172,19 +176,23 @@ export default function Home() {
                 <ThemeToggle />
               </div>
               <div className="flex items-center justify-between gap-4 mb-2 pb-2 border-b border-card-border">
-                <span className="text-sm text-foreground/80">그리드 열</span>
+                <span className="text-sm text-foreground/80">썸네일</span>
                 <div className="flex gap-1">
-                  {([2, 3, 4] as const).map((n) => (
+                  {([
+                    { value: 2, label: '크게' },
+                    { value: 3, label: '보통' },
+                    { value: 4, label: '작게' },
+                  ] as const).map(({ value, label }) => (
                     <button
-                      key={n}
-                      onClick={() => handleColumnsChange(n)}
-                      className={`w-8 h-8 text-sm rounded transition-colors ${
-                        gridColumns === n
+                      key={value}
+                      onClick={() => handleColumnsChange(value)}
+                      className={`px-2 h-8 text-xs rounded transition-colors ${
+                        gridColumns === value
                           ? 'bg-primary text-white'
                           : 'bg-card-border text-foreground/60 hover:text-foreground'
                       }`}
                     >
-                      {n}
+                      {label}
                     </button>
                   ))}
                 </div>
