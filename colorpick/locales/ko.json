@@ -1,0 +1,17 @@
+{
+  "appTitle": "ColorPick",
+  "appDescription": "이미지의 색상 비율을 분석합니다",
+  "uploadTitle": "이미지를 드래그하거나 클릭하세요",
+  "uploadHint": "PNG, JPG, GIF, WebP (최대 10MB)",
+  "colorCount": "색상 개수",
+  "displayFormat": "표시 형식",
+  "originalImage": "원본 이미지",
+  "colorAnalysis": "색상 분석",
+  "copied": "복사됨!",
+  "clickToCopy": "클릭하여 복사",
+  "analyzing": "분석 중...",
+  "noColors": "색상을 추출할 수 없습니다",
+  "fileTooLarge": "파일이 너무 큽니다 (최대 10MB)",
+  "invalidFile": "지원하지 않는 파일 형식입니다",
+  "changeImage": "이미지 변경"
+}

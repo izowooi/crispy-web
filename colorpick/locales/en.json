@@ -1,0 +1,17 @@
+{
+  "appTitle": "ColorPick",
+  "appDescription": "Analyze color proportions in images",
+  "uploadTitle": "Drag & drop or click to upload",
+  "uploadHint": "PNG, JPG, GIF, WebP (max 10MB)",
+  "colorCount": "Number of colors",
+  "displayFormat": "Display format",
+  "originalImage": "Original image",
+  "colorAnalysis": "Color analysis",
+  "copied": "Copied!",
+  "clickToCopy": "Click to copy",
+  "analyzing": "Analyzing...",
+  "noColors": "Could not extract colors",
+  "fileTooLarge": "File too large (max 10MB)",
+  "invalidFile": "Unsupported file format",
+  "changeImage": "Change image"
+}
