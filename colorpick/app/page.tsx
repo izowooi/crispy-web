@@ -15,7 +15,7 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [colorCount, setColorCount] = useState(8);
   const [showHex, setShowHex] = useState(true);
-  const [showRgb, setShowRgb] = useState(true);
+  const [showRgb, setShowRgb] = useState(false);
 
   const { t } = useTranslation(language);
 

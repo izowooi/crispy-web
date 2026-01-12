@@ -19,7 +19,8 @@ export default function ColorBar({ colors, showHex, showRgb, t }: ColorBarProps)
     if (showHex) textParts.push(color.hex);
     if (showRgb) textParts.push(`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`);
 
-    const textToCopy = textParts.join(' ');
+    // 둘 다 해제된 경우 HEX 복사
+    const textToCopy = textParts.length > 0 ? textParts.join(' ') : color.hex;
 
     try {
       await navigator.clipboard.writeText(textToCopy);
