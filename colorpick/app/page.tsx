@@ -16,7 +16,7 @@ export default function Home() {
   const [showHex, setShowHex] = useState(true);
   const [showRgb, setShowRgb] = useState(false);
   const [imageSize, setImageSize] = useState(256);
-  const [internalColorCount, setInternalColorCount] = useState(128);
+  const [internalColorCount, setInternalColorCount] = useState(64);
 
   const { t } = useTranslation(language);
 
@@ -113,8 +113,8 @@ export default function Home() {
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-center gap-6">
                 {/* Image size selector */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">
+                <div className="flex items-center gap-2" title={t('imageSizeTooltip')}>
+                  <span className="text-sm font-medium text-gray-700 cursor-help">
                     {t('imageSize')}:
                   </span>
                   <div className="flex gap-1">
@@ -136,15 +136,15 @@ export default function Home() {
                 </div>
 
                 {/* Internal color count slider */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">
+                <div className="flex items-center gap-2" title={t('colorDepthTooltip')}>
+                  <span className="text-sm font-medium text-gray-700 cursor-help">
                     {t('colorDepth')}:
                   </span>
                   <input
                     type="range"
-                    min="32"
-                    max="256"
-                    step="32"
+                    min="8"
+                    max="64"
+                    step="8"
                     value={internalColorCount}
                     onChange={(e) => setInternalColorCount(Number(e.target.value))}
                     className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
