@@ -12,9 +12,7 @@ interface PixelData {
 }
 
 // 알고리즘 상수
-const INTERNAL_COLOR_COUNT = 128;  // 내부 계산용 (정확도 향상)
 const DISPLAY_COLOR_COUNT = 8;     // 표시용 (고정)
-const MAX_IMAGE_SIZE = 256;        // 더 많은 픽셀 분석
 
 // RGB를 HEX로 변환
 function rgbToHex(r: number, g: number, b: number): string {
@@ -179,17 +177,21 @@ function medianCut(pixels: PixelData[], numColors: number): PixelData[] {
 }
 
 // 메인 색상 추출 함수
-export async function extractColors(imageFile: File): Promise<ColorInfo[]> {
-  // 더 큰 이미지로 분석하여 세부 색상 감지
-  const imageData = await loadImageToCanvas(imageFile, MAX_IMAGE_SIZE);
+export async function extractColors(
+  imageFile: File,
+  imageSize: number = 256,
+  internalColorCount: number = 128
+): Promise<ColorInfo[]> {
+  // 지정된 크기로 이미지 분석
+  const imageData = await loadImageToCanvas(imageFile, imageSize);
   const pixels = getPixelArray(imageData);
 
   if (pixels.length === 0) {
     return [];
   }
 
-  // 많은 색상으로 분할하여 정확도 향상
-  const dominantColors = medianCut(pixels, INTERNAL_COLOR_COUNT);
+  // 지정된 색상 수로 분할
+  const dominantColors = medianCut(pixels, internalColorCount);
 
   // 전체 픽셀 수 계산
   const totalPixels = dominantColors.reduce((sum, p) => sum + p.count, 0);

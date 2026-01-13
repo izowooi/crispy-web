@@ -3,6 +3,8 @@
   "appDescription": "Analyze color proportions in images",
   "uploadTitle": "Drag & drop or click to upload",
   "uploadHint": "PNG, JPG, GIF, WebP (max 10MB)",
+  "imageSize": "Resolution",
+  "colorDepth": "Color depth",
   "displayFormat": "Display format",
   "originalImage": "Original image",
   "colorAnalysis": "Color analysis",

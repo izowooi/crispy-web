@@ -15,8 +15,12 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showHex, setShowHex] = useState(true);
   const [showRgb, setShowRgb] = useState(false);
+  const [imageSize, setImageSize] = useState(256);
+  const [internalColorCount, setInternalColorCount] = useState(128);
 
   const { t } = useTranslation(language);
+
+  const IMAGE_SIZE_OPTIONS = [128, 256, 512, 1024];
 
   // Cleanup image URL on unmount or when image changes
   useEffect(() => {
@@ -38,7 +42,7 @@ export default function Home() {
     setIsAnalyzing(true);
 
     try {
-      const extractedColors = await extractColors(file);
+      const extractedColors = await extractColors(file, imageSize, internalColorCount);
       setColors(extractedColors);
     } catch (error) {
       console.error('Failed to extract colors:', error);
@@ -46,7 +50,26 @@ export default function Home() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [imageUrl]);
+  }, [imageUrl, imageSize, internalColorCount]);
+
+  // Re-analyze when settings change
+  useEffect(() => {
+    if (imageFile && !isAnalyzing) {
+      const reanalyze = async () => {
+        setIsAnalyzing(true);
+        try {
+          const extractedColors = await extractColors(imageFile, imageSize, internalColorCount);
+          setColors(extractedColors);
+        } catch (error) {
+          console.error('Failed to extract colors:', error);
+        } finally {
+          setIsAnalyzing(false);
+        }
+      };
+      reanalyze();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageSize, internalColorCount]);
 
   const handleReset = useCallback(() => {
     if (imageUrl) {
@@ -89,6 +112,49 @@ export default function Home() {
             {/* Controls */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-center gap-6">
+                {/* Image size selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {t('imageSize')}:
+                  </span>
+                  <div className="flex gap-1">
+                    {IMAGE_SIZE_OPTIONS.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setImageSize(size)}
+                        disabled={isAnalyzing}
+                        className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                          imageSize === size
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        } ${isAnalyzing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Internal color count slider */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {t('colorDepth')}:
+                  </span>
+                  <input
+                    type="range"
+                    min="32"
+                    max="256"
+                    step="32"
+                    value={internalColorCount}
+                    onChange={(e) => setInternalColorCount(Number(e.target.value))}
+                    className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    disabled={isAnalyzing}
+                  />
+                  <span className="text-sm font-medium text-gray-900 w-8">
+                    {internalColorCount}
+                  </span>
+                </div>
+
                 {/* Format toggles */}
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">
