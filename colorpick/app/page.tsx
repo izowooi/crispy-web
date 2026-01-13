@@ -13,7 +13,6 @@ export default function Home() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [colors, setColors] = useState<ColorInfo[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [colorCount, setColorCount] = useState(8);
   const [showHex, setShowHex] = useState(true);
   const [showRgb, setShowRgb] = useState(false);
 
@@ -39,7 +38,7 @@ export default function Home() {
     setIsAnalyzing(true);
 
     try {
-      const extractedColors = await extractColors(file, colorCount);
+      const extractedColors = await extractColors(file);
       setColors(extractedColors);
     } catch (error) {
       console.error('Failed to extract colors:', error);
@@ -47,25 +46,7 @@ export default function Home() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [colorCount, imageUrl]);
-
-  // Re-analyze when color count changes
-  useEffect(() => {
-    if (imageFile && !isAnalyzing) {
-      const reanalyze = async () => {
-        setIsAnalyzing(true);
-        try {
-          const extractedColors = await extractColors(imageFile, colorCount);
-          setColors(extractedColors);
-        } catch (error) {
-          console.error('Failed to extract colors:', error);
-        } finally {
-          setIsAnalyzing(false);
-        }
-      };
-      reanalyze();
-    }
-  }, [colorCount]);
+  }, [imageUrl]);
 
   const handleReset = useCallback(() => {
     if (imageUrl) {
@@ -108,25 +89,6 @@ export default function Home() {
             {/* Controls */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-center gap-6">
-                {/* Color count slider */}
-                <div className="flex items-center gap-3">
-                  <label className="text-sm font-medium text-gray-700">
-                    {t('colorCount')}:
-                  </label>
-                  <input
-                    type="range"
-                    min="4"
-                    max="16"
-                    value={colorCount}
-                    onChange={(e) => setColorCount(Number(e.target.value))}
-                    className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                    disabled={isAnalyzing}
-                  />
-                  <span className="text-sm font-medium text-gray-900 w-6">
-                    {colorCount}
-                  </span>
-                </div>
-
                 {/* Format toggles */}
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">
