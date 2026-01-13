@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,11 +12,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://colorpick.pages.dev/"),
   title: "ColorPick - Image Color Analyzer",
   description: "Analyze color proportions in images. Upload an image to extract dominant colors and see their percentages.",
   keywords: ["color", "image", "analyzer", "palette", "extractor"],
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.png",
+    shortcut: "/icon-192.png",
+    apple: "/apple-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ColorPick",
+  },
   openGraph: {
     title: "ColorPick - Image Color Analyzer",
     description: "Analyze color proportions in images. Upload an image to extract dominant colors and see their percentages.",
