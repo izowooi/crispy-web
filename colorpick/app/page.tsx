@@ -113,8 +113,8 @@ export default function Home() {
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-center gap-6">
                 {/* Image size selector */}
-                <div className="flex items-center gap-2" title={t('imageSizeTooltip')}>
-                  <span className="text-sm font-medium text-gray-700 cursor-help">
+                <div className="relative group flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700 cursor-help underline decoration-dotted decoration-gray-400">
                     {t('imageSize')}:
                   </span>
                   <div className="flex gap-1">
@@ -133,11 +133,16 @@ export default function Home() {
                       </button>
                     ))}
                   </div>
+                  {/* Tooltip */}
+                  <div className="absolute left-0 top-full mt-2 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                    {t('imageSizeTooltip')}
+                    <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-800 rotate-45"></div>
+                  </div>
                 </div>
 
                 {/* Internal color count slider */}
-                <div className="flex items-center gap-2" title={t('colorDepthTooltip')}>
-                  <span className="text-sm font-medium text-gray-700 cursor-help">
+                <div className="relative group flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700 cursor-help underline decoration-dotted decoration-gray-400">
                     {t('colorDepth')}:
                   </span>
                   <input
@@ -153,6 +158,11 @@ export default function Home() {
                   <span className="text-sm font-medium text-gray-900 w-8">
                     {internalColorCount}
                   </span>
+                  {/* Tooltip */}
+                  <div className="absolute left-0 top-full mt-2 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                    {t('colorDepthTooltip')}
+                    <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-800 rotate-45"></div>
+                  </div>
                 </div>
 
                 {/* Format toggles */}
