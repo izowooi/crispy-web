@@ -20,7 +20,7 @@ export default function Home() {
 
   const { t } = useTranslation(language);
 
-  const IMAGE_SIZE_OPTIONS = [128, 256, 512, 1024];
+  const IMAGE_SIZE_OPTIONS = [32, 64, 128, 256, 512];
 
   // Cleanup image URL on unmount or when image changes
   useEffect(() => {
