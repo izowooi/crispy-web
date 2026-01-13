@@ -13,9 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://colorpick.pages.dev/"),
   title: "ColorPick - Image Color Analyzer",
   description: "Analyze color proportions in images. Upload an image to extract dominant colors and see their percentages.",
   keywords: ["color", "image", "analyzer", "palette", "extractor"],
+  openGraph: {
+    title: "ColorPick - Image Color Analyzer",
+    description: "Analyze color proportions in images. Upload an image to extract dominant colors and see their percentages.",
+    url: "https://colorpick.pages.dev/",
+    siteName: "ColorPick",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ColorPick App Interface",
+      },
+    ],
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
