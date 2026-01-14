@@ -16,7 +16,7 @@ export default function Home() {
   const [showHex, setShowHex] = useState(true);
   const [showRgb, setShowRgb] = useState(false);
   const [imageSize, setImageSize] = useState(256);
-  const [internalColorCount, setInternalColorCount] = useState(64);
+  const [internalColorCount, setInternalColorCount] = useState(8);
 
   const { t } = useTranslation(language);
 
@@ -147,9 +147,9 @@ export default function Home() {
                   </span>
                   <input
                     type="range"
-                    min="8"
-                    max="64"
-                    step="8"
+                    min="2"
+                    max="16"
+                    step="2"
                     value={internalColorCount}
                     onChange={(e) => setInternalColorCount(Number(e.target.value))}
                     className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
