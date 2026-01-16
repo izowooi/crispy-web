@@ -77,8 +77,6 @@ export function ClipClient({ id }: ClipClientProps) {
             onClick={() => {
               if (navigator.share) {
                 navigator.share({
-                  title: clip.title,
-                  text: clip.description || clip.title,
                   url: window.location.href,
                 });
               } else {
