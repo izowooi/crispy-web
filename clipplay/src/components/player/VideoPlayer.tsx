@@ -14,12 +14,16 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ clip, className = '', autoPlay = false }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const wasPlayingBeforeDrag = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragProgress, setDragProgress] = useState(0);
 
   const videoUrl = getVideoUrl(R2_PUBLIC_URL, clip.fileKey);
 
@@ -50,15 +54,92 @@ export function VideoPlayer({ clip, className = '', autoPlay = false }: VideoPla
   }, [duration]);
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = x / rect.width;
     handleSeek(percentage * duration);
   };
 
+  // Mouse drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+
+    wasPlayingBeforeDrag.current = isPlaying;
+    if (videoRef.current && isPlaying) {
+      videoRef.current.pause();
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setDragProgress(percentage);
+  }, [isPlaying]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !progressBarRef.current) return;
+
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setDragProgress(percentage);
+  }, [isDragging]);
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging) return;
+
+    setIsDragging(false);
+
+    const newTime = (dragProgress / 100) * duration;
+    handleSeek(newTime);
+
+    if (wasPlayingBeforeDrag.current && videoRef.current) {
+      videoRef.current.play();
+    }
+  }, [isDragging, dragProgress, duration, handleSeek]);
+
   // Skip backward/forward 10 seconds
   const skipBackward = () => handleSeek(currentTime - 10);
   const skipForward = () => handleSeek(currentTime + 10);
+
+  // Touch drag handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsDragging(true);
+
+    wasPlayingBeforeDrag.current = isPlaying;
+    if (videoRef.current && isPlaying) {
+      videoRef.current.pause();
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.touches[0].clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setDragProgress(percentage);
+  }, [isPlaying]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging || !progressBarRef.current) return;
+
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const x = e.touches[0].clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setDragProgress(percentage);
+  }, [isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isDragging) return;
+
+    setIsDragging(false);
+
+    const newTime = (dragProgress / 100) * duration;
+    handleSeek(newTime);
+
+    if (wasPlayingBeforeDrag.current && videoRef.current) {
+      videoRef.current.play();
+    }
+  }, [isDragging, dragProgress, duration, handleSeek]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -106,7 +187,21 @@ export function VideoPlayer({ clip, className = '', autoPlay = false }: VideoPla
     }
   }, [autoPlay]);
 
+  // Document-level mouse events for drag tracking outside progress bar
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const displayProgress = isDragging ? dragProgress : progress;
 
   return (
     <div className={`bg-black rounded-2xl overflow-hidden ${className}`}>
@@ -186,21 +281,30 @@ export function VideoPlayer({ clip, className = '', autoPlay = false }: VideoPla
         {/* Progress bar */}
         <div className="flex items-center gap-3 mb-4">
           <span className="text-sm text-foreground/70 min-w-[40px] text-right">
-            {formatDuration(currentTime)}
+            {formatDuration(isDragging ? (dragProgress / 100) * duration : currentTime)}
           </span>
 
           <div
-            className="flex-1 h-2 bg-card-border rounded-full cursor-pointer group"
+            ref={progressBarRef}
+            className={`flex-1 h-2 bg-card-border rounded-full group ${
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
             onClick={handleProgressClick}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <div className="relative h-full">
               <div
-                className="h-full bg-primary rounded-full transition-all"
-                style={{ width: `${progress}%` }}
+                className={`h-full bg-primary rounded-full ${isDragging ? '' : 'transition-all'}`}
+                style={{ width: `${displayProgress}%` }}
               />
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ left: `calc(${progress}% - 8px)` }}
+                className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-primary rounded-full transition-opacity shadow-md ${
+                  isDragging ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'
+                }`}
+                style={{ left: `calc(${displayProgress}% - 8px)` }}
               />
             </div>
           </div>
