@@ -157,8 +157,8 @@ graph LR
     end
 
     subgraph Edge[⚡ Edge Runtime]
-        E[/api/generate]
-        F[/api/download]
+        E["API: generate"]
+        F["API: download"]
     end
 
     subgraph Alibaba[☁️ Alibaba Cloud]
