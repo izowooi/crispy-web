@@ -129,7 +129,15 @@ export default function Home() {
         </div>
 
         <footer className="text-center mt-8 text-sm text-gray-500">
-          Powered by Alibaba Qwen Image Edit
+          <p>Copyright (C) 2026 izowooi</p>
+          <a
+            href="https://github.com/izowooi/crispy-web/tree/main/imgblend"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-600 hover:underline"
+          >
+            소스 코드 보기
+          </a>
         </footer>
       </div>
     </main>
