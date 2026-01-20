@@ -15,16 +15,14 @@ export default function ResultDisplay({
     if (!imageUrl) return
 
     try {
-      const response = await fetch(imageUrl)
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
+      // 서버 프록시를 통해 다운로드 (CORS 우회)
+      const proxyUrl = `/api/download?url=${encodeURIComponent(imageUrl)}`
       const a = document.createElement('a')
-      a.href = url
+      a.href = proxyUrl
       a.download = `qwen-edit-${Date.now()}.png`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      URL.revokeObjectURL(url)
     } catch (err) {
       console.error('다운로드 오류:', err)
       alert('이미지 다운로드에 실패했습니다.')
