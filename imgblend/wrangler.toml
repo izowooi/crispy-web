@@ -1,0 +1,6 @@
+name = "imgblend"
+compatibility_date = "2024-07-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# 환경변수는 Cloudflare 대시보드에서 설정하세요
