@@ -10,6 +10,7 @@ build/
 
 # debug
 npm-debug.log*
+firebase-debug.log
 
 # env files
 .env*.local
