@@ -31,7 +31,7 @@ interface DashScopeResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { images, prompt, negativePrompt } = await request.json()
+    const { images, prompt, negativePrompt, customApiKey } = await request.json()
 
     if (!images || images.length === 0) {
       return NextResponse.json(
@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const apiKey = process.env.DASHSCOPE_API_KEY
+    // 사용자 키가 있으면 사용, 없으면 서버 환경변수 사용
+    const apiKey = customApiKey || process.env.DASHSCOPE_API_KEY
     if (!apiKey) {
       return NextResponse.json(
         { error: 'API 키가 설정되지 않았습니다.' },
