@@ -13,6 +13,7 @@ import {
   formatBytes,
   type CompressionResult,
 } from '@/lib/video/compress';
+import { DEFAULT_SETTINGS } from '@/types';
 
 const EMOJI_OPTIONS = ['🎬', '🎥', '📹', '🎞️', '🌟', '💕', '🎉', '🏠', '✨', '🌈'];
 
@@ -73,6 +74,9 @@ export default function AdminUploadPage() {
   const [compressedFile, setCompressedFile] = useState<Blob | null>(null);
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
 
+  // Settings state (dynamically loaded from server)
+  const [maxFileSizeMB, setMaxFileSizeMB] = useState(DEFAULT_SETTINGS.maxFileSizeMB);
+
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
       router.push('/admin/login');
@@ -82,6 +86,21 @@ export default function AdminUploadPage() {
   // Check compression support on mount
   useEffect(() => {
     isCompressionSupported().then(setCompressionSupport);
+  }, []);
+
+  // Fetch settings from server on mount
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((settings) => {
+        if (settings.maxFileSizeMB) {
+          setMaxFileSizeMB(settings.maxFileSizeMB);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch settings:', err);
+        // Keep default value on error
+      });
   }, []);
 
   // Cleanup video URL on unmount
@@ -107,8 +126,8 @@ export default function AdminUploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size > 200 * 1024 * 1024) {
-        setError('파일 크기는 200MB를 초과할 수 없습니다.');
+      if (selectedFile.size > maxFileSizeMB * 1024 * 1024) {
+        setError(`파일 크기는 ${maxFileSizeMB}MB를 초과할 수 없습니다.`);
         return;
       }
       if (!selectedFile.type.startsWith('video/')) {
@@ -421,7 +440,7 @@ export default function AdminUploadPage() {
               </p>
             )}
             <p className="mt-2 text-xs text-foreground/40">
-              최대 200MB, MP4 권장 (세로 동영상)
+              최대 {maxFileSizeMB}MB, MP4 권장 (세로 동영상)
             </p>
           </div>
 

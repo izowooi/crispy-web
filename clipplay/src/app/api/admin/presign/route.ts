@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromCookies } from '@/lib/auth/google';
-import { generatePresignedUploadUrl, generateClipId } from '@/lib/r2/upload';
+import { generatePresignedUploadUrl, generateClipId, getMetadataFromR2 } from '@/lib/r2/upload';
+import { DEFAULT_SETTINGS } from '@/types';
 
 export const runtime = 'edge';
 
@@ -32,9 +33,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only video files are allowed' }, { status: 400 });
     }
 
-    // Validate file size (200MB)
-    if (fileSize > 200 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size exceeds 200MB limit' }, { status: 400 });
+    // Get max file size from settings
+    const metadata = await getMetadataFromR2();
+    const maxFileSizeMB = metadata.settings?.maxFileSizeMB ?? DEFAULT_SETTINGS.maxFileSizeMB;
+
+    // Validate file size
+    if (fileSize > maxFileSizeMB * 1024 * 1024) {
+      return NextResponse.json({ error: `File size exceeds ${maxFileSizeMB}MB limit` }, { status: 400 });
     }
 
     // Generate unique clip ID

@@ -14,10 +14,21 @@ export interface Clip {
   updatedAt: string; // ISO 8601
 }
 
+// App settings (configurable via metadata.json)
+export interface AppSettings {
+  maxFileSizeMB: number;
+}
+
+// Default settings (used when settings not in metadata.json)
+export const DEFAULT_SETTINGS: AppSettings = {
+  maxFileSizeMB: 200,
+};
+
 // R2 metadata.json schema
 export interface Metadata {
   clips: Clip[];
   allowedUploaders: string[];
+  settings?: AppSettings; // optional for backward compatibility
 }
 
 // Video player state
