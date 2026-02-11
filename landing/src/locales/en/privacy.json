@@ -1,0 +1,34 @@
+{
+  "title": "Privacy Policy",
+  "effectiveDate": "2026-01-01",
+  "sections": [
+    {
+      "heading": "1. Information We Collect",
+      "content": "We collect information to provide better services to our users. The types of information we collect include usage data and device information when you use our applications."
+    },
+    {
+      "heading": "2. How We Use Information",
+      "content": "We use the information we collect to provide, maintain, and improve our services. This includes using data to fix bugs, analyze usage patterns, and develop new features."
+    },
+    {
+      "heading": "3. Information Sharing",
+      "content": "We do not share personal information with companies, organizations, or individuals outside of izowooi except in the following cases: with your consent, for legal reasons, or to protect our rights and safety."
+    },
+    {
+      "heading": "4. Data Security",
+      "content": "We work hard to protect our users from unauthorized access, alteration, disclosure, or destruction of information we hold. We use encryption and secure protocols to protect your data."
+    },
+    {
+      "heading": "5. Your Rights",
+      "content": "You have the right to access, update, or delete your personal information at any time. You can also request a copy of your data or ask us to stop processing it."
+    },
+    {
+      "heading": "6. Changes to This Policy",
+      "content": "We may change this Privacy Policy from time to time. We will post any privacy policy changes on this page and update the effective date. Please review this policy periodically."
+    },
+    {
+      "heading": "7. Contact",
+      "content": "If you have any questions about this Privacy Policy, please contact us at izowooi@hotmail.com."
+    }
+  ]
+}
