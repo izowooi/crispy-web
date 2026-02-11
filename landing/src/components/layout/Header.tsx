@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Container from "./Container";
-import NavLink from "@/components/ui/NavLink";
-import MobileNav from "./MobileNav";
+// import NavLink from "@/components/ui/NavLink";
+// import MobileNav from "./MobileNav";
 
 export default function Header() {
   return (
@@ -14,11 +14,11 @@ export default function Header() {
           >
             izowooi
           </Link>
-          <nav className="hidden md:flex items-center gap-8">
+          {/* <nav className="hidden md:flex items-center gap-8">
             <NavLink href="/about-me">About me</NavLink>
             <NavLink href="/apps">Apps</NavLink>
           </nav>
-          <MobileNav />
+          <MobileNav /> */}
         </div>
       </Container>
     </header>
