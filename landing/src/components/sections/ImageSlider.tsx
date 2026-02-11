@@ -20,9 +20,12 @@ export default function ImageSlider() {
   return (
     <div className="relative w-full h-[calc(100vh-64px-73px)] bg-neutral-100 overflow-hidden select-none">
       {images.map((img, i) => (
-        <div
+        <a
           key={img.src}
-          className={`absolute inset-0 transition-opacity duration-500 ${i === current ? "opacity-100" : "opacity-0 pointer-events-none"
+          href="https://play.google.com/store/apps/details?id=com.izowooi.honey_history"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`absolute inset-0 transition-opacity duration-500 cursor-pointer ${i === current ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
         >
           <Image
@@ -32,7 +35,7 @@ export default function ImageSlider() {
             className="object-contain"
             priority={i === 0}
           />
-        </div>
+        </a>
       ))}
 
       {/* Left button */}
