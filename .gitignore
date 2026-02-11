@@ -37,3 +37,4 @@ next-env.d.ts
 qrcode/firebase-debug.log
 clipplay/docs/metadata.json
 podplay/firebase-debug.log
+landing/firebase-debug.log
