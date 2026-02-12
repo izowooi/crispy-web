@@ -1,0 +1,35 @@
+{
+  "name": "redraw",
+  "version": "1.0.0",
+  "description": "AI 이미지 스타일 변형 웹앱",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "keywords": [],
+  "author": "Redraw Team",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "autoprefixer": "^10.4.24",
+    "jsonwebtoken": "^9.0.3",
+    "jszip": "^3.10.1",
+    "next": "^16.1.6",
+    "postcss": "^8.5.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "replicate": "^1.4.0",
+    "server-only": "^0.0.1",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/jszip": "^3.4.0"
+  },
+  "private": "true"
+}
