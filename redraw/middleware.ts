@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-// Edge Runtime 사용 (Cloudflare Pages 호환)
-export const runtime = 'edge';
-
 // 공개 경로 (인증 불필요)
 const PUBLIC_PATHS = ['/login', '/api/auth/login'];
 
