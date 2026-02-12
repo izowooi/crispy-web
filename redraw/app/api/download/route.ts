@@ -37,7 +37,8 @@ export async function POST(request: Request) {
       zip.file(filename, buffer);
     });
 
-    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+    // Cloudflare Workers와 호환되는 Uint8Array 사용
+    const zipBuffer = await zip.generateAsync({ type: 'uint8array' });
 
     // ZIP 파일 응답
     return new Response(zipBuffer, {
