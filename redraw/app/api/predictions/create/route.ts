@@ -3,6 +3,8 @@ import { replicate } from '@/lib/replicate';
 import { getStyleById } from '@/lib/styles';
 import type { GenerationRequest } from '@/lib/types';
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const body: GenerationRequest = await request.json();

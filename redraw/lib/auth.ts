@@ -1,41 +1,55 @@
 import 'server-only';
-import jwt from 'jsonwebtoken';
 
-export interface JWTPayload {
+export interface AuthPayload {
   authenticated: boolean;
-  iat?: number;
-  exp?: number;
+  exp: number;
 }
 
 /**
- * JWT 토큰 생성
+ * Edge Runtime 호환 토큰 생성 (Web Crypto API 사용)
  */
-export function createToken(): string {
+export async function createToken(): Promise<string> {
   const secret = process.env.JWT_SECRET;
-
-  console.log('[createToken] JWT_SECRET 환경변수 존재:', !!secret);
 
   if (!secret) {
     throw new Error('JWT_SECRET 환경 변수가 설정되지 않았습니다.');
   }
 
-  const payload: JWTPayload = {
+  const payload: AuthPayload = {
     authenticated: true,
+    exp: Date.now() + 24 * 60 * 60 * 1000, // 24시간 후
   };
 
-  return jwt.sign(payload, secret, {
-    expiresIn: '24h', // 24시간 유효
-  });
+  // 간단한 HMAC 기반 토큰 생성
+  const data = JSON.stringify(payload);
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(data);
+  const secretBuffer = encoder.encode(secret);
+
+  // Web Crypto API로 HMAC 생성
+  const key = await crypto.subtle.importKey(
+    'raw',
+    secretBuffer,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign('HMAC', key, dataBuffer);
+  const signatureHex = Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  // Base64 인코딩
+  const token = btoa(data) + '.' + signatureHex;
+  return token;
 }
 
 /**
- * JWT 토큰 검증
+ * Edge Runtime 호환 토큰 검증
  */
-export function verifyToken(token: string): JWTPayload | null {
+export async function verifyToken(token: string): Promise<AuthPayload | null> {
   const secret = process.env.JWT_SECRET;
-
-  console.log('[verifyToken] JWT_SECRET 환경변수 존재:', !!secret);
-  console.log('[verifyToken] JWT_SECRET 값 (일부):', secret?.substring(0, 10));
 
   if (!secret) {
     console.error('[verifyToken] JWT_SECRET 환경 변수가 없습니다.');
@@ -43,9 +57,51 @@ export function verifyToken(token: string): JWTPayload | null {
   }
 
   try {
-    const decoded = jwt.verify(token, secret) as JWTPayload;
-    console.log('[verifyToken] 토큰 검증 성공:', decoded);
-    return decoded;
+    const [encodedPayload, signature] = token.split('.');
+    if (!encodedPayload || !signature) {
+      return null;
+    }
+
+    const data = atob(encodedPayload);
+    const payload: AuthPayload = JSON.parse(data);
+
+    // 만료 확인
+    if (payload.exp < Date.now()) {
+      console.log('[verifyToken] 토큰 만료됨');
+      return null;
+    }
+
+    // 서명 검증
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(data);
+    const secretBuffer = encoder.encode(secret);
+
+    const key = await crypto.subtle.importKey(
+      'raw',
+      secretBuffer,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+
+    const signatureBuffer = new Uint8Array(
+      signature.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+    );
+
+    const isValid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBuffer,
+      dataBuffer
+    );
+
+    if (!isValid) {
+      console.log('[verifyToken] 서명 검증 실패');
+      return null;
+    }
+
+    console.log('[verifyToken] 토큰 검증 성공');
+    return payload;
   } catch (error) {
     console.error('[verifyToken] 토큰 검증 실패:', error);
     return null;

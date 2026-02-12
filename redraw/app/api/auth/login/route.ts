@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createToken, verifyPassword } from '@/lib/auth';
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -23,8 +25,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // JWT 토큰 생성
-    const token = createToken();
+    // 토큰 생성 (async)
+    const token = await createToken();
 
     // 응답 생성
     const response = NextResponse.json(

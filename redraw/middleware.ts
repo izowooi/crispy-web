@@ -2,15 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-// Node.js runtime 사용 (환경변수 접근을 위해)
-export const runtime = 'nodejs';
+// Edge Runtime 사용 (Cloudflare Pages 호환)
+export const runtime = 'edge';
 
 // 공개 경로 (인증 불필요)
 const PUBLIC_PATHS = ['/login', '/api/auth/login'];
 
-export function middleware(request: NextRequest) {
-  console.log('[Middleware] JWT_SECRET 환경변수 존재:', !!process.env.JWT_SECRET);
-  console.log('[Middleware] JWT_SECRET 값 (일부):', process.env.JWT_SECRET?.substring(0, 10));
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   console.log('[Middleware] 요청 경로:', pathname);
@@ -41,8 +39,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // 토큰 검증
-  const payload = verifyToken(authToken);
+  // 토큰 검증 (async)
+  const payload = await verifyToken(authToken);
   console.log('[Middleware] 토큰 검증 결과:', payload);
 
   if (!payload || !payload.authenticated) {
