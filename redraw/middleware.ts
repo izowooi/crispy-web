@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+// import { verifyToken } from '@/lib/auth';
 
 // 공개 경로 (인증 불필요)
-const PUBLIC_PATHS = ['/login', '/api/auth/login'];
+// const PUBLIC_PATHS = ['/login', '/api/auth/login'];
 
 export function middleware(request: NextRequest) {
+  // ⚠️ 임시로 인증 비활성화 - 모든 요청 허용
+  return NextResponse.next();
+
+  /* 인증 기능 - 나중에 다시 활성화
   const { pathname } = request.nextUrl;
 
   // 정적 파일 및 Next.js 내부 경로는 건너뛰기
@@ -43,6 +47,7 @@ export function middleware(request: NextRequest) {
 
   // 인증 성공
   return NextResponse.next();
+  */
 }
 
 export const config = {
