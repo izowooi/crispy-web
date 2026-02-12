@@ -1,8 +1,6 @@
 import 'server-only';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
-
 export interface JWTPayload {
   authenticated: boolean;
   iat?: number;
@@ -13,11 +11,19 @@ export interface JWTPayload {
  * JWT 토큰 생성
  */
 export function createToken(): string {
+  const secret = process.env.JWT_SECRET;
+
+  console.log('[createToken] JWT_SECRET 환경변수 존재:', !!secret);
+
+  if (!secret) {
+    throw new Error('JWT_SECRET 환경 변수가 설정되지 않았습니다.');
+  }
+
   const payload: JWTPayload = {
     authenticated: true,
   };
 
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, secret, {
     expiresIn: '24h', // 24시간 유효
   });
 }
@@ -26,10 +32,22 @@ export function createToken(): string {
  * JWT 토큰 검증
  */
 export function verifyToken(token: string): JWTPayload | null {
+  const secret = process.env.JWT_SECRET;
+
+  console.log('[verifyToken] JWT_SECRET 환경변수 존재:', !!secret);
+  console.log('[verifyToken] JWT_SECRET 값 (일부):', secret?.substring(0, 10));
+
+  if (!secret) {
+    console.error('[verifyToken] JWT_SECRET 환경 변수가 없습니다.');
+    return null;
+  }
+
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, secret) as JWTPayload;
+    console.log('[verifyToken] 토큰 검증 성공:', decoded);
     return decoded;
   } catch (error) {
+    console.error('[verifyToken] 토큰 검증 실패:', error);
     return null;
   }
 }
