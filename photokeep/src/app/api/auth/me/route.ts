@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyJwt, COOKIE_NAME } from '@/lib/auth/jwt';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
 

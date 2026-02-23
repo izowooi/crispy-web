@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getSession } from '@/lib/auth/session';
 
+export const runtime = 'edge';
+
 export default async function AdminPage() {
   const user = await getSession();
 

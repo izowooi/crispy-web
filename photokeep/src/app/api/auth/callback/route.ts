@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForTokens, getGoogleUserInfo } from '@/lib/auth/google';
 import { signJwt, COOKIE_NAME } from '@/lib/auth/jwt';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { verifyJwt, COOKIE_NAME } from '@/lib/auth/jwt';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   // Get user from JWT
   const token = request.cookies.get(COOKIE_NAME)?.value;
