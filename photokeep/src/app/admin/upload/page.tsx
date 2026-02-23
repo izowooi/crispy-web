@@ -115,8 +115,9 @@ export default function UploadPage() {
       if (!postRes.ok) throw new Error('포스트 저장 실패');
 
       files.forEach((f) => URL.revokeObjectURL(f.previewUrl));
-      router.push('/');
+      // refresh()를 먼저 호출해야 push() 후 이동한 페이지에서 최신 데이터를 받음
       router.refresh();
+      router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : '업로드 실패');
     } finally {

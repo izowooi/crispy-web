@@ -2,6 +2,11 @@ import { supabase } from '@/lib/supabase/client';
 import type { PostWithPhotos } from '@/types/database';
 import PhotoCarousel from '@/components/feed/PhotoCarousel';
 import Header from '@/components/ui/Header';
+import RefreshButton from '@/components/ui/RefreshButton';
+
+// Cloudflare Pages Edge Runtime에서 매 요청마다 서버 렌더링 (정적 캐시 방지)
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -83,6 +88,9 @@ export default async function FeedPage() {
           );
         })}
       </div>
+
+      {/* 새 사진 확인용 플로팅 새로고침 버튼 */}
+      <RefreshButton />
     </div>
   );
 }
