@@ -20,8 +20,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode: system preference OR data-theme="dark" */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --background: #0a0a0a;
     --foreground: #ededed;
     --border: #2e2e2e;
@@ -29,6 +30,15 @@
     --tab-active: #ededed;
     --tab-inactive: #525252;
   }
+}
+
+:root[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --border: #2e2e2e;
+  --muted: #a3a3a3;
+  --tab-active: #ededed;
+  --tab-inactive: #525252;
 }
 
 body {

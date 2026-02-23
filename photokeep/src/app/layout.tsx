@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import BottomTabBar from "@/components/ui/BottomTabBar";
+import SettingsButton from "@/components/ui/SettingsButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,7 +25,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var t = localStorage.getItem('photokeep-theme');
+                if (t === 'light' || t === 'dark') {
+                  document.documentElement.setAttribute('data-theme', t);
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -33,6 +48,7 @@ export default function RootLayout({
             {children}
           </main>
           <BottomTabBar />
+          <SettingsButton />
         </div>
       </body>
     </html>
