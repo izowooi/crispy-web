@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
 import type { PostWithPhotos } from '@/types/database';
 import PhotoCarousel from '@/components/feed/PhotoCarousel';
+import Header from '@/components/ui/Header';
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -51,12 +52,7 @@ export default async function FeedPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3">
-        <h1 className="text-lg font-semibold">PhotoKeep</h1>
-        <a href="/login" className="text-xs text-muted hover:text-foreground">
-          로그인
-        </a>
-      </header>
+      <Header title="PhotoKeep" />
 
       <div className="divide-y divide-border">
         {feed.map((post) => {

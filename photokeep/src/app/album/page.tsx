@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import type { Album } from '@/types/database';
+import Header from '@/components/ui/Header';
 
 export default async function AlbumPage() {
   const { data: albums, error } = await supabase
@@ -19,9 +20,7 @@ export default async function AlbumPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-10 border-b border-border bg-background px-4 py-3">
-        <h1 className="text-lg font-semibold">앨범</h1>
-      </header>
+      <Header title="앨범" />
 
       {list.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-4 pt-20">
