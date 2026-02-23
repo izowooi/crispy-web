@@ -1,6 +1,7 @@
 export interface Post {
   id: string;
   content: string | null;
+  emoji: string;
   author_name: string;
   cover_photo_url: string | null;
   created_at: string;

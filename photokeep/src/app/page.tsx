@@ -67,7 +67,13 @@ export default async function FeedPage() {
               {/* Content + date */}
               <div className="px-4 pt-3">
                 {post.content && (
-                  <p className="text-sm leading-relaxed">{post.content}</p>
+                  <p className="text-sm leading-relaxed">
+                    <span className="mr-1">{post.emoji}</span>
+                    {post.content}
+                  </p>
+                )}
+                {!post.content && post.emoji && (
+                  <p className="text-lg">{post.emoji}</p>
                 )}
                 <p className="mt-1 text-xs text-muted">
                   {timeAgo(post.created_at)}

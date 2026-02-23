@@ -3,6 +3,20 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
+const EMOJI_OPTIONS = ['📷', '🌸', '👨‍👩‍👧‍👦', '🎂', '🌳', '☀️', '❤️', '🎉', '✨', '🏠'];
+
+function isValidSingleEmoji(str: string): boolean {
+  if (!str) return false;
+  const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*$/u;
+  return emojiRegex.test(str);
+}
+
+function extractFirstEmoji(str: string): string | null {
+  const emojiRegex = /(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F))*/u;
+  const match = str.match(emojiRegex);
+  return match ? match[0] : null;
+}
+
 interface FilePreview {
   file: File;
   previewUrl: string;
@@ -15,6 +29,9 @@ export default function UploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FilePreview[]>([]);
   const [content, setContent] = useState('');
+  const [emoji, setEmoji] = useState('📷');
+  const [showCustomEmoji, setShowCustomEmoji] = useState(false);
+  const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,8 +47,6 @@ export default function UploadPage() {
       newFiles.push({ file, previewUrl, ...dims });
     }
     setFiles((prev) => [...prev, ...newFiles].slice(0, 10));
-
-    // Reset input
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
@@ -57,7 +72,6 @@ export default function UploadPage() {
     setError('');
 
     try {
-      // 1. Get presigned URLs
       const presignRes = await fetch('/api/admin/presign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,7 +86,6 @@ export default function UploadPage() {
       if (!presignRes.ok) throw new Error('Presign 요청 실패');
       const { files: presigned } = await presignRes.json();
 
-      // 2. Upload to R2
       await Promise.all(
         presigned.map(async (p: { uploadUrl: string; contentType: string }, i: number) => {
           const res = await fetch(p.uploadUrl, {
@@ -84,12 +97,12 @@ export default function UploadPage() {
         })
       );
 
-      // 3. Save post to DB
       const postRes = await fetch('/api/admin/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content,
+          emoji,
           photos: presigned.map((p: { publicUrl: string }, i: number) => ({
             url: p.publicUrl,
             width: files[i].width,
@@ -101,9 +114,7 @@ export default function UploadPage() {
 
       if (!postRes.ok) throw new Error('포스트 저장 실패');
 
-      // Cleanup previews
       files.forEach((f) => URL.revokeObjectURL(f.previewUrl));
-
       router.push('/');
       router.refresh();
     } catch (err) {
@@ -118,7 +129,6 @@ export default function UploadPage() {
       <h1 className="text-xl font-bold">사진 업로드</h1>
       <p className="mt-1 text-sm text-muted">최대 10장까지 선택할 수 있습니다</p>
 
-      {/* File picker */}
       <input
         ref={fileInputRef}
         type="file"
@@ -168,6 +178,67 @@ export default function UploadPage() {
         </button>
       )}
 
+      {/* Emoji selection */}
+      <div className="mt-4">
+        <label className="mb-2 block text-sm font-medium">이모지</label>
+        <div className="flex flex-wrap gap-2">
+          {EMOJI_OPTIONS.map((e) => (
+            <button
+              key={e}
+              type="button"
+              onClick={() => {
+                setEmoji(e);
+                setShowCustomEmoji(false);
+                setCustomEmojiInput('');
+              }}
+              className={`flex h-11 w-11 items-center justify-center rounded-lg border text-xl transition-colors ${
+                emoji === e && !showCustomEmoji
+                  ? 'border-foreground bg-foreground/10'
+                  : 'border-border hover:bg-foreground/5'
+              }`}
+            >
+              {e}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setShowCustomEmoji(!showCustomEmoji)}
+            className={`flex h-11 w-11 items-center justify-center rounded-lg border text-lg transition-colors ${
+              showCustomEmoji
+                ? 'border-foreground bg-foreground/10'
+                : 'border-border hover:bg-foreground/5'
+            }`}
+          >
+            ✏️
+          </button>
+        </div>
+        {showCustomEmoji && (
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="text"
+              value={customEmojiInput}
+              onChange={(e) => {
+                const input = e.target.value;
+                const extracted = extractFirstEmoji(input);
+                if (extracted) {
+                  setCustomEmojiInput(extracted);
+                  setEmoji(extracted);
+                } else if (input === '') {
+                  setCustomEmojiInput('');
+                }
+              }}
+              className="h-11 w-16 rounded-lg border border-border bg-transparent text-center text-xl focus:border-foreground/30 focus:outline-none"
+              placeholder="😊"
+              maxLength={4}
+            />
+            {customEmojiInput && isValidSingleEmoji(customEmojiInput) && (
+              <span className="text-xs text-green-500">유효</span>
+            )}
+            <span className="text-xs text-muted">이모지 1개만 입력</span>
+          </div>
+        )}
+      </div>
+
       {/* Content input */}
       <textarea
         value={content}
@@ -177,18 +248,16 @@ export default function UploadPage() {
         className="mt-4 w-full rounded-xl border border-border bg-transparent px-4 py-3 text-sm placeholder:text-muted focus:border-foreground/30 focus:outline-none"
       />
 
-      {/* Error */}
       {error && (
         <p className="mt-2 text-sm text-red-500">{error}</p>
       )}
 
-      {/* Upload button */}
       <button
         onClick={handleUpload}
         disabled={files.length === 0 || uploading}
         className="mt-4 w-full rounded-xl bg-foreground py-3 text-sm font-semibold text-background transition-opacity disabled:opacity-40"
       >
-        {uploading ? '업로드 중...' : '업로드'}
+        {uploading ? '업로드 중...' : `${emoji} 업로드`}
       </button>
     </div>
   );
