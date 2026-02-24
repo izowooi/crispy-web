@@ -32,6 +32,22 @@ export default async function AdminPage() {
         </Link>
 
         <Link
+          href="/admin/posts"
+          className="flex items-center gap-3 rounded-xl border border-border p-4 hover:bg-foreground/5"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground/10">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-medium">포스트 관리</p>
+            <p className="text-xs text-muted">포스트 수정, 삭제, 순서 변경</p>
+          </div>
+        </Link>
+
+        <Link
           href="/"
           className="flex items-center gap-3 rounded-xl border border-border p-4 hover:bg-foreground/5"
         >

@@ -38,6 +38,7 @@ export default async function FeedPage() {
   let query = supabaseAdmin
     .from('posts')
     .select('*, photos(*)')
+    .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
 
   if (!showPrivate) {

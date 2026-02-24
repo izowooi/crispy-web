@@ -4,6 +4,7 @@ export interface Post {
   emoji: string;
   is_private: boolean;
   author_name: string;
+  sort_order: number;
   cover_photo_url: string | null;
   created_at: string;
   updated_at: string;

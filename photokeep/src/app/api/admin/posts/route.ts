@@ -4,6 +4,26 @@ import { verifyJwt, COOKIE_NAME } from '@/lib/auth/jwt';
 
 export const runtime = 'edge';
 
+export async function GET(request: NextRequest) {
+  const token = request.cookies.get(COOKIE_NAME)?.value;
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const user = await verifyJwt(token);
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data: posts, error } = await supabaseAdmin
+    .from('posts')
+    .select('*, photos(*)')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ posts });
+}
+
 export async function POST(request: NextRequest) {
   // Get user from JWT
   const token = request.cookies.get(COOKIE_NAME)?.value;
