@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import type { Photo } from '@/types/database';
+import { useCarouselSwipe } from '@/hooks/useCarouselSwipe';
 
 interface PhotoCarouselProps {
   photos: Photo[];
@@ -20,19 +21,27 @@ function Lightbox({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
+  const { syncIndex } = useCarouselSwipe({
+    scrollRef,
+    itemCount: photos.length,
+    onIndexChange: setCurrentIndex,
+  });
+
   // 초기 인덱스로 스크롤 이동 (애니메이션 없이)
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     el.scrollLeft = initialIndex * el.clientWidth;
-  }, [initialIndex]);
+    syncIndex(initialIndex);
+  }, [initialIndex, syncIndex]);
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     const index = Math.round(el.scrollLeft / el.clientWidth);
     setCurrentIndex(index);
-  }, []);
+    syncIndex(index);
+  }, [syncIndex]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -80,13 +89,13 @@ function Lightbox({
       <div
         ref={scrollRef}
         className="flex flex-1 snap-x snap-mandatory overflow-x-auto"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', touchAction: 'pan-y' }}
         onClick={onClose}
       >
         {photos.map((photo) => (
           <div
             key={photo.id}
-            className="flex w-screen flex-shrink-0 snap-start items-center justify-center"
+            className="flex w-screen flex-shrink-0 snap-start [scroll-snap-stop:always] items-center justify-center"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -125,12 +134,19 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  const { syncIndex } = useCarouselSwipe({
+    scrollRef,
+    itemCount: photos.length,
+    onIndexChange: setCurrentIndex,
+  });
+
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     const index = Math.round(el.scrollLeft / el.clientWidth);
     setCurrentIndex(index);
-  }, []);
+    syncIndex(index);
+  }, [syncIndex]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -177,12 +193,12 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
         <div
           ref={scrollRef}
           className="flex snap-x snap-mandatory overflow-x-auto"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', touchAction: 'pan-y' }}
         >
           {photos.map((photo, i) => (
             <button
               key={photo.id}
-              className="aspect-[3/4] w-full flex-shrink-0 snap-start overflow-hidden bg-black"
+              className="aspect-[3/4] w-full flex-shrink-0 snap-start [scroll-snap-stop:always] overflow-hidden bg-black"
               onClick={() => setLightboxIndex(i)}
               aria-label={`사진 ${i + 1} 크게 보기`}
             >

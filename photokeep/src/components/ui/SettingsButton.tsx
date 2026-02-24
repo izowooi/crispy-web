@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+  useCarouselSensitivity,
+  DEFAULT_SENSITIVITY,
+  MIN_SENSITIVITY,
+  MAX_SENSITIVITY,
+} from '@/hooks/useCarouselSettings';
 
 interface User {
   email: string;
@@ -15,6 +21,7 @@ export default function SettingsButton() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [theme, setTheme] = useState<'system' | 'light' | 'dark'>('system');
+  const { sensitivity, updateSensitivity } = useCarouselSensitivity();
 
   useEffect(() => {
     // Load saved theme
@@ -136,6 +143,34 @@ export default function SettingsButton() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Scroll sensitivity section */}
+            <div className="mb-4 border-b border-border pb-4">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-medium text-muted">스크롤 감도</p>
+                <button
+                  onClick={() => updateSensitivity(DEFAULT_SENSITIVITY)}
+                  className="text-[10px] text-muted hover:text-foreground"
+                >
+                  초기화
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-muted">빠름</span>
+                <input
+                  type="range"
+                  min={MIN_SENSITIVITY}
+                  max={MAX_SENSITIVITY}
+                  value={sensitivity}
+                  onChange={(e) => updateSensitivity(parseInt(e.target.value, 10))}
+                  className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-foreground/15 accent-foreground [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground"
+                />
+                <span className="text-[10px] text-muted">느림</span>
+              </div>
+              <p className="mt-1.5 text-[10px] text-muted">
+                사진 넘김 민감도를 조절합니다
+              </p>
             </div>
 
             {/* Admin section */}
