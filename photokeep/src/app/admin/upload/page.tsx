@@ -32,6 +32,7 @@ export default function UploadPage() {
   const [emoji, setEmoji] = useState('📷');
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
@@ -103,6 +104,7 @@ export default function UploadPage() {
         body: JSON.stringify({
           content,
           emoji,
+          is_private: isPrivate,
           photos: presigned.map((p: { publicUrl: string }, i: number) => ({
             url: p.publicUrl,
             width: files[i].width,
@@ -238,6 +240,29 @@ export default function UploadPage() {
             <span className="text-xs text-muted">이모지 1개만 입력</span>
           </div>
         )}
+      </div>
+
+      {/* Public/Private toggle */}
+      <div className="mt-4 flex items-center justify-between rounded-xl border border-border px-4 py-3">
+        <div>
+          <p className="text-sm font-medium">{isPrivate ? '비공개' : '공개'}</p>
+          <p className="text-xs text-muted">
+            {isPrivate ? '관리자만 볼 수 있습니다' : '모든 가족이 볼 수 있습니다'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsPrivate(!isPrivate)}
+          className={`relative h-7 w-12 rounded-full transition-colors ${
+            isPrivate ? 'bg-foreground' : 'bg-foreground/20'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-6 w-6 rounded-full bg-background shadow transition-transform ${
+              isPrivate ? 'translate-x-5' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
       </div>
 
       {/* Content input */}

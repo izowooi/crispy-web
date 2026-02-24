@@ -13,9 +13,10 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { content, emoji, photos } = body as {
+  const { content, emoji, is_private, photos } = body as {
     content: string;
     emoji: string;
+    is_private: boolean;
     photos: { url: string; width: number; height: number; sort_order: number }[];
   };
 
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     .insert({
       content: content || null,
       emoji: emoji || '📷',
+      is_private: is_private ?? false,
       author_name: user.name,
       cover_photo_url: photos[0].url,
     })

@@ -1,8 +1,10 @@
-import { supabase } from '@/lib/supabase/client';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import type { PostWithPhotos } from '@/types/database';
 import PhotoCarousel from '@/components/feed/PhotoCarousel';
 import Header from '@/components/ui/Header';
 import RefreshButton from '@/components/ui/RefreshButton';
+import { getSession } from '@/lib/auth/session';
+import { isAdmin } from '@/lib/auth/admin';
 
 // Cloudflare Pages Edge Runtime에서 매 요청마다 서버 렌더링 (정적 캐시 방지)
 export const runtime = 'edge';
@@ -30,10 +32,19 @@ function timeAgo(dateStr: string): string {
 }
 
 export default async function FeedPage() {
-  const { data: posts, error } = await supabase
+  const user = await getSession();
+  const showPrivate = user ? isAdmin(user.email) : false;
+
+  let query = supabaseAdmin
     .from('posts')
     .select('*, photos(*)')
     .order('created_at', { ascending: false });
+
+  if (!showPrivate) {
+    query = query.eq('is_private', false);
+  }
+
+  const { data: posts, error } = await query;
 
   if (error) {
     return (
@@ -71,15 +82,22 @@ export default async function FeedPage() {
 
               {/* Content + date */}
               <div className="px-4 pt-3">
-                {post.content && (
-                  <p className="text-sm leading-relaxed">
-                    <span className="mr-1">{post.emoji}</span>
-                    {post.content}
-                  </p>
-                )}
-                {!post.content && post.emoji && (
-                  <p className="text-lg">{post.emoji}</p>
-                )}
+                <div className="flex items-start gap-1">
+                  {post.content && (
+                    <p className="flex-1 text-sm leading-relaxed">
+                      <span className="mr-1">{post.emoji}</span>
+                      {post.content}
+                    </p>
+                  )}
+                  {!post.content && post.emoji && (
+                    <p className="flex-1 text-lg">{post.emoji}</p>
+                  )}
+                  {post.is_private && (
+                    <span className="shrink-0 rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] text-muted">
+                      비공개
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-xs text-muted">
                   {timeAgo(post.created_at)}
                 </p>
