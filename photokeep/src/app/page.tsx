@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import type { PostWithPhotos } from '@/types/database';
 import PhotoCarousel from '@/components/feed/PhotoCarousel';
 import Header from '@/components/ui/Header';
-import RefreshButton from '@/components/ui/RefreshButton';
+import PullToRefresh from '@/components/ui/PullToRefresh';
 import { getSession } from '@/lib/auth/session';
 import { isAdmin } from '@/lib/auth/admin';
 
@@ -68,7 +68,7 @@ export default async function FeedPage() {
   }
 
   return (
-    <div>
+    <PullToRefresh>
       <Header title="PhotoKeep" />
 
       <div className="divide-y divide-border">
@@ -107,9 +107,6 @@ export default async function FeedPage() {
           );
         })}
       </div>
-
-      {/* 새 사진 확인용 플로팅 새로고침 버튼 */}
-      <RefreshButton />
-    </div>
+    </PullToRefresh>
   );
 }
