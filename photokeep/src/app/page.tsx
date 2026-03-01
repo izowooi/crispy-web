@@ -85,7 +85,7 @@ export default async function FeedPage() {
               <div className="px-4 pt-3">
                 <div className="flex items-start gap-1">
                   {post.content && (
-                    <p className="flex-1 text-sm leading-relaxed">
+                    <p className="flex-1 text-sm leading-relaxed whitespace-pre-line">
                       <span className="mr-1">{post.emoji}</span>
                       {post.content}
                     </p>
