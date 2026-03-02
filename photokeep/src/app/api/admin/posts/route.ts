@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     .from('posts')
     .insert({
       content: content || null,
-      emoji: emoji || '📷',
+      emoji: emoji || '',
       is_private: is_private ?? false,
       author_name: user.name,
       cover_photo_url: photos[0].url,

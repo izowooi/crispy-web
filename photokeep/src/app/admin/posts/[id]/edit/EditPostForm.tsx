@@ -40,7 +40,7 @@ export default function EditPostForm({ id }: { id: string }) {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
   const [content, setContent] = useState('');
-  const [emoji, setEmoji] = useState('📷');
+  const [emoji, setEmoji] = useState('');
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -60,11 +60,11 @@ export default function EditPostForm({ id }: { id: string }) {
       const post = data.post;
 
       setContent(post.content || '');
-      setEmoji(post.emoji || '📷');
+      setEmoji(post.emoji || '');
       setIsPrivate(post.is_private);
 
       // Check if emoji is custom
-      if (!EMOJI_OPTIONS.includes(post.emoji)) {
+      if (post.emoji && !EMOJI_OPTIONS.includes(post.emoji)) {
         setShowCustomEmoji(true);
         setCustomEmojiInput(post.emoji);
       }
@@ -283,6 +283,18 @@ export default function EditPostForm({ id }: { id: string }) {
       <div className="mt-4">
         <label className="mb-2 block text-sm font-medium">이모지</label>
         <div className="flex flex-wrap gap-2">
+          {/* 없음 버튼 */}
+          <button
+            type="button"
+            onClick={() => { setEmoji(''); setShowCustomEmoji(false); setCustomEmojiInput(''); }}
+            className={`flex h-11 w-11 items-center justify-center rounded-lg border text-xs transition-colors ${
+              emoji === '' && !showCustomEmoji
+                ? 'border-foreground bg-foreground/10'
+                : 'border-border hover:bg-foreground/5'
+            }`}
+          >
+            없음
+          </button>
           {EMOJI_OPTIONS.map((e) => (
             <button
               key={e}
@@ -381,7 +393,7 @@ export default function EditPostForm({ id }: { id: string }) {
         disabled={photos.length === 0 || saving}
         className="mt-4 w-full rounded-xl bg-foreground py-3 text-sm font-semibold text-background transition-opacity disabled:opacity-40"
       >
-        {saving ? '저장 중...' : `${emoji} 저장`}
+        {saving ? '저장 중...' : emoji ? `${emoji} 저장` : '저장'}
       </button>
     </div>
   );

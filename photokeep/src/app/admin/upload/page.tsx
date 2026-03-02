@@ -29,7 +29,7 @@ export default function UploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FilePreview[]>([]);
   const [content, setContent] = useState('');
-  const [emoji, setEmoji] = useState('📷');
+  const [emoji, setEmoji] = useState('');
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -185,6 +185,18 @@ export default function UploadPage() {
       <div className="mt-4">
         <label className="mb-2 block text-sm font-medium">이모지</label>
         <div className="flex flex-wrap gap-2">
+          {/* 없음 버튼 */}
+          <button
+            type="button"
+            onClick={() => { setEmoji(''); setShowCustomEmoji(false); setCustomEmojiInput(''); }}
+            className={`flex h-11 w-11 items-center justify-center rounded-lg border text-xs transition-colors ${
+              emoji === '' && !showCustomEmoji
+                ? 'border-foreground bg-foreground/10'
+                : 'border-border hover:bg-foreground/5'
+            }`}
+          >
+            없음
+          </button>
           {EMOJI_OPTIONS.map((e) => (
             <button
               key={e}
@@ -283,7 +295,7 @@ export default function UploadPage() {
         disabled={files.length === 0 || uploading}
         className="mt-4 w-full rounded-xl bg-foreground py-3 text-sm font-semibold text-background transition-opacity disabled:opacity-40"
       >
-        {uploading ? '업로드 중...' : `${emoji} 업로드`}
+        {uploading ? '업로드 중...' : emoji ? `${emoji} 업로드` : '업로드'}
       </button>
     </div>
   );
