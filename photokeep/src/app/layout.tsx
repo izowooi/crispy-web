@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PhotoKeep",
   description: "가족 사진 공유 갤러리",
+  manifest: "/manifest.json",
+  openGraph: {
+    title: "PhotoKeep",
+    description: "가족 사진 공유 갤러리",
+    siteName: "PhotoKeep",
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
