@@ -352,7 +352,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm bg-gray-900 border border-gray-700 rounded-2xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">awesome-cut</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">컷 메이커</h1>
           <p className="text-gray-400 text-sm">접근 암호를 입력해주세요</p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -569,7 +569,7 @@ export default function Page() {
     <main className="max-w-2xl mx-auto px-4 py-10">
       {/* 헤더 */}
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">awesome-cut</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">컷 메이커</h1>
         <p className="text-gray-400 text-sm">
           캐릭터 시트 + 스토리라인으로 3×3 시네마틱 시퀀스를 생성합니다
         </p>
