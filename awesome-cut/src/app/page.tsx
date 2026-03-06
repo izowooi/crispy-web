@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────
@@ -124,78 +124,192 @@ function CharacterSlot({
   );
 }
 
-// ─── 결과 이미지 카드 ───────────────────────────────────────────────────
+// ─── 결과 이미지 카드 (썸네일) ──────────────────────────────────────────
 
 function ResultCard({
   image,
   index,
-  selected,
-  isUpscaling,
-  upscaledImage,
-  onSelect,
-  onDownloadUpscaled,
+  isUpscaled,
+  onOpen,
 }: {
   image: GeneratedImage;
   index: number;
-  selected: boolean;
-  isUpscaling: boolean;
-  upscaledImage: GeneratedImage | null;
-  onSelect: () => void;
-  onDownloadUpscaled: () => void;
+  isUpscaled: boolean;
+  onOpen: () => void;
 }) {
   const src = `data:${image.mimeType};base64,${image.base64}`;
 
   return (
     <div
-      className={`relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer group
-        ${selected ? "border-indigo-400 ring-2 ring-indigo-400/50" : "border-gray-700 hover:border-gray-500"}`}
-      onClick={onSelect}
+      className="relative rounded-xl overflow-hidden border-2 border-gray-700 hover:border-indigo-500 transition-all cursor-pointer group"
+      onClick={onOpen}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={`생성 이미지 ${index + 1}`} className="w-full h-auto block" />
 
-      {/* 선택 오버레이 */}
-      <div className={`absolute inset-0 bg-indigo-500/10 transition-opacity ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
+      {/* 호버 오버레이 */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium bg-black/60 px-3 py-1.5 rounded-lg transition-opacity">
+          크게 보기
+        </span>
+      </div>
 
       {/* 번호 배지 */}
       <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
         #{index + 1}
       </div>
 
-      {/* 개별 다운로드 (1K) */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          const blob = base64ToBlob(image.base64, image.mimeType);
-          const ext = image.mimeType.split("/")[1] || "png";
-          downloadBlob(blob, `sequence_${index + 1}.${ext}`);
-        }}
-        className="absolute bottom-2 left-2 bg-black/70 hover:bg-gray-700 text-white text-xs px-2 py-1 rounded transition-colors opacity-0 group-hover:opacity-100"
-      >
-        1K 저장
-      </button>
-
-      {/* 업스케일 버튼 */}
-      {selected && (
-        <div className="absolute bottom-2 right-2">
-          {upscaledImage ? (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDownloadUpscaled(); }}
-              className="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors font-medium"
-            >
-              2K 다운로드
-            </button>
-          ) : (
-            <button
-              onClick={(e) => { e.stopPropagation(); onSelect(); }}
-              disabled={isUpscaling}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded-lg transition-colors font-medium"
-            >
-              {isUpscaling ? "업스케일 중..." : "2K 업스케일"}
-            </button>
-          )}
+      {/* 업스케일 완료 배지 */}
+      {isUpscaled && (
+        <div className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+          ✓ 2K
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── 라이트박스 컴포넌트 ─────────────────────────────────────────────────
+
+function Lightbox({
+  images,
+  currentIdx,
+  upscaledIdx,
+  upscaledImage,
+  isUpscaling,
+  onClose,
+  onNavigate,
+  onUpscale,
+  onDownloadUpscaled,
+}: {
+  images: GeneratedImage[];
+  currentIdx: number;
+  upscaledIdx: number | null;
+  upscaledImage: GeneratedImage | null;
+  isUpscaling: boolean;
+  onClose: () => void;
+  onNavigate: (idx: number) => void;
+  onUpscale: (idx: number) => void;
+  onDownloadUpscaled: () => void;
+}) {
+  const image = images[currentIdx];
+  const src = `data:${image.mimeType};base64,${image.base64}`;
+  const isThisUpscaled = upscaledIdx === currentIdx;
+  const isThisUpscaling = isUpscaling && upscaledIdx === currentIdx;
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && currentIdx > 0) onNavigate(currentIdx - 1);
+      if (e.key === "ArrowRight" && currentIdx < images.length - 1) onNavigate(currentIdx + 1);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [currentIdx, images.length, onClose, onNavigate]);
+
+  const download1K = () => {
+    const blob = base64ToBlob(image.base64, image.mimeType);
+    const ext = image.mimeType.split("/")[1] || "png";
+    downloadBlob(blob, `sequence_${currentIdx + 1}.${ext}`);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/92 flex flex-col items-center justify-center p-4"
+      onClick={onClose}
+    >
+      {/* 상단 바 */}
+      <div
+        className="w-full max-w-5xl flex items-center justify-between mb-3 flex-shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="text-gray-400 text-sm">
+          #{currentIdx + 1} / {images.length}
+          {isThisUpscaled && <span className="ml-2 text-green-400 text-xs font-medium">✓ 2K 업스케일 완료</span>}
+        </span>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* 이미지 영역 */}
+      <div className="relative w-full max-w-5xl flex items-center justify-center flex-1 min-h-0" onClick={(e) => e.stopPropagation()}>
+        {/* 이전 버튼 */}
+        <button
+          onClick={() => onNavigate(currentIdx - 1)}
+          disabled={currentIdx === 0}
+          className="absolute left-0 z-10 w-10 h-10 flex items-center justify-center bg-black/60 hover:bg-black/80 disabled:opacity-20 text-white rounded-full transition-colors"
+        >
+          ←
+        </button>
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={`생성 이미지 ${currentIdx + 1}`}
+          className="max-w-full max-h-full object-contain rounded-lg"
+          style={{ maxHeight: "calc(100vh - 180px)" }}
+        />
+
+        {/* 다음 버튼 */}
+        <button
+          onClick={() => onNavigate(currentIdx + 1)}
+          disabled={currentIdx === images.length - 1}
+          className="absolute right-0 z-10 w-10 h-10 flex items-center justify-center bg-black/60 hover:bg-black/80 disabled:opacity-20 text-white rounded-full transition-colors"
+        >
+          →
+        </button>
+      </div>
+
+      {/* 하단 액션 바 */}
+      <div
+        className="w-full max-w-5xl flex items-center justify-center gap-3 mt-4 flex-shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 인디케이터 점 */}
+        <div className="flex gap-1.5 mr-4">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => onNavigate(i)}
+              className={`w-2 h-2 rounded-full transition-colors ${i === currentIdx ? "bg-white" : "bg-gray-600 hover:bg-gray-400"}`}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={download1K}
+          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm rounded-lg transition-colors"
+        >
+          1K 저장
+        </button>
+
+        {isThisUpscaled && upscaledImage ? (
+          <button
+            onClick={onDownloadUpscaled}
+            className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            2K 다운로드
+          </button>
+        ) : isThisUpscaling ? (
+          <button disabled className="px-4 py-2 bg-indigo-800 text-indigo-300 text-sm rounded-lg opacity-70 flex items-center gap-2">
+            <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-indigo-300/30 border-t-indigo-300 rounded-full" />
+            업스케일 중...
+          </button>
+        ) : (
+          <button
+            onClick={() => onUpscale(currentIdx)}
+            disabled={isUpscaling || upscaledIdx !== null}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+            title={upscaledIdx !== null && !isThisUpscaled ? "다른 이미지가 이미 업스케일됐습니다" : ""}
+          >
+            2K 업스케일
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -209,7 +323,8 @@ export default function Page() {
   const [style, setStyle] = useState("realistic_cinematic");
   const [appState, setAppState] = useState<AppState>("idle");
   const [images, setImages] = useState<GeneratedImage[]>([]);
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [upscaledIdx, setUpscaledIdx] = useState<number | null>(null);
   const [upscaledImage, setUpscaledImage] = useState<GeneratedImage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -244,7 +359,8 @@ export default function Page() {
     setError(null);
     setAppState("generating");
     setImages([]);
-    setSelectedIdx(null);
+    setLightboxIdx(null);
+    setUpscaledIdx(null);
     setUpscaledImage(null);
 
     try {
@@ -281,6 +397,7 @@ export default function Page() {
     if (!img) return;
 
     setAppState("upscaling");
+    setUpscaledIdx(idx);
     setUpscaledImage(null);
 
     try {
@@ -324,20 +441,6 @@ export default function Page() {
     downloadBlob(blob, "upscaled_2k.png");
   };
 
-  // 이미지 카드 클릭 (선택 + 업스케일 트리거)
-  const handleSelectImage = (idx: number) => {
-    if (busy) return;
-    if (selectedIdx === idx) {
-      // 이미 선택된 경우 업스케일 실행 (업스케일 결과 없을 때)
-      if (!upscaledImage && !isUpscaling) {
-        handleUpscale(idx);
-      }
-      return;
-    }
-    setSelectedIdx(idx);
-    setUpscaledImage(null);
-  };
-
   // ZIP 다운로드
   const handleDownloadZip = async () => {
     if (images.length === 0) return;
@@ -354,7 +457,8 @@ export default function Page() {
   // 재생성
   const handleRegenerate = () => {
     setImages([]);
-    setSelectedIdx(null);
+    setLightboxIdx(null);
+    setUpscaledIdx(null);
     setUpscaledImage(null);
     setError(null);
     setAppState("idle");
@@ -491,7 +595,7 @@ export default function Page() {
           </div>
 
           <p className="text-xs text-gray-500 mb-4">
-            이미지를 클릭해서 선택 → 한 번 더 클릭하면 2K 업스케일이 시작됩니다.
+            이미지를 클릭하면 크게 볼 수 있습니다. 라이트박스에서 2K 업스케일을 진행하세요.
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -500,25 +604,15 @@ export default function Page() {
                 key={i}
                 image={img}
                 index={i}
-                selected={selectedIdx === i}
-                isUpscaling={isUpscaling && selectedIdx === i}
-                upscaledImage={selectedIdx === i ? upscaledImage : null}
-                onSelect={() => handleSelectImage(i)}
-                onDownloadUpscaled={handleDownloadUpscaled}
+                isUpscaled={upscaledIdx === i}
+                onOpen={() => setLightboxIdx(i)}
               />
             ))}
           </div>
 
-          {isUpscaling && (
-            <div className="mt-4 text-center text-sm text-indigo-400 flex items-center justify-center gap-2">
-              <span className="animate-spin inline-block w-4 h-4 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full" />
-              2K 업스케일 진행 중...
-            </div>
-          )}
-
           {upscaledImage && (
             <div className="mt-4 px-4 py-3 bg-green-950 border border-green-800 rounded-xl text-green-300 text-sm text-center">
-              2K 업스케일 완료! 이미지 위의 &ldquo;2K 다운로드&rdquo; 버튼을 눌러 저장하세요.
+              2K 업스케일 완료! 이미지를 클릭해서 라이트박스에서 &ldquo;2K 다운로드&rdquo;를 눌러 저장하세요.
             </div>
           )}
 
@@ -526,7 +620,8 @@ export default function Page() {
           <button
             onClick={() => {
               setImages([]);
-              setSelectedIdx(null);
+              setLightboxIdx(null);
+              setUpscaledIdx(null);
               setUpscaledImage(null);
               setAppState("idle");
               setError(null);
@@ -536,6 +631,21 @@ export default function Page() {
             처음으로 돌아가기 (캐릭터/스토리 수정)
           </button>
         </section>
+      )}
+
+      {/* 라이트박스 */}
+      {lightboxIdx !== null && images.length > 0 && (
+        <Lightbox
+          images={images}
+          currentIdx={lightboxIdx}
+          upscaledIdx={upscaledIdx}
+          upscaledImage={upscaledImage}
+          isUpscaling={isUpscaling}
+          onClose={() => setLightboxIdx(null)}
+          onNavigate={setLightboxIdx}
+          onUpscale={handleUpscale}
+          onDownloadUpscaled={handleDownloadUpscaled}
+        />
       )}
 
       {/* 푸터 */}
