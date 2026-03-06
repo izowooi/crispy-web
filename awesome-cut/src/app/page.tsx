@@ -256,8 +256,15 @@ export default function Page() {
       const res = await fetch("/api/generate", { method: "POST", body: formData });
       const data = await res.json();
 
+      console.log("[client] /api/generate 응답:", res.status, data);
+
       if (!res.ok) {
         throw new Error(data.error ?? "알 수 없는 오류");
+      }
+
+      if (data.errors?.length) {
+        console.warn("[client] 일부 이미지 생성 실패:", data.errors);
+        setError(`일부 이미지 생성 실패 (${data.images.length}/4장 성공): ${data.errors[0]}`);
       }
 
       setImages(data.images);
