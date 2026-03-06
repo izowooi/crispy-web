@@ -104,7 +104,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "캐릭터 시트를 최소 1장 업로드해주세요." }, { status: 400 });
     }
 
-    const stylePrompt = STYLE_PROMPTS[style] ?? STYLE_PROMPTS["realistic_cinematic"];
+    const customStyleText = formData.get("customStyleText") as string | null;
+    const stylePrompt =
+      style === "custom" && customStyleText?.trim()
+        ? customStyleText.trim()
+        : (STYLE_PROMPTS[style] ?? STYLE_PROMPTS["realistic_cinematic"]);
 
     const prompt = `Create a 3x3 ${stylePrompt} sequence as a single landscape image.
 The image must have 3 columns and 3 rows of cinematic panels showing a continuous story.
