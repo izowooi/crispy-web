@@ -112,12 +112,28 @@
 
 | 항목 | 내용 |
 |---|---|
-| 프레임워크 | Next.js (App Router) |
-| 언어 | TypeScript |
-| 스타일링 | Tailwind CSS v4 |
+| 프레임워크 | Next.js 16.x (App Router) |
+| 런타임 | Node.js 22.x LTS |
+| 언어 | TypeScript 5.x |
+| UI 라이브러리 | React 19.x |
+| 스타일링 | Tailwind CSS v4 + `@tailwindcss/postcss` |
+| CSS 진입점 | `@import "tailwindcss"` (globals.css) |
 | AI 모델 | Nano Banana 2 (`gemini-3.1-flash-image-preview`) |
-| AI SDK | `@google/genai` |
-| 환경변수 | `GEMINI_API_KEY` |
+| AI SDK | `@google/genai` v1.43.0+ |
+| 환경변수 | `GEMINI_API_KEY` (.env.local) |
+| 패키지 매니저 | npm |
+| 배포 | Cloudflare Pages |
+
+### 환경 설정
+
+`.env.local` 파일을 프로젝트 루트에 생성하고 아래 값을 설정한다.
+`.env.local.example`을 참고용으로 저장소에 포함한다.
+
+```
+GEMINI_API_KEY=your_api_key_here
+```
+
+API 키는 [Google AI Studio](https://aistudio.google.com)에서 발급받는다.
 
 ---
 
@@ -125,18 +141,24 @@
 
 ### POST `/api/generate`
 - **입력**: FormData
-  - `characters[]`: 캐릭터 시트 이미지 파일 (1~4장)
-  - `storyline`: 스토리라인 텍스트
+  - `characters[]`: 캐릭터 시트 이미지 파일 (1~4장, 각 최대 10MB, JPG/PNG/WebP)
+  - `storyline`: 스토리라인 텍스트 (최대 500자)
   - `style`: 스타일 ID (`realistic_cinematic` | `animated_cinematic` | `webtoon` | `watercolor` | `3d_cgi`)
   - `count`: 생성 수 (고정: `4`)
 - **출력**: JSON `{ images: [{ base64: string, mimeType: string }] }`
-- `maxDuration`: 120초 (4장 동시 생성 고려)
+- **구현**: `Promise.all`로 4장 병렬 호출
+- **출력 포맷**: PNG (Gemini 응답 기준)
+- `maxDuration`: 120초
 
 ### POST `/api/upscale`
 - **입력**: FormData
   - `image`: 업스케일 대상 이미지 파일
-- **출력**: 업스케일된 이미지 바이너리
+- **출력**: 업스케일된 이미지 바이너리 (PNG)
 - `maxDuration`: 60초
+
+### 클라이언트 UX 제약
+- 로딩 중 제출 버튼 비활성화 (중복 호출 방지)
+- 업스케일 진행 중 선택 버튼 비활성화
 
 ---
 
@@ -149,6 +171,18 @@
 - 최대 캐릭터 수: **4명**
 - 시퀀스 레이아웃: **3×3 고정**
 - AI 모델: **Nano Banana 2 고정** (사용자 변경 불가)
+
+---
+
+## 리스크 / 오픈 이슈
+
+| 항목 | 내용 | 대응 방안 |
+|---|---|---|
+| 가로 이미지 출력 보장 | Nano Banana 2가 landscape 출력을 항상 보장하지 않을 수 있음 | 프롬프트에 `landscape orientation` 명시 + 응답 검증 |
+| 4장 유사도 | 동일 프롬프트 병렬 호출 시 결과가 거의 같을 수 있음 | temperature/seed 파라미터로 다양성 유도 (지원 시) |
+| 2K 업스케일 방식 | Gemini 모델로 고해상도 재요청 vs 외부 업스케일러 미결정 | 초기 버전은 Gemini 동일 모델로 고해상도 프롬프트 재요청으로 구현 |
+| 안전 필터 차단 | 로맨스/격투 장면이 필터링될 수 있음 | 오류 메시지 안내 + 사용자에게 프롬프트 수정 유도 |
+| API 비용 | 4장 생성 + 업스케일은 호출당 비용 발생 | 업스케일 1장 제한으로 비용 통제 |
 
 ---
 
