@@ -603,7 +603,7 @@ export default function Page() {
           disabled={busy}
           maxLength={500}
           rows={4}
-          placeholder="예시: 바리스타이자 카페 사장인 남자주인공과 아르바이트생인 여자주인공 사이에 벌어지는 로맨스의 설레는 시작"
+          placeholder="예시: 게임 기획자 남자 주인공과 경찰관 여자 주인공이 이세계로 소환되면서 시작되는 설레이는 로맨스"
           className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-600 resize-none focus:outline-none focus:border-indigo-500 transition-colors text-sm disabled:opacity-50"
         />
         <div className="text-right text-xs text-gray-600 mt-1">{storyline.length}/500</div>
