@@ -7,6 +7,7 @@ import JSZip from "jszip";
 
 type GeneratedImage = { base64: string; mimeType: string };
 type AppState = "idle" | "generating" | "done" | "upscaling";
+type AuthState = "checking" | "locked" | "unlocked";
 
 // ─── 상수 ─────────────────────────────────────────────────────────────────
 
@@ -314,9 +315,91 @@ function Lightbox({
   );
 }
 
+// ─── 암호 입력 화면 ─────────────────────────────────────────────────────
+
+function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password.trim()) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        localStorage.setItem("awesomecut_pass", password);
+        onUnlock();
+      } else {
+        setError("암호가 틀렸습니다.");
+        setPassword("");
+      }
+    } catch {
+      setError("서버 연결 오류. 다시 시도해주세요.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm bg-gray-900 border border-gray-700 rounded-2xl p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-white mb-2">awesome-cut</h1>
+          <p className="text-gray-400 text-sm">접근 암호를 입력해주세요</p>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="암호 입력"
+            autoFocus
+            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
+          />
+          {error && (
+            <p className="text-red-400 text-xs text-center">{error}</p>
+          )}
+          <button
+            type="submit"
+            disabled={submitting || !password.trim()}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-semibold rounded-xl transition-colors"
+          >
+            {submitting ? "확인 중..." : "입장"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── 메인 페이지 ────────────────────────────────────────────────────────
 
 export default function Page() {
+  const [authState, setAuthState] = useState<AuthState>("checking");
+
+  // 마운트 시 캐시된 암호로 자동 인증 시도
+  useEffect(() => {
+    const stored = localStorage.getItem("awesomecut_pass");
+    if (!stored) {
+      setAuthState("locked");
+      return;
+    }
+    fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: stored }),
+    })
+      .then((res) => setAuthState(res.ok ? "unlocked" : "locked"))
+      .catch(() => setAuthState("locked"));
+  }, []);
+
   const [characters, setCharacters] = useState<(File | null)[]>([null, null, null, null]);
   const [previews, setPreviews] = useState<(string | null)[]>([null, null, null, null]);
   const [storyline, setStoryline] = useState("");
@@ -466,6 +549,18 @@ export default function Page() {
   };
 
   const characterCount = characters.filter(Boolean).length;
+
+  if (authState === "checking") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="animate-spin w-8 h-8 border-2 border-gray-600 border-t-indigo-400 rounded-full" />
+      </div>
+    );
+  }
+
+  if (authState === "locked") {
+    return <PasswordGate onUnlock={() => setAuthState("unlocked")} />;
+  }
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
