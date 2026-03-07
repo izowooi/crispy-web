@@ -12,11 +12,13 @@ export const metadata: Metadata = {
     siteName: "awesome-cut",
     locale: "ko_KR",
     type: "website",
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "컷 메이커 - awesome-cut",
     description: "캐릭터 시트와 스토리라인으로 3×3 시네마틱 시퀀스 이미지를 Nano Banana 2로 생성합니다",
+    images: ["/opengraph-image.png"],
   },
 };
 
