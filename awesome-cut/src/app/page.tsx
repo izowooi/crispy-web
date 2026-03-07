@@ -83,7 +83,7 @@ function CharacterSlot({
   return (
     <div
       className={`relative rounded-xl border-2 border-dashed transition-colors cursor-pointer aspect-[3/4] flex flex-col items-center justify-center overflow-hidden
-        ${dragging ? "border-indigo-400 bg-indigo-950" : preview ? "border-indigo-600 bg-gray-900" : "border-gray-700 bg-gray-900 hover:border-gray-500"}
+        ${dragging ? "border-indigo-400 bg-indigo-100/60 dark:bg-indigo-900/40" : preview ? "border-indigo-500 bg-white/80 dark:bg-slate-800/60" : "border-slate-300 bg-slate-100/60 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800/40 dark:hover:border-slate-500"}
         ${disabled ? "opacity-50 pointer-events-none" : ""}`}
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
@@ -112,12 +112,12 @@ function CharacterSlot({
           >
             ✕
           </button>
-          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-center text-xs py-1 text-gray-300">
+          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-center text-xs py-1 text-slate-200">
             캐릭터 {index + 1}
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center gap-2 text-gray-500 select-none">
+        <div className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500 select-none">
           <span className="text-3xl">+</span>
           <span className="text-xs text-center px-2">캐릭터 {index + 1}<br />드래그 또는 클릭</span>
         </div>
@@ -143,7 +143,7 @@ function ResultCard({
 
   return (
     <div
-      className="relative rounded-xl overflow-hidden border-2 border-gray-700 hover:border-indigo-500 transition-all cursor-pointer group"
+      className="relative rounded-xl overflow-hidden border-2 border-slate-300 hover:border-indigo-400 dark:border-slate-600 transition-all cursor-pointer group shadow-lg"
       onClick={onOpen}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -217,7 +217,7 @@ function Lightbox({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/92 flex flex-col items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-sm flex flex-col items-center justify-center p-4"
       onClick={onClose}
     >
       {/* 상단 바 */}
@@ -225,13 +225,13 @@ function Lightbox({
         className="w-full max-w-5xl flex items-center justify-between mb-3 flex-shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-gray-400 text-sm">
+        <span className="text-slate-300 text-sm">
           #{currentIdx + 1} / {images.length}
           {isThisUpscaled && <span className="ml-2 text-green-400 text-xs font-medium">✓ 2K 업스케일 완료</span>}
         </span>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+          className="text-slate-400 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
         >
           ✕
         </button>
@@ -277,14 +277,14 @@ function Lightbox({
             <button
               key={i}
               onClick={() => onNavigate(i)}
-              className={`w-2 h-2 rounded-full transition-colors ${i === currentIdx ? "bg-white" : "bg-gray-600 hover:bg-gray-400"}`}
+              className={`w-2 h-2 rounded-full transition-colors ${i === currentIdx ? "bg-white" : "bg-slate-600 hover:bg-slate-400"}`}
             />
           ))}
         </div>
 
         <button
           onClick={download1K}
-          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm rounded-lg transition-colors"
         >
           1K 저장
         </button>
@@ -305,7 +305,7 @@ function Lightbox({
           <button
             onClick={() => onUpscale(currentIdx)}
             disabled={isUpscaling || upscaledIdx !== null}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors"
             title={upscaledIdx !== null && !isThisUpscaled ? "다른 이미지가 이미 업스케일됐습니다" : ""}
           >
             2K 업스케일
@@ -350,10 +350,10 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm bg-gray-900 border border-gray-700 rounded-2xl p-8">
+      <div className="w-full max-w-sm bg-white/90 border border-slate-200 dark:bg-slate-800/80 dark:border-slate-600 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">컷 메이커</h1>
-          <p className="text-gray-400 text-sm">접근 암호를 입력해주세요</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">컷 메이커</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">접근 암호를 입력해주세요</p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
@@ -362,7 +362,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="암호 입력"
             autoFocus
-            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
+            className="w-full bg-slate-50 border border-slate-300 text-slate-800 placeholder-slate-400 dark:bg-slate-700/60 dark:border-slate-500 dark:text-slate-100 dark:placeholder-slate-500 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-400 transition-colors text-sm"
           />
           {error && (
             <p className="text-red-400 text-xs text-center">{error}</p>
@@ -370,7 +370,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
           <button
             type="submit"
             disabled={submitting || !password.trim()}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-semibold rounded-xl transition-colors"
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-slate-700 dark:disabled:text-slate-500 text-white font-semibold rounded-xl transition-colors"
           >
             {submitting ? "확인 중..." : "입장"}
           </button>
@@ -384,6 +384,29 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
 
 export default function Page() {
   const [authState, setAuthState] = useState<AuthState>("checking");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme") as "dark" | "light" | null;
+    const t = stored ?? "dark";
+    setTheme(t);
+    if (t === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("theme", next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   // 마운트 시 캐시된 암호로 자동 인증 시도
   useEffect(() => {
@@ -556,7 +579,7 @@ export default function Page() {
   if (authState === "checking") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="animate-spin w-8 h-8 border-2 border-gray-600 border-t-indigo-400 rounded-full" />
+        <span className="animate-spin w-8 h-8 border-2 border-slate-700 border-t-indigo-400 rounded-full" />
       </div>
     );
   }
@@ -568,17 +591,32 @@ export default function Page() {
   return (
     <main className="max-w-2xl mx-auto px-4 py-10">
       {/* 헤더 */}
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">컷 메이커</h1>
-        <p className="text-gray-400 text-sm">
+      <div className="mb-10 relative text-center">
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-slate-800 to-indigo-600 dark:from-white dark:to-indigo-200 bg-clip-text text-transparent">컷 메이커</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">
           캐릭터 시트 + 스토리라인으로 3×3 시네마틱 시퀀스를 생성합니다
         </p>
+        <button
+          onClick={toggleTheme}
+          className="absolute top-0 right-0 p-2 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
+          title={theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"}
+        >
+          {theme === "dark" ? (
+            <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.166 17.834a.75.75 0 0 0-1.06 1.06l1.59 1.591a.75.75 0 1 0 1.061-1.06l-1.59-1.591ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.166 6.166a.75.75 0 0 0 1.06 1.06l1.59-1.59a.75.75 0 1 0-1.06-1.061L6.166 6.166Z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
+              <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* 1. 캐릭터 슬롯 */}
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          캐릭터 시트 <span className="text-gray-600 normal-case font-normal">({characterCount}/{MAX_CHARACTERS})</span>
+        <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-3">
+          캐릭터 시트 <span className="text-slate-400 dark:text-slate-500 normal-case font-normal">({characterCount}/{MAX_CHARACTERS})</span>
         </h2>
         <div className="grid grid-cols-4 gap-3">
           {Array.from({ length: MAX_CHARACTERS }, (_, i) => (
@@ -597,7 +635,7 @@ export default function Page() {
 
       {/* 2. 스토리라인 */}
       <section className="mb-6">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+        <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-3">
           스토리라인
         </h2>
         <textarea
@@ -607,14 +645,14 @@ export default function Page() {
           maxLength={500}
           rows={4}
           placeholder="예시: 게임 기획자 남자 주인공과 경찰관 여자 주인공이 이세계로 소환되면서 시작되는 설레이는 로맨스"
-          className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 placeholder-gray-600 resize-none focus:outline-none focus:border-indigo-500 transition-colors text-sm disabled:opacity-50"
+          className="w-full bg-white border border-slate-300 text-slate-800 placeholder-slate-400 dark:bg-slate-800/60 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-500 rounded-xl px-4 py-3 resize-none focus:outline-none focus:border-indigo-400 transition-colors text-sm disabled:opacity-50"
         />
-        <div className="text-right text-xs text-gray-600 mt-1">{storyline.length}/500</div>
+        <div className="text-right text-xs text-slate-400 dark:text-slate-500 mt-1">{storyline.length}/500</div>
       </section>
 
       {/* 3. 스타일 선택 */}
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+        <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-3">
           시네마틱 스타일
         </h2>
         <div className="flex flex-col gap-2">
@@ -622,7 +660,7 @@ export default function Page() {
             <div key={s.id}>
               <label
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-colors
-                  ${style === s.id ? "border-indigo-500 bg-indigo-950/50" : "border-gray-700 bg-gray-900 hover:border-gray-500"}
+                  ${style === s.id ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/60" : "border-slate-200 bg-slate-50 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800/50 dark:hover:border-slate-500"}
                   ${busy ? "opacity-50 pointer-events-none" : ""}`}
               >
                 <input
@@ -634,8 +672,8 @@ export default function Page() {
                   className="accent-indigo-500"
                 />
                 <div>
-                  <div className="text-sm font-medium text-gray-100">{s.label}</div>
-                  <div className="text-xs text-gray-500">{s.desc}</div>
+                  <div className="text-sm font-medium text-slate-800 dark:text-slate-100">{s.label}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{s.desc}</div>
                 </div>
               </label>
               {s.id === "custom" && style === "custom" && (
@@ -646,7 +684,7 @@ export default function Page() {
                     onChange={(e) => setCustomStyle(e.target.value)}
                     disabled={busy}
                     placeholder="예: noir film style, Studio Ghibli animation, oil painting..."
-                    className="w-full bg-gray-800 border border-gray-600 focus:border-indigo-500 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none transition-colors disabled:opacity-50"
+                    className="w-full bg-white border border-slate-300 text-slate-800 placeholder-slate-400 dark:bg-slate-700/60 dark:border-slate-500 dark:text-slate-100 dark:placeholder-slate-500 focus:border-indigo-400 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50"
                   />
                   {!customStyle.trim() && (
                     <p className="text-xs text-amber-500 mt-1">스타일을 입력해야 생성할 수 있습니다.</p>
@@ -660,7 +698,7 @@ export default function Page() {
 
       {/* 오류 메시지 */}
       {error && (
-        <div className="mb-6 px-4 py-3 bg-red-950 border border-red-800 rounded-xl text-red-300 text-sm">
+        <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-600 dark:bg-red-950 dark:border-red-800 dark:text-red-300 rounded-xl text-sm">
           {error}
         </div>
       )}
@@ -670,7 +708,7 @@ export default function Page() {
         <button
           onClick={handleGenerate}
           disabled={busy || characterCount === 0 || !storyline.trim() || (style === "custom" && !customStyle.trim())}
-          className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-semibold rounded-xl transition-colors text-base"
+          className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 dark:disabled:from-slate-700 dark:disabled:to-slate-700 dark:disabled:text-slate-500 text-white font-semibold rounded-xl transition-all text-base shadow-lg shadow-indigo-900/40"
         >
           {isGenerating ? (
             <span className="flex items-center justify-center gap-2">
@@ -687,28 +725,28 @@ export default function Page() {
       {images.length > 0 && (
         <section className="mt-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               생성 결과
             </h2>
             <div className="flex gap-2">
               <button
                 onClick={handleDownloadZip}
                 disabled={busy}
-                className="text-xs px-3 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 rounded-lg transition-colors"
+                className="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:opacity-50 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
               >
                 ZIP 다운로드
               </button>
               <button
                 onClick={handleRegenerate}
                 disabled={busy}
-                className="text-xs px-3 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 rounded-lg transition-colors"
+                className="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:opacity-50 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
               >
                 재생성
               </button>
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
             이미지를 클릭하면 크게 볼 수 있습니다. 라이트박스에서 2K 업스케일을 진행하세요.
           </p>
 
@@ -725,7 +763,7 @@ export default function Page() {
           </div>
 
           {upscaledImage && (
-            <div className="mt-4 px-4 py-3 bg-green-950 border border-green-800 rounded-xl text-green-300 text-sm text-center">
+            <div className="mt-4 px-4 py-3 bg-green-50 border border-green-200 text-green-700 dark:bg-green-950 dark:border-green-800 dark:text-green-300 rounded-xl text-sm text-center">
               2K 업스케일 완료! 이미지를 클릭해서 라이트박스에서 &ldquo;2K 다운로드&rdquo;를 눌러 저장하세요.
             </div>
           )}
@@ -740,7 +778,7 @@ export default function Page() {
               setAppState("idle");
               setError(null);
             }}
-            className="mt-6 w-full py-3 border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-gray-200 rounded-xl transition-colors text-sm"
+            className="mt-6 w-full py-3 border border-slate-300 hover:border-slate-400 text-slate-500 hover:text-slate-700 dark:border-slate-600 dark:hover:border-slate-500 dark:text-slate-400 dark:hover:text-slate-200 rounded-xl transition-colors text-sm"
           >
             처음으로 돌아가기 (캐릭터/스토리 수정)
           </button>
@@ -763,7 +801,7 @@ export default function Page() {
       )}
 
       {/* 푸터 */}
-      <footer className="mt-16 text-center text-xs text-gray-700">
+      <footer className="mt-16 text-center text-xs text-slate-400 dark:text-slate-600">
         Powered by Nano Banana 2 (Gemini 3.1 Flash Image)
       </footer>
     </main>
