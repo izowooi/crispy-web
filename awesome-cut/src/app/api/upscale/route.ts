@@ -1,7 +1,24 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge';
 export const maxDuration = 60;
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = await imageFile.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
+    const base64 = arrayBufferToBase64(bytes);
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -77,10 +94,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg }, { status: 500 });
     }
 
-    const imageBuffer = Buffer.from(imagePart.inlineData.data!, "base64");
-    console.log(`[upscale] success: ${imageBuffer.length} bytes`);
+    const imageBuffer = base64ToUint8Array(imagePart.inlineData.data!);
+    console.log(`[upscale] success: ${imageBuffer.byteLength} bytes`);
 
-    return new Response(imageBuffer, {
+    return new Response(imageBuffer.buffer as ArrayBuffer, {
       headers: {
         "Content-Type": imagePart.inlineData.mimeType!,
         "Content-Disposition": "attachment; filename=upscaled_2k.png",

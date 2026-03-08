@@ -1,7 +1,17 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge';
 export const maxDuration = 120;
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+  return btoa(binary);
+}
 
 const STYLE_PROMPTS: Record<string, string> = {
   realistic_cinematic: "photorealistic cinematic",
@@ -120,7 +130,7 @@ Output as a single wide landscape image (wider than tall) with clear panel divis
     const characterParts = await Promise.all(
       characterFiles.map(async (file) => {
         const bytes = await file.arrayBuffer();
-        const base64 = Buffer.from(bytes).toString("base64");
+        const base64 = arrayBufferToBase64(bytes);
         return {
           inlineData: {
             mimeType: file.type,
