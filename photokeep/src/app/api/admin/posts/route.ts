@@ -33,11 +33,13 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { content, emoji, is_private, photos } = body as {
+  const { content, emoji, is_private, photos, category_id, subcategory_id } = body as {
     content: string;
     emoji: string;
     is_private: boolean;
     photos: { url: string; width: number; height: number; sort_order: number }[];
+    category_id?: string | null;
+    subcategory_id?: string | null;
   };
 
   if (!photos || photos.length === 0) {
@@ -53,6 +55,8 @@ export async function POST(request: NextRequest) {
       is_private: is_private ?? false,
       author_name: user.name,
       cover_photo_url: photos[0].url,
+      category_id: category_id || null,
+      subcategory_id: subcategory_id || null,
     })
     .select('id')
     .single();

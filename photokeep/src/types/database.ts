@@ -1,3 +1,16 @@
+export interface Category {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface SubCategory {
+  id: string;
+  category_id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Post {
   id: string;
   content: string | null;
@@ -6,6 +19,8 @@ export interface Post {
   author_name: string;
   sort_order: number;
   cover_photo_url: string | null;
+  category_id: string | null;
+  subcategory_id: string | null;
   created_at: string;
   updated_at: string;
 }

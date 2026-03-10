@@ -41,7 +41,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { content, emoji, is_private, sort_order, added_photos, removed_photo_ids, photo_order } = body as {
+  const { content, emoji, is_private, sort_order, added_photos, removed_photo_ids, photo_order, category_id, subcategory_id } = body as {
     content?: string;
     emoji?: string;
     is_private?: boolean;
@@ -49,6 +49,8 @@ export async function PATCH(
     added_photos?: { url: string; width: number; height: number; sort_order: number }[];
     removed_photo_ids?: string[];
     photo_order?: { id: string; sort_order: number }[];
+    category_id?: string | null;
+    subcategory_id?: string | null;
   };
 
   // Update post fields
@@ -57,6 +59,8 @@ export async function PATCH(
   if (emoji !== undefined) updates.emoji = emoji;
   if (is_private !== undefined) updates.is_private = is_private;
   if (sort_order !== undefined) updates.sort_order = sort_order;
+  if (category_id !== undefined) updates.category_id = category_id || null;
+  if (subcategory_id !== undefined) updates.subcategory_id = subcategory_id || null;
 
   if (Object.keys(updates).length > 0) {
     const { error: postError } = await supabaseAdmin
