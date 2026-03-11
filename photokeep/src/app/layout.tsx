@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import BottomTabBar from "@/components/ui/BottomTabBar";
 import SettingsButton from "@/components/ui/SettingsButton";
-import ServiceWorkerRegistration from "@/components/ui/ServiceWorkerRegistration";
-import PwaInstallBanner from "@/components/ui/PwaInstallBanner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,12 +17,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PhotoKeep",
   description: "가족 사진 공유 갤러리",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "PhotoKeep",
-  },
   icons: {
     apple: "/icons/icon-192x192.png",
   },
@@ -37,9 +29,9 @@ export const metadata: Metadata = {
     url: process.env.NEXT_PUBLIC_BASE_URL ?? "https://photokeep.pages.dev",
     images: [
       {
-        url: "/icons/icon-512x512.png",
-        width: 512,
-        height: 512,
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
         alt: "PhotoKeep - 가족 사진 공유 갤러리",
       },
     ],
@@ -48,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PhotoKeep",
     description: "가족 사진 공유 갤러리",
-    images: ["/icons/icon-512x512.png"],
+    images: ["/opengraph-image.png"],
   },
 };
 
@@ -82,8 +74,6 @@ export default function RootLayout({
           </main>
           <BottomTabBar />
           <SettingsButton />
-          <PwaInstallBanner />
-          <ServiceWorkerRegistration />
         </div>
       </body>
     </html>
