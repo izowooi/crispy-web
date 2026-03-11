@@ -37,9 +37,9 @@ export const metadata: Metadata = {
     url: process.env.NEXT_PUBLIC_BASE_URL ?? "https://photokeep.pages.dev",
     images: [
       {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
+        url: "/icons/icon-512x512.png",
+        width: 512,
+        height: 512,
         alt: "PhotoKeep - 가족 사진 공유 갤러리",
       },
     ],
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PhotoKeep",
     description: "가족 사진 공유 갤러리",
-    images: ["/opengraph-image"],
+    images: ["/icons/icon-512x512.png"],
   },
 };
 
