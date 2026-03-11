@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Photo } from '@/types/database';
-import CategorySelector from '@/components/ui/CategorySelector';
 
 const EMOJI_OPTIONS = ['📷', '🌸', '👨‍👩‍👧‍👦', '🎂', '🌳', '☀️', '❤️', '🎉', '✨', '🏠'];
 
@@ -45,8 +44,6 @@ export default function EditPostForm({ id }: { id: string }) {
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [subcategoryId, setSubcategoryId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -65,9 +62,6 @@ export default function EditPostForm({ id }: { id: string }) {
       setContent(post.content || '');
       setEmoji(post.emoji || '');
       setIsPrivate(post.is_private);
-      setCategoryId(post.category_id ?? null);
-      setSubcategoryId(post.subcategory_id ?? null);
-
       // Check if emoji is custom
       if (post.emoji && !EMOJI_OPTIONS.includes(post.emoji)) {
         setShowCustomEmoji(true);
@@ -193,8 +187,6 @@ export default function EditPostForm({ id }: { id: string }) {
           content,
           emoji,
           is_private: isPrivate,
-          category_id: categoryId,
-          subcategory_id: subcategoryId,
           removed_photo_ids: removedPhotoIds,
           added_photos,
           photo_order,
@@ -380,18 +372,6 @@ export default function EditPostForm({ id }: { id: string }) {
             }`}
           />
         </button>
-      </div>
-
-      {/* Category selection */}
-      <div className="mt-4 rounded-xl border border-border px-4 py-3">
-        <CategorySelector
-          categoryId={categoryId}
-          subcategoryId={subcategoryId}
-          onCategoryChange={(cId, sId) => {
-            setCategoryId(cId);
-            setSubcategoryId(sId);
-          }}
-        />
       </div>
 
       {/* Content input */}
