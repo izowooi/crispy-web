@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import CategorySelector from '@/components/ui/CategorySelector';
 
 const EMOJI_OPTIONS = ['📷', '🌸', '👨‍👩‍👧‍👦', '🎂', '🌳', '☀️', '❤️', '🎉', '✨', '🏠'];
 
@@ -33,6 +34,8 @@ export default function UploadPage() {
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [subcategoryId, setSubcategoryId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
@@ -105,6 +108,8 @@ export default function UploadPage() {
           content,
           emoji,
           is_private: isPrivate,
+          category_id: categoryId,
+          subcategory_id: subcategoryId,
           photos: presigned.map((p: { publicUrl: string }, i: number) => ({
             url: p.publicUrl,
             width: files[i].width,
@@ -253,6 +258,12 @@ export default function UploadPage() {
           </div>
         )}
       </div>
+
+      <CategorySelector
+        categoryId={categoryId}
+        subcategoryId={subcategoryId}
+        onChange={(cat, sub) => { setCategoryId(cat); setSubcategoryId(sub); }}
+      />
 
       {/* Public/Private toggle */}
       <div className="mt-4 flex items-center justify-between rounded-xl border border-border px-4 py-3">
