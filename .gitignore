@@ -39,3 +39,5 @@ clipplay/docs/metadata.json
 podplay/firebase-debug.log
 landing/firebase-debug.log
 /landing/.claude
+/timenuts/.next
+/timenuts/node_modules
