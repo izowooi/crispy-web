@@ -101,7 +101,12 @@ export default function AdminClipsPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-foreground truncate">{clip.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-foreground truncate">{clip.title}</h3>
+                    {clip.isPublic === false && (
+                      <span className="shrink-0 text-xs px-2 py-0.5 bg-foreground/10 text-foreground/50 rounded">🔒 비공개</span>
+                    )}
+                  </div>
                   <p className="text-sm text-foreground/60 truncate">{clip.description}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-foreground/50">
                     <span>{formatDuration(clip.duration)}</span>

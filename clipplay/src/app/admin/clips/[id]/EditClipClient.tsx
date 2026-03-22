@@ -40,6 +40,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
     emoji: '🎬',
     duration: 0,
     filmingDate: '',
+    isPublic: true,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
         emoji: clip.emoji,
         duration: clip.duration,
         filmingDate: clip.filmingDate || '',
+        isPublic: clip.isPublic ?? true,
       });
     }
   }, [clip]);
@@ -120,6 +122,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
         description: formData.description.trim(),
         emoji: formData.emoji,
         duration: formData.duration,
+        isPublic: formData.isPublic,
         updatedAt: new Date().toISOString(),
       };
 
@@ -354,6 +357,32 @@ export function EditClipClient({ id }: EditClipClientProps) {
             <p className="mt-2 text-xs text-foreground/40">
               동영상을 촬영한 날짜입니다. 추억 모음 기능에서 사용됩니다.
             </p>
+          </div>
+
+          {/* Visibility */}
+          <div className="bg-card-bg border border-card-border rounded-2xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{formData.isPublic ? '🌍' : '🔒'}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {formData.isPublic ? '공개' : '비공개'}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-foreground/50">
+                  {formData.isPublic ? '모든 방문자에게 피드에 표시됩니다.' : '관리자만 볼 수 있습니다.'}
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isPublic}
+                  onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-card-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
           </div>
 
           {/* Thumbnail */}

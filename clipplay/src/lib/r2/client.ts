@@ -37,6 +37,9 @@ export function parseMetadata(jsonString: string): Metadata {
  */
 export function filterClips(clips: Clip[], searchQuery: string): Clip[] {
   return clips.filter((clip) => {
+    // Hide private clips (undefined/true = public)
+    if (clip.isPublic === false) return false;
+
     // Search filter (case-insensitive, title only)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();

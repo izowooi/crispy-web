@@ -17,6 +17,7 @@ interface MetadataRequest {
   filmingDate?: string;
   thumbnailKey?: string;
   thumbnailTimestamp?: number;
+  isPublic?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
       filmingDate,
       thumbnailKey,
       thumbnailTimestamp,
+      isPublic = true,
     } = body;
 
     // Validate required fields
@@ -63,6 +65,7 @@ export async function POST(request: NextRequest) {
       filmingDate: filmingDate || undefined,
       thumbnailKey: thumbnailKey || undefined,
       thumbnailTimestamp: thumbnailTimestamp || undefined,
+      isPublic,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

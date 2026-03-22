@@ -10,6 +10,7 @@ export interface Clip {
   thumbnailKey?: string; // thumbnails/uuid.jpg (optional)
   thumbnailTimestamp?: number; // timestamp in seconds where thumbnail was captured
   filmingDate?: string; // ISO 8601 date (e.g., "2024-12-25") - when the video was filmed
+  isPublic?: boolean; // undefined/true = public, false = private
   createdAt: string; // ISO 8601
   updatedAt: string; // ISO 8601
 }

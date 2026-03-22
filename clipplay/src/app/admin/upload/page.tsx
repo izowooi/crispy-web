@@ -48,6 +48,8 @@ export default function AdminUploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const [isPublic, setIsPublic] = useState(true);
+
   // Thumbnail states
   const [thumbnailMode, setThumbnailMode] = useState<'capture' | 'upload'>('capture');
   const [thumbnailTime, setThumbnailTime] = useState(1);
@@ -292,6 +294,7 @@ export default function AdminUploadPage() {
           filmingDate: filmingDate || undefined,
           thumbnailKey: thumbnailBlob ? thumbnailKey : undefined,
           thumbnailTimestamp: thumbnailBlob ? thumbnailTime : undefined,
+          isPublic,
         }),
       });
 
@@ -314,6 +317,7 @@ export default function AdminUploadPage() {
       setThumbnailBlob(null);
       setThumbnailPreview(null);
       setThumbnailTime(1);
+      setIsPublic(true);
       if (videoUrl) {
         URL.revokeObjectURL(videoUrl);
         setVideoUrl(null);
@@ -382,6 +386,32 @@ export default function AdminUploadPage() {
             <p className="mt-2 text-xs text-foreground/40">
               최대 {maxFileSizeMB}MB, MP4 권장 (세로 동영상)
             </p>
+          </div>
+
+          {/* Visibility Toggle */}
+          <div className="bg-card-bg border border-card-border rounded-2xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{isPublic ? '🌍' : '🔒'}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {isPublic ? '공개' : '비공개'}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-foreground/50">
+                  {isPublic ? '모든 방문자에게 피드에 표시됩니다.' : '관리자만 볼 수 있습니다.'}
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-card-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
           </div>
 
           {/* Video Preview & Thumbnail Capture */}
