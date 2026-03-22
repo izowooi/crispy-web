@@ -7,6 +7,9 @@ import Link from 'next/link';
 
 const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
 
+// How many clips ahead/behind to keep src loaded
+const SRC_LOAD_WINDOW = 2;
+
 interface VerticalSwipeFeedProps {
   clips: Clip[];
   initialIndex?: number;
@@ -17,6 +20,9 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [videoStates, setVideoStates] = useState<{ hasSrc: boolean; readyState: number; networkState: number; paused: boolean }[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const touchStartY = useRef(0);
@@ -24,14 +30,20 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
 
   const currentClip = clips[currentIndex];
 
+  const addDebugLog = useCallback((msg: string) => {
+    const timestamp = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+    const line = `${timestamp} ${msg}`;
+    console.log(`[Feed] ${line}`);
+    setDebugLogs((prev) => [line, ...prev].slice(0, 30));
+  }, []);
+
   // Handle video play/pause
   const togglePlay = useCallback(() => {
     const video = videoRefs.current[currentIndex];
     if (!video) return;
 
     if (video.paused) {
-      video.play();
-      setIsPlaying(true);
+      video.play().then(() => setIsPlaying(true)).catch(() => {});
     } else {
       video.pause();
       setIsPlaying(false);
@@ -51,22 +63,26 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
   const goToClip = useCallback((index: number) => {
     if (index < 0 || index >= clips.length) return;
 
-    // Pause current video
-    const currentVideo = videoRefs.current[currentIndex];
-    if (currentVideo) {
-      currentVideo.pause();
-      currentVideo.currentTime = 0;
-    }
+    // Pause ALL videos (not just current)
+    videoRefs.current.forEach((video, i) => {
+      if (!video) return;
+      if (!video.paused) {
+        video.pause();
+      }
+      if (i !== index) {
+        video.currentTime = 0;
+      }
+    });
 
     setCurrentIndex(index);
     setProgress(0);
     setIsPlaying(false);
-  }, [clips.length, currentIndex]);
+  }, [clips.length]);
 
   // Touch handlers for swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
-    touchEndY.current = e.touches[0].clientY;  // 탭 시 diff=0 보장
+    touchEndY.current = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -78,10 +94,8 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
     const threshold = 50;
 
     if (diff > threshold) {
-      // Swipe up - next clip
       goToClip(currentIndex + 1);
     } else if (diff < -threshold) {
-      // Swipe down - previous clip
       goToClip(currentIndex - 1);
     }
   };
@@ -105,19 +119,55 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
     }
   }, [handleWheel]);
 
-  // Auto-play current video
+  // Snapshot video element states for the debug panel (called after src changes)
+  const snapshotVideoStates = useCallback(() => {
+    setVideoStates(
+      videoRefs.current.map((video) =>
+        video
+          ? { hasSrc: video.hasAttribute('src'), readyState: video.readyState, networkState: video.networkState, paused: video.paused }
+          : { hasSrc: false, readyState: 0, networkState: 0, paused: true }
+      )
+    );
+  }, []);
+
+  // [Fix] Manage src loading window — releases decoder resources for distant clips
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (!video || !clips[i]) return;
+      const inWindow = Math.abs(i - currentIndex) <= SRC_LOAD_WINDOW;
+      const clipSrc = getVideoUrl(R2_PUBLIC_URL, clips[i].fileKey);
+
+      if (inWindow) {
+        if (!video.hasAttribute('src')) {
+          video.src = clipSrc;
+          video.load();
+          addDebugLog(`[${i}] src set & load()`);
+        }
+      } else {
+        if (video.hasAttribute('src')) {
+          video.pause();
+          video.removeAttribute('src');
+          video.load(); // Releases media decoder
+          addDebugLog(`[${i}] src released`);
+        }
+      }
+    });
+    snapshotVideoStates();
+  }, [currentIndex, clips, addDebugLog, snapshotVideoStates]);
+
+  // Auto-play current video (runs after src management effect above)
   useEffect(() => {
     const video = videoRefs.current[currentIndex];
-    if (video) {
-      video.muted = isMuted;
-      video.play().then(() => {
-        setIsPlaying(true);
-      }).catch(() => {
-        // Autoplay blocked, stay paused
-        setIsPlaying(false);
-      });
-    }
-  }, [currentIndex, isMuted]);
+    if (!video) return;
+    video.muted = isMuted;
+    video.play().then(() => {
+      setIsPlaying(true);
+      addDebugLog(`[${currentIndex}] play() ok`);
+    }).catch((err) => {
+      setIsPlaying(false);
+      addDebugLog(`[${currentIndex}] play() blocked: ${err.message}`);
+    });
+  }, [currentIndex, isMuted, addDebugLog]);
 
   // Update progress
   useEffect(() => {
@@ -132,8 +182,6 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
 
     const handleEnded = () => {
       setIsPlaying(false);
-      // Optionally auto-advance to next clip
-      // goToClip(currentIndex + 1);
     };
 
     video.addEventListener('timeupdate', handleTimeUpdate);
@@ -186,15 +234,30 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
             key={clip.id}
             className="h-screen w-full flex items-center justify-center relative"
           >
+            {/* src is managed imperatively via refs — not set here to avoid React/DOM conflicts */}
             <video
               ref={(el) => { videoRefs.current[index] = el; }}
-              src={getVideoUrl(R2_PUBLIC_URL, clip.fileKey)}
               className="max-h-full max-w-full object-contain"
               playsInline
               loop
               muted={isMuted}
-              preload={Math.abs(index - currentIndex) <= 1 ? 'auto' : 'none'}
+              preload="auto"
               onClick={togglePlay}
+              onError={() => {
+                const video = videoRefs.current[index];
+                const errCode = video?.error?.code;
+                const errMsg = video?.error?.message ?? 'unknown';
+                addDebugLog(`[${index}] error code=${errCode} ${errMsg}`);
+                // Retry: reassign src and reload
+                if (video) {
+                  const clipSrc = getVideoUrl(R2_PUBLIC_URL, clip.fileKey);
+                  video.src = clipSrc;
+                  video.load();
+                  if (index === currentIndex) {
+                    video.play().catch(() => {});
+                  }
+                }
+              }}
             />
 
             {/* Overlay info */}
@@ -245,7 +308,7 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
                     )}
                   </button>
 
-                  {/* Share / Link to detail */}
+                  {/* Link to detail */}
                   <Link
                     href={`/clip/${clip.id}`}
                     className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center"
@@ -254,6 +317,17 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
                   </Link>
+
+                  {/* Debug toggle */}
+                  <button
+                    onClick={() => setShowDebug((v) => !v)}
+                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center"
+                    title="디버그 패널"
+                  >
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </button>
                 </div>
 
                 {/* Play/Pause indicator */}
@@ -293,6 +367,34 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
           <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
+        </div>
+      )}
+
+      {/* Debug panel */}
+      {showDebug && (
+        <div className="absolute bottom-0 left-0 w-80 max-h-64 bg-black/80 text-white text-xs font-mono overflow-hidden flex flex-col rounded-tr-lg">
+          <div className="flex items-center justify-between px-2 py-1 bg-white/10 shrink-0">
+            <span>디버그 — 클립 {currentIndex + 1}/{clips.length}</span>
+            <button onClick={() => setDebugLogs([])} className="text-white/50 hover:text-white">지우기</button>
+          </div>
+          {/* Video states */}
+          <div className="px-2 py-1 border-b border-white/10 shrink-0">
+            {videoStates.map((state, i) => {
+              const dist = Math.abs(i - currentIndex);
+              if (dist > SRC_LOAD_WINDOW + 1) return null;
+              return (
+                <div key={i} className={`${i === currentIndex ? 'text-yellow-300' : 'text-white/60'}`}>
+                  [{i}] src={state.hasSrc ? '✓' : '✗'} ready={state.readyState} net={state.networkState} {state.paused ? '⏸' : '▶'}
+                </div>
+              );
+            })}
+          </div>
+          {/* Logs */}
+          <div className="overflow-y-auto flex-1 px-2 py-1 space-y-0.5">
+            {debugLogs.map((log, i) => (
+              <div key={i} className="text-white/70 leading-4">{log}</div>
+            ))}
+          </div>
         </div>
       )}
     </div>
