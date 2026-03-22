@@ -21,7 +21,7 @@ export interface AppSettings {
 
 // Default settings (used when settings not in metadata.json)
 export const DEFAULT_SETTINGS: AppSettings = {
-  maxFileSizeMB: 200,
+  maxFileSizeMB: 500,
 };
 
 // R2 metadata.json schema

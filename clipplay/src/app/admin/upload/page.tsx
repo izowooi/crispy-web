@@ -1,18 +1,12 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { useAuthContext } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { captureVideoFrame, blobToFile, formatTime } from '@/lib/thumbnail/capture';
-import {
-  isCompressionSupported,
-  compressVideo,
-  estimateCompressedSize,
-  formatBytes,
-  type CompressionResult,
-} from '@/lib/video/compress';
+import { captureVideoFrame, formatTime } from '@/lib/thumbnail/capture';
+import { formatBytes } from '@/lib/video/compress';
 import { DEFAULT_SETTINGS } from '@/types';
 
 const EMOJI_OPTIONS = ['🎬', '🎥', '📹', '🎞️', '🌟', '💕', '🎉', '🏠', '✨', '🌈'];
@@ -62,18 +56,6 @@ export default function AdminUploadPage() {
   const [isCapturing, setIsCapturing] = useState(false);
   const thumbnailFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Compression states
-  const [compressionEnabled, setCompressionEnabled] = useState(true);
-  const [compressionSupport, setCompressionSupport] = useState<{
-    supported: boolean;
-    hevc: boolean;
-    h264: boolean;
-  } | null>(null);
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionProgress, setCompressionProgress] = useState(0);
-  const [compressedFile, setCompressedFile] = useState<Blob | null>(null);
-  const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
-
   // Settings state (dynamically loaded from server)
   const [maxFileSizeMB, setMaxFileSizeMB] = useState(DEFAULT_SETTINGS.maxFileSizeMB);
 
@@ -82,11 +64,6 @@ export default function AdminUploadPage() {
       router.push('/admin/login');
     }
   }, [isLoading, isAuthenticated, isAdmin, router]);
-
-  // Check compression support on mount
-  useEffect(() => {
-    isCompressionSupported().then(setCompressionSupport);
-  }, []);
 
   // Fetch settings from server on mount
   useEffect(() => {
@@ -148,9 +125,6 @@ export default function AdminUploadPage() {
       setThumbnailBlob(null);
       setThumbnailPreview(null);
       setThumbnailTime(1);
-      setCompressedFile(null);
-      setCompressionResult(null);
-      setCompressionProgress(0);
 
       // Auto-extract filming date from file's lastModified
       const lastModifiedDate = new Date(selectedFile.lastModified);
@@ -255,39 +229,8 @@ export default function AdminUploadPage() {
       setUploading(true);
       setUploadProgress(0);
 
-      // Determine which file to upload (compressed or original)
-      let fileToUpload: File | Blob = file;
-      let finalFileSize = file.size;
-
-      // Step 0: Compress video if enabled and supported
-      if (compressionEnabled && compressionSupport?.supported) {
-        setIsCompressing(true);
-        setCompressionProgress(0);
-
-        try {
-          const result = await compressVideo(
-            file,
-            {
-              codec: compressionSupport.hevc ? 'hevc' : 'avc',
-              maxWidth: 720,
-              maxHeight: 1280,
-              bitrate: 2_000_000,
-            },
-            (progress) => setCompressionProgress(Math.round(progress * 100))
-          );
-
-          setCompressedFile(result.blob);
-          setCompressionResult(result);
-          fileToUpload = result.blob;
-          finalFileSize = result.compressedSize;
-        } catch (compressErr) {
-          console.error('Compression failed:', compressErr);
-          // Continue with original file if compression fails
-          setError('압축 실패, 원본 파일로 업로드합니다.');
-        } finally {
-          setIsCompressing(false);
-        }
-      }
+      const fileToUpload: File | Blob = file;
+      const finalFileSize = file.size;
 
       // Step 1: Get presigned URLs
       const presignResponse = await fetch('/api/admin/presign', {
@@ -371,9 +314,6 @@ export default function AdminUploadPage() {
       setThumbnailBlob(null);
       setThumbnailPreview(null);
       setThumbnailTime(1);
-      setCompressedFile(null);
-      setCompressionResult(null);
-      setCompressionProgress(0);
       if (videoUrl) {
         URL.revokeObjectURL(videoUrl);
         setVideoUrl(null);
@@ -443,69 +383,6 @@ export default function AdminUploadPage() {
               최대 {maxFileSizeMB}MB, MP4 권장 (세로 동영상)
             </p>
           </div>
-
-          {/* Compression Toggle */}
-          {file && (
-            <div className="bg-card-bg border border-card-border rounded-2xl p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🗜️</span>
-                    <label className="text-sm font-medium text-foreground">
-                      압축 후 업로드
-                    </label>
-                    {compressionSupport?.hevc && (
-                      <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded">
-                        H.265
-                      </span>
-                    )}
-                    {compressionSupport?.h264 && !compressionSupport?.hevc && (
-                      <span className="text-xs bg-blue-500/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded">
-                        H.264
-                      </span>
-                    )}
-                  </div>
-                  {compressionSupport?.supported ? (
-                    <p className="mt-1 text-xs text-foreground/50">
-                      예상 크기: ~{formatBytes(estimateCompressedSize(duration || 60))}
-                      <span className="ml-2 text-foreground/40">
-                        (원본의 약 1/{Math.ceil(file.size / estimateCompressedSize(duration || 60))})
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-xs text-orange-500">
-                      이 브라우저에서는 압축이 지원되지 않습니다
-                    </p>
-                  )}
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={compressionEnabled && (compressionSupport?.supported ?? false)}
-                    onChange={(e) => setCompressionEnabled(e.target.checked)}
-                    disabled={!compressionSupport?.supported}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-card-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-disabled:opacity-50"></div>
-                </label>
-              </div>
-
-              {/* Compression Result */}
-              {compressionResult && (
-                <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-green-600 dark:text-green-400">압축 완료!</span>
-                    <span className="text-foreground/70">
-                      {formatBytes(compressionResult.originalSize)} → {formatBytes(compressionResult.compressedSize)}
-                      <span className="ml-2 font-medium text-green-600 dark:text-green-400">
-                        ({compressionResult.compressionRatio.toFixed(1)}x 압축)
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Video Preview & Thumbnail Capture */}
           {videoUrl && (
@@ -822,32 +699,8 @@ export default function AdminUploadPage() {
             )}
           </div>
 
-          {/* Submit */}
-          {/* Compression Progress */}
-          {isCompressing && (
-            <div className="bg-card-bg border border-card-border rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-foreground">
-                  🗜️ 압축 중...
-                </span>
-                <span className="text-sm font-bold text-primary">
-                  {compressionProgress}%
-                </span>
-              </div>
-              <div className="w-full h-3 bg-card-border rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${compressionProgress}%` }}
-                />
-              </div>
-              <p className="mt-2 text-xs text-foreground/50 text-center">
-                {compressionSupport?.hevc ? 'H.265 (HEVC)' : 'H.264'} 인코딩 중...
-              </p>
-            </div>
-          )}
-
           {/* Upload Progress */}
-          {uploading && !isCompressing && (
+          {uploading && (
             <div className="bg-card-bg border border-card-border rounded-2xl p-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-foreground">
@@ -864,11 +717,7 @@ export default function AdminUploadPage() {
                 />
               </div>
               <p className="mt-2 text-xs text-foreground/50 text-center">
-                {compressedFile ? (
-                  <>
-                    {formatBytes(Math.round(compressedFile.size * uploadProgress / 100))} / {formatBytes(compressedFile.size)}
-                  </>
-                ) : file ? (
+                {file ? (
                   <>
                     {formatBytes(Math.round(file.size * uploadProgress / 100))} / {formatBytes(file.size)}
                   </>
@@ -878,15 +727,10 @@ export default function AdminUploadPage() {
           )}
           <button
             type="submit"
-            disabled={uploading || isCompressing}
+            disabled={uploading}
             className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isCompressing ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                압축 중...
-              </span>
-            ) : uploading ? (
+            {uploading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 업로드 중...
