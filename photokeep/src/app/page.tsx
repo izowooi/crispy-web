@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { PostWithPhotos } from '@/types/database';
 import PhotoCarousel from '@/components/feed/PhotoCarousel';
+import DownloadButton from '@/components/feed/DownloadButton';
 import Header from '@/components/ui/Header';
 import PullToRefresh from '@/components/ui/PullToRefresh';
 import { getSession } from '@/lib/auth/session';
@@ -98,6 +99,7 @@ export default async function FeedPage() {
                       비공개
                     </span>
                   )}
+                  <DownloadButton photos={sortedPhotos} createdAt={post.created_at} />
                 </div>
                 <p className="mt-1 text-xs text-muted">
                   {timeAgo(post.created_at)}
