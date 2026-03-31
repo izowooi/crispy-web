@@ -23,6 +23,7 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     volume: 1,
     playbackRate: 1,
     isLoading: false,
+    bufferedPercent: 0,
     error: null,
   });
 
@@ -116,8 +117,28 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
       setState((prev) => ({
         ...prev,
         duration: audioRef.current!.duration,
-        isLoading: false,
       }));
+    }
+  }, []);
+
+  const handleCanPlay = useCallback(() => {
+    setState((prev) => ({ ...prev, isLoading: false }));
+  }, []);
+
+  const handleWaiting = useCallback(() => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+  }, []);
+
+  const handleStalled = useCallback(() => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+  }, []);
+
+  const handleProgress = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio && audio.buffered.length > 0 && audio.duration > 0) {
+      const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+      const bufferedPercent = (bufferedEnd / audio.duration) * 100;
+      setState((prev) => ({ ...prev, bufferedPercent }));
     }
   }, []);
 
@@ -145,16 +166,24 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('stalled', handleStalled);
+    audio.addEventListener('progress', handleProgress);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('stalled', handleStalled);
+      audio.removeEventListener('progress', handleProgress);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [handleTimeUpdate, handleLoadedMetadata, handleEnded, handleError]);
+  }, [handleTimeUpdate, handleLoadedMetadata, handleCanPlay, handleWaiting, handleStalled, handleProgress, handleEnded, handleError]);
 
   return {
     state,

@@ -22,6 +22,7 @@ export function AudioPlayer({ className = '', podcast }: AudioPlayerProps) {
     volume,
     playbackRate,
     isLoading,
+    bufferedPercent,
     error,
   } = state;
 
@@ -78,6 +79,7 @@ export function AudioPlayer({ className = '', podcast }: AudioPlayerProps) {
         currentTime={currentTime}
         duration={duration}
         onSeek={actions.seek}
+        bufferedPercent={bufferedPercent}
         className="mb-6"
       />
 

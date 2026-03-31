@@ -7,6 +7,7 @@ interface ProgressBarProps {
   duration: number;
   onSeek: (time: number) => void;
   showTime?: boolean;
+  bufferedPercent?: number;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export function ProgressBar({
   duration,
   onSeek,
   showTime = true,
+  bufferedPercent = 0,
   className = '',
 }: ProgressBarProps) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -56,7 +58,11 @@ export function ProgressBar({
       >
         <div className="relative h-full">
           <div
-            className="h-full bg-primary rounded-full transition-all"
+            className="absolute h-full bg-primary/30 rounded-full"
+            style={{ width: `${bufferedPercent}%` }}
+          />
+          <div
+            className="relative h-full bg-primary rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
           <div

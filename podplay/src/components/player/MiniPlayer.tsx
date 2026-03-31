@@ -10,7 +10,7 @@ interface MiniPlayerProps {
 
 export function MiniPlayer({ onExpand }: MiniPlayerProps) {
   const { state, actions } = usePlayer();
-  const { currentPodcast, isPlaying, currentTime, duration, isLoading } = state;
+  const { currentPodcast, isPlaying, currentTime, duration, isLoading, bufferedPercent } = state;
 
   if (!currentPodcast) {
     return null;
@@ -32,6 +32,7 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
         duration={duration}
         onSeek={actions.seek}
         showTime={false}
+        bufferedPercent={bufferedPercent}
         className="px-0"
       />
 

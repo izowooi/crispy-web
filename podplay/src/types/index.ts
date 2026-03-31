@@ -33,6 +33,7 @@ export interface PlayerState {
   volume: number;
   playbackRate: number;
   isLoading: boolean;
+  bufferedPercent: number;
   error: string | null;
 }
 
