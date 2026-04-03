@@ -41,3 +41,5 @@ landing/firebase-debug.log
 /landing/.claude
 /timenuts/.next
 /timenuts/node_modules
+/hero-showcase/.playwright-mcp
+hero-showcase/firebase-debug.log
