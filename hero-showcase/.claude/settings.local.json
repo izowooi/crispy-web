@@ -30,7 +30,12 @@
       "Bash(npx @opennextjs/cloudflare build)",
       "Bash(npx wrangler:*)",
       "Bash(node scripts/assemble-pages.mjs)",
-      "Bash(curl -s https://heroarchive.pages.dev)"
+      "Bash(curl -s https://heroarchive.pages.dev)",
+      "Bash(curl -sI \"https://heroarchive.pages.dev/_next/static/chunks/026ut0pspjs84.css\")",
+      "Bash(curl -s \"https://heroarchive.pages.dev/_next/static/chunks/026ut0pspjs84.css\")",
+      "Bash(curl -sv \"https://heroarchive.pages.dev/_next/static/chunks/026ut0pspjs84.css\")",
+      "Bash(node -e \" const mod = require\\('/Users/izowooi/git/crispy-web/hero-showcase/node_modules/@opennextjs/cloudflare/dist/api/config.js'\\); console.log\\(Object.keys\\(mod\\)\\); \")",
+      "Bash(curl -sI \"https://heroarchive.pages.dev/_next/static/chunks/0xdu70t~_wlrn.css\")"
     ]
   }
 }

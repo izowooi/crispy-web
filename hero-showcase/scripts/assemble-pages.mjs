@@ -40,4 +40,16 @@ for (const dir of ["cloudflare", "middleware", "server-functions", ".build"]) {
 // Place worker.js as _worker.js at root
 copyFileSync(join(openNext, "worker.js"), join(out, "_worker.js"));
 
+// Patch __ASSETS_RUN_WORKER_FIRST__ to true in cloudflare/init.js
+// (wrangler.jsonc `assets.run_worker_first` is not supported for Pages projects,
+//  so we patch the compiled output directly)
+import { readFileSync, writeFileSync } from "fs";
+const initPath = join(out, "cloudflare", "init.js");
+const initContent = readFileSync(initPath, "utf-8");
+const patched = initContent.replace(
+  /__ASSETS_RUN_WORKER_FIRST__:\s*false/,
+  "__ASSETS_RUN_WORKER_FIRST__: true"
+);
+writeFileSync(initPath, patched);
+
 console.log("✓ Pages deployment assembled at .pages-out/");
