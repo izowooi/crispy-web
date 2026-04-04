@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "pages:build": "npx @opennextjs/cloudflare build && cp .open-next/worker.js .open-next/assets/_worker.js",
+    "preview": "npm run pages:build && npx wrangler pages dev .open-next/assets",
+    "deploy": "npm run pages:build && npx wrangler pages deploy .open-next/assets --project-name heroarchive"
   },
   "dependencies": {
+    "@ast-grep/napi-darwin-arm64": "^0.42.0",
     "@supabase/supabase-js": "^2.101.1",
     "next": "16.2.2",
     "react": "19.2.4",

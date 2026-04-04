@@ -24,7 +24,11 @@
       "Bash(curl -sI \"https://elufbvcnhitoksoofbir.supabase.co/storage/v1/object/public/hs-cards/char_001-1775230936697.html\")",
       "Bash(curl -s http://localhost:3000/heroes/cfd10555-6017-4186-a312-d711d41e98b5)",
       "mcp__playwright__browser_wait_for",
-      "mcp__playwright__browser_console_messages"
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_tabs",
+      "Bash(curl -sI https://heroarchive.pages.dev)",
+      "Bash(npx @opennextjs/cloudflare build)",
+      "Bash(npx wrangler:*)"
     ]
   }
 }

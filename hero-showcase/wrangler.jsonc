@@ -1,9 +1,6 @@
 {
-  "name": "hero-showcase",
+  "name": "heroarchive",
   "compatibility_flags": ["nodejs_compat"],
   "compatibility_date": "2024-09-23",
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  }
+  "pages_build_output_dir": ".open-next/assets"
 }
