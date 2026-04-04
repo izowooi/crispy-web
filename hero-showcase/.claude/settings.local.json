@@ -28,7 +28,9 @@
       "mcp__playwright__browser_tabs",
       "Bash(curl -sI https://heroarchive.pages.dev)",
       "Bash(npx @opennextjs/cloudflare build)",
-      "Bash(npx wrangler:*)"
+      "Bash(npx wrangler:*)",
+      "Bash(node scripts/assemble-pages.mjs)",
+      "Bash(curl -s https://heroarchive.pages.dev)"
     ]
   }
 }

@@ -2,5 +2,5 @@
   "name": "heroarchive",
   "compatibility_flags": ["nodejs_compat"],
   "compatibility_date": "2024-09-23",
-  "pages_build_output_dir": ".open-next/assets"
+  "pages_build_output_dir": ".pages-out"
 }
