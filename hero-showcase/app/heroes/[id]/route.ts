@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import type { Hero } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
 
 function escapeHtml(str: string): string {
   return str
@@ -84,6 +86,11 @@ export async function GET(
   ctx: RouteContext<"/heroes/[id]">
 ) {
   const { id } = await ctx.params;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const { data: hero } = await supabase
     .from("hs_heroes")
