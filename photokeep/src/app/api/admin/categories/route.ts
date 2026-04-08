@@ -21,7 +21,25 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ categories });
+  const { data: postPrivacy } = await supabaseAdmin
+    .from('posts')
+    .select('category_id, subcategory_id, is_private');
+
+  const byCategory: Record<string, { public: number; private: number }> = {};
+  const bySubcategory: Record<string, { public: number; private: number }> = {};
+
+  for (const p of postPrivacy ?? []) {
+    if (p.category_id) {
+      if (!byCategory[p.category_id]) byCategory[p.category_id] = { public: 0, private: 0 };
+      if (p.is_private) { byCategory[p.category_id].private++; } else { byCategory[p.category_id].public++; }
+    }
+    if (p.subcategory_id) {
+      if (!bySubcategory[p.subcategory_id]) bySubcategory[p.subcategory_id] = { public: 0, private: 0 };
+      if (p.is_private) { bySubcategory[p.subcategory_id].private++; } else { bySubcategory[p.subcategory_id].public++; }
+    }
+  }
+
+  return NextResponse.json({ categories, privacyCounts: { byCategory, bySubcategory } });
 }
 
 export async function POST(request: NextRequest) {

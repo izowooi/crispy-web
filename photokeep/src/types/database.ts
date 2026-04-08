@@ -68,3 +68,13 @@ export interface AppSetting {
 export interface PostWithPhotos extends Post {
   photos: Photo[];
 }
+
+export interface PrivacyCount {
+  public: number;
+  private: number;
+}
+
+export interface CategoryPrivacyCounts {
+  byCategory: Record<string, PrivacyCount>;
+  bySubcategory: Record<string, PrivacyCount>;
+}
