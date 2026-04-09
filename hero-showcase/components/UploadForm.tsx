@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FileDropZone } from "./FileDropZone";
 import { parseCharacterHtml } from "@/lib/parseHtml";
@@ -26,12 +26,33 @@ export function UploadForm() {
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<CharacterData | null>(null);
   const [previewPortraitUrl, setPreviewPortraitUrl] = useState<string | null>(null);
+  const [duplicateHero, setDuplicateHero] = useState<{ id: string; name: string } | null>(null);
+
+  const effectiveName = overrideName.trim() || preview?.name || "";
+
+  useEffect(() => {
+    if (!effectiveName) {
+      setDuplicateHero(null);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("hs_heroes")
+      .select("id, name")
+      .eq("name", effectiveName)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setDuplicateHero(data ?? null);
+      });
+    return () => { cancelled = true; };
+  }, [effectiveName]);
 
   const handleHtmlFile = async (file: File) => {
     setHtmlFile(file);
     setError(null);
     setPreview(null);
     setPreviewPortraitUrl(null);
+    setDuplicateHero(null);
     try {
       const text = await file.text();
       const { characterData, portraitDataUrl } = parseCharacterHtml(text);
@@ -193,6 +214,24 @@ export function UploadForm() {
         )}
       </div>
 
+      {duplicateHero && (
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+          <strong>&quot;{duplicateHero.name}&quot;</strong> 이름의 영웅이 이미 등록되어 있습니다.{" "}
+          <a
+            href={`/heroes/${duplicateHero.id}`}
+            className="underline font-medium"
+            target="_blank"
+            rel="noreferrer"
+          >
+            기존 카드 보기
+          </a>
+          <br />
+          <span className="text-amber-600 dark:text-amber-400">
+            다른 이름으로 등록하려면 Advanced 옵션에서 영웅 이름을 변경하세요.
+          </span>
+        </div>
+      )}
+
       {error && (
         <div className="rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
@@ -201,7 +240,7 @@ export function UploadForm() {
 
       <button
         type="submit"
-        disabled={!htmlFile || !preview || isUploading}
+        disabled={!htmlFile || !preview || isUploading || !!duplicateHero}
         className="w-full py-3 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
       >
         {isUploading ? (
