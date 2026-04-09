@@ -2,8 +2,13 @@
 
 import Link from "next/link";
 import { useTheme } from "./ThemeProvider";
+import type { SessionUser } from "@/lib/session";
 
-export function Header() {
+interface HeaderProps {
+  user?: SessionUser | null;
+}
+
+export function Header({ user }: HeaderProps) {
   const { theme, toggle } = useTheme();
 
   return (
@@ -16,12 +21,46 @@ export function Header() {
           🏰 Hero Showcase
         </Link>
         <div className="flex items-center gap-3">
-          <Link
-            href="/upload"
-            className="px-4 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-          >
-            업로드
-          </Link>
+          {user ? (
+            <>
+              <Link
+                href="/upload"
+                className="px-4 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              >
+                업로드
+              </Link>
+              <div className="flex items-center gap-2">
+                {user.picture ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.picture}
+                    alt={user.name}
+                    className="w-7 h-7 rounded-full border border-gray-300 dark:border-gray-600"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
+                  {user.name}
+                </span>
+              </div>
+              <a
+                href="/auth/logout"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                로그아웃
+              </a>
+            </>
+          ) : (
+            <a
+              href="/auth/login"
+              className="px-4 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+            >
+              로그인
+            </a>
+          )}
           <button
             onClick={toggle}
             aria-label="다크모드 토글"
