@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Header } from "@/components/Header";
+import { AuthFooter } from "@/components/AuthFooter";
 import { decodeSession, SESSION_COOKIE } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -23,8 +24,9 @@ export default async function RootLayout({
     <html lang="ko" className="h-full">
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
-          <Header user={user} />
+          <Header />
           <main className="flex-1">{children}</main>
+          <AuthFooter user={user} />
         </ThemeProvider>
       </body>
     </html>
