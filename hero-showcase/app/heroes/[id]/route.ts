@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { decodeSession, SESSION_COOKIE, isAdmin } from "@/lib/session";
 import type { Hero } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,13 @@ function escapeHtml(str: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildNavBar(heroName: string, prevId: string | null, nextId: string | null): string {
+function buildNavBar(
+  heroName: string,
+  heroId: string,
+  prevId: string | null,
+  nextId: string | null,
+  isAdminUser: boolean
+): string {
   const name = escapeHtml(heroName);
   const prevHref = prevId ? `/heroes/${prevId}` : null;
   const nextHref = nextId ? `/heroes/${nextId}` : null;
@@ -31,6 +38,10 @@ function buildNavBar(heroName: string, prevId: string | null, nextId: string | n
   const nextBtn = nextHref
     ? `<a href="${nextHref}" style="${btnActive}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">다음 &#8594;</a>`
     : `<span style="${btnDisabled}">다음 &#8594;</span>`;
+
+  const deleteBtn = isAdminUser
+    ? `<form method="post" action="/heroes/${heroId}/delete" style="display:inline;margin:0;" onsubmit="return confirm('정말 삭제하시겠습니까?')"><button type="submit" style="display:inline-flex;align-items:center;padding:4px 12px;font-size:13px;border-radius:6px;border:1px solid rgba(255,80,80,0.5);background:transparent;color:#ff6b6b;cursor:pointer;white-space:nowrap;">삭제</button></form>`
+    : "";
 
   return `
 <div id="__hero_nav" style="
@@ -51,6 +62,7 @@ function buildNavBar(heroName: string, prevId: string | null, nextId: string | n
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
     ${prevBtn}
     ${nextBtn}
+    ${deleteBtn}
   </div>
 </div>
 <script>
@@ -82,10 +94,13 @@ function injectNavBar(html: string, navBarHtml: string): string {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   ctx: RouteContext<"/heroes/[id]">
 ) {
   const { id } = await ctx.params;
+
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const user = token ? await decodeSession(token) : null;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -129,8 +144,10 @@ export async function GET(
 
   const navBarHtml = buildNavBar(
     h.name,
+    h.id,
     prevHero?.id ?? null,
-    nextHero?.id ?? null
+    nextHero?.id ?? null,
+    isAdmin(user)
   );
   const modifiedHtml = injectNavBar(rawHtml, navBarHtml);
 

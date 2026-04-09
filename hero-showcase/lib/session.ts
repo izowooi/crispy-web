@@ -66,4 +66,10 @@ export async function decodeSession(token: string): Promise<SessionUser | null> 
   }
 }
 
+export const ADMIN_EMAIL = "izowooi85@gmail.com";
+
+export function isAdmin(user: SessionUser | null | undefined): boolean {
+  return user?.email === ADMIN_EMAIL;
+}
+
 export { SESSION_MAX_AGE_SEC };
