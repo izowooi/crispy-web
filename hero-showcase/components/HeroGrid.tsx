@@ -1,8 +1,29 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { HeroMiniCard } from "./HeroMiniCard";
 import type { Hero } from "@/lib/types";
 
+type SortMode = "random" | "name";
+
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function HeroGrid({ heroes }: { heroes: Hero[] }) {
+  const [sortMode, setSortMode] = useState<SortMode>("random");
+  const [randomOrder, setRandomOrder] = useState<Hero[]>([]);
+
+  useEffect(() => {
+    setRandomOrder(shuffled(heroes));
+  }, [heroes]);
+
   if (heroes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -23,18 +44,48 @@ export function HeroGrid({ heroes }: { heroes: Hero[] }) {
     );
   }
 
+  const displayed =
+    sortMode === "name"
+      ? [...heroes].sort((a, b) => a.name.localeCompare(b.name, "ko"))
+      : randomOrder;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {heroes.map((hero) => (
-        <HeroMiniCard
-          key={hero.id}
-          id={hero.id}
-          name={hero.name}
-          title={hero.title}
-          rarity={hero.rarity}
-          portrait_url={hero.portrait_url}
-        />
-      ))}
-    </div>
+    <>
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          onClick={() => setSortMode("random")}
+          className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+            sortMode === "random"
+              ? "bg-indigo-600 text-white border-indigo-600"
+              : "bg-transparent text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500"
+          }`}
+        >
+          🔀 랜덤
+        </button>
+        <button
+          onClick={() => setSortMode("name")}
+          className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+            sortMode === "name"
+              ? "bg-indigo-600 text-white border-indigo-600"
+              : "bg-transparent text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500"
+          }`}
+        >
+          가나다순
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {displayed.map((hero) => (
+          <HeroMiniCard
+            key={hero.id}
+            id={hero.id}
+            name={hero.name}
+            title={hero.title}
+            rarity={hero.rarity}
+            portrait_url={hero.portrait_url}
+          />
+        ))}
+      </div>
+    </>
   );
 }

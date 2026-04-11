@@ -7,8 +7,7 @@ export const revalidate = 0;
 export default async function GalleryPage() {
   const { data, error } = await supabase
     .from("hs_heroes")
-    .select("id, name, title, job, rarity, portrait_url, card_url, metadata, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, name, title, job, rarity, portrait_url, card_url, metadata, created_at");
 
   const heroes: Hero[] = (data as Hero[]) ?? [];
 
