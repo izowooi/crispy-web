@@ -53,7 +53,7 @@ export function HeroGrid({ heroes }: { heroes: Hero[] }) {
     <>
       <div className="flex items-center gap-2 mb-4">
         <button
-          onClick={() => setSortMode("random")}
+          onClick={() => { setSortMode("random"); setRandomOrder(shuffled(heroes)); }}
           className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
             sortMode === "random"
               ? "bg-indigo-600 text-white border-indigo-600"
