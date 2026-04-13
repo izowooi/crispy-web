@@ -10,13 +10,13 @@ const RARITY_CONFIG: Record<string, { label: string; className: string }> = {
   mythic:    { label: "신화",  className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border border-red-200 dark:border-red-700" },
 };
 
-type HeroMiniCardProps = Pick<Hero, "id" | "name" | "title" | "rarity" | "portrait_url">;
+type HeroMiniCardProps = Pick<Hero, "id" | "short_id" | "name" | "title" | "rarity" | "portrait_url">;
 
-export function HeroMiniCard({ id, name, title, rarity, portrait_url }: HeroMiniCardProps) {
+export function HeroMiniCard({ id, short_id, name, title, rarity, portrait_url }: HeroMiniCardProps) {
   const rConfig = RARITY_CONFIG[rarity] ?? RARITY_CONFIG.common;
 
   return (
-    <Link href={`/heroes/${id}`} className="group block">
+    <Link href={`/heroes/${short_id ?? id}`} className="group block">
       <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
         {/* Portrait */}
         <div className="relative aspect-[4/5] bg-gray-100 dark:bg-gray-700 overflow-hidden">

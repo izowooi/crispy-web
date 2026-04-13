@@ -79,6 +79,7 @@ export function HeroGrid({ heroes }: { heroes: Hero[] }) {
           <HeroMiniCard
             key={hero.id}
             id={hero.id}
+            short_id={hero.short_id}
             name={hero.name}
             title={hero.title}
             rarity={hero.rarity}
