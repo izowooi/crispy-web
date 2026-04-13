@@ -1,5 +1,6 @@
 export interface Hero {
   id: string;
+  short_id: string | null;
   name: string;
   title: string | null;
   job: string | null;

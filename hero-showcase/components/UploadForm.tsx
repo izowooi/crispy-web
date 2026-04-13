@@ -8,6 +8,21 @@ import { convertToWebP, base64ToFile } from "@/lib/imageUtils";
 import { supabase } from "@/lib/supabase";
 import type { CharacterData } from "@/lib/types";
 
+const BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+function makeShortId(len = 3): string {
+  return Array.from({ length: len }, () => BASE62[Math.floor(Math.random() * 62)]).join("");
+}
+
+async function generateUniqueShortId(): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const sid = makeShortId(3);
+    const { data } = await supabase.from("hs_heroes").select("id").eq("short_id", sid).maybeSingle();
+    if (!data) return sid;
+  }
+  return makeShortId(4);
+}
+
 const RARITY_LABELS: Record<string, string> = {
   common: "커먼",
   rare: "레어",
@@ -102,6 +117,9 @@ export function UploadForm() {
         .getPublicUrl(cardPath);
       const cardPublicUrl = cardUrlData.publicUrl;
 
+      // Generate short ID
+      const shortId = await generateUniqueShortId();
+
       // DB insert
       const { data: inserted, error: dbErr } = await supabase
         .from("hs_heroes")
@@ -113,12 +131,13 @@ export function UploadForm() {
           portrait_url: portraitPublicUrl,
           card_url: cardPublicUrl,
           metadata: preview,
+          short_id: shortId,
         })
-        .select("id")
+        .select("id, short_id")
         .single();
       if (dbErr) throw new Error(`DB 저장 실패: ${dbErr.message}`);
 
-      router.push(`/heroes/${inserted.id}`);
+      router.push(`/heroes/${inserted.short_id ?? inserted.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "업로드 중 오류가 발생했습니다.");
     } finally {
