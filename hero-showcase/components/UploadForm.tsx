@@ -120,7 +120,7 @@ export function UploadForm() {
       // Generate short ID
       const shortId = await generateUniqueShortId();
 
-      // DB insert
+      // DB insert — with short_id
       const { data: inserted, error: dbErr } = await supabase
         .from("hs_heroes")
         .insert({
@@ -135,7 +135,29 @@ export function UploadForm() {
         })
         .select("id, short_id")
         .single();
-      if (dbErr) throw new Error(`DB 저장 실패: ${dbErr.message}`);
+
+      // If short_id column is missing (migration not yet run), retry without it
+      if (dbErr) {
+        if (dbErr.message.includes("short_id")) {
+          const { data: fallback, error: fallbackErr } = await supabase
+            .from("hs_heroes")
+            .insert({
+              name: overrideName.trim() || preview.name || "이름 없음",
+              title: preview.title ?? null,
+              job: preview.job ?? null,
+              rarity: preview.rarity ?? "common",
+              portrait_url: portraitPublicUrl,
+              card_url: cardPublicUrl,
+              metadata: preview,
+            })
+            .select("id")
+            .single();
+          if (fallbackErr) throw new Error(`DB 저장 실패: ${fallbackErr.message}`);
+          router.push(`/heroes/${fallback.id}`);
+          return;
+        }
+        throw new Error(`DB 저장 실패: ${dbErr.message}`);
+      }
 
       router.push(`/heroes/${inserted.short_id ?? inserted.id}`);
     } catch (e) {
