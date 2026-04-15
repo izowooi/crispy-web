@@ -64,11 +64,20 @@ const KakaoMap = forwardRef<KakaoMapHandle, Props>(function KakaoMap(
         setTimeout(() => map.relayout(), 0);
 
         // `idle` fires after pan/zoom settles — perfect for reverse-geocoding.
-        kakao.maps.event.addListener(map, "idle", () => {
+        // NOTE: loadKakaoMaps resolves with `window.kakao.maps`, so the event
+        // namespace is `kakao.event` here, NOT `kakao.maps.event`.
+        kakao.event.addListener(map, "idle", () => {
           if (!onIdleRef.current) return;
           const c = map.getCenter();
           onIdleRef.current({ lat: c.getLat(), lng: c.getLng() });
         });
+
+        // Emit the initial center so the picker has something to show before
+        // the first user pan.
+        {
+          const c = map.getCenter();
+          onIdleRef.current?.({ lat: c.getLat(), lng: c.getLng() });
+        }
 
         onReady?.();
       })
