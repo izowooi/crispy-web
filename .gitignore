@@ -47,3 +47,13 @@ hero-showcase/firebase-debug.log
 /hero-showcase/.pages-out
 /hero-showcase/.claude
 /hero-showcase/.wrangler
+
+# root-level stray files
+/firebase-debug.log
+/.playwright-mcp
+/.plans
+
+# place-keep/my-places
+/place-keep/my-places/node_modules
+/place-keep/my-places/.next
+/place-keep/my-places/.claude
