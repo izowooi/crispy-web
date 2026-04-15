@@ -140,8 +140,11 @@ export default function PlaceFormSheet({ open, mode, initial, saving, onCancel, 
           />
         </label>
 
-        <div className="mb-4 text-xs text-gray-500">
-          좌표: {initial.lat.toFixed(6)}, {initial.lng.toFixed(6)}
+        <div className="mb-4 text-xs text-gray-500" data-testid="form-location-summary">
+          <div>📍 {address.trim() || placeName.trim() || "선택한 지도 위치"}</div>
+          <div className="mt-0.5 text-[10px] text-gray-400">
+            좌표 {initial.lat.toFixed(5)}, {initial.lng.toFixed(5)}
+          </div>
         </div>
 
         <div className="flex justify-end gap-2">

@@ -17,10 +17,15 @@ type Props = {
   onMarkerClick: (place: Place) => void;
   onReady?: () => void;
   onError?: (message: string) => void;
+  /**
+   * Fires (debounced) whenever the map stops moving. Used by the LocationPicker
+   * to drive reverse-geocoding while the crosshair mode is active.
+   */
+  onIdle?: (center: { lat: number; lng: number }) => void;
 };
 
 const KakaoMap = forwardRef<KakaoMapHandle, Props>(function KakaoMap(
-  { places, initialCenter, onMarkerClick, onReady, onError },
+  { places, initialCenter, onMarkerClick, onReady, onError, onIdle },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -28,6 +33,8 @@ const KakaoMap = forwardRef<KakaoMapHandle, Props>(function KakaoMap(
   const markersRef = useRef<Map<string, any>>(new Map());
   const onMarkerClickRef = useRef(onMarkerClick);
   onMarkerClickRef.current = onMarkerClick;
+  const onIdleRef = useRef(onIdle);
+  onIdleRef.current = onIdle;
 
   useImperativeHandle(ref, () => ({
     panTo(lat: number, lng: number) {
@@ -55,6 +62,14 @@ const KakaoMap = forwardRef<KakaoMapHandle, Props>(function KakaoMap(
         mapRef.current = map;
         // Nudge the map to recompute its size after layout.
         setTimeout(() => map.relayout(), 0);
+
+        // `idle` fires after pan/zoom settles — perfect for reverse-geocoding.
+        kakao.maps.event.addListener(map, "idle", () => {
+          if (!onIdleRef.current) return;
+          const c = map.getCenter();
+          onIdleRef.current({ lat: c.getLat(), lng: c.getLng() });
+        });
+
         onReady?.();
       })
       .catch((err: Error) => {

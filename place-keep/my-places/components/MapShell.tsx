@@ -6,6 +6,7 @@ import PlaceDetailSheet from "./PlaceDetailSheet";
 import PlaceFormSheet from "./PlaceFormSheet";
 import AddPlaceFab from "./AddPlaceFab";
 import PlaceSearchBox, { type SearchPick } from "./PlaceSearchBox";
+import LocationPicker from "./LocationPicker";
 import type { Place, PlaceInput } from "@/types/place";
 import { createPlace, deletePlace, listPlaces, updatePlace } from "@/lib/places";
 
@@ -15,6 +16,7 @@ const LAST_CENTER_KEY = "my-places:last-center";
 
 type Mode =
   | { kind: "idle" }
+  | { kind: "picking" } // crosshair active, waiting for user to confirm location
   | { kind: "detail"; place: Place }
   | { kind: "create"; seed: { lat: number; lng: number; place_name?: string; address?: string; category?: string } }
   | { kind: "edit"; place: Place };
@@ -28,6 +30,8 @@ export default function MapShell() {
   const [banner, setBanner] = useState<string | null>(null);
   const [initialCenter, setInitialCenter] = useState(DEFAULT_CENTER);
   const [focusedShortId, setFocusedShortId] = useState<string | null>(null);
+  // Latest map center, refreshed on every `idle` event from KakaoMap.
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
 
   // Resolve initial center from localStorage on first mount.
   useEffect(() => {
@@ -77,10 +81,31 @@ export default function MapShell() {
     }
   }, [focusedShortId, places]);
 
+  const handleMapIdle = useCallback((c: { lat: number; lng: number }) => {
+    setMapCenter(c);
+  }, []);
+
   const handleAdd = useCallback(() => {
-    const center = mapRef.current?.getCenter() ?? initialCenter;
-    setMode({ kind: "create", seed: center });
-  }, [initialCenter]);
+    setMode({ kind: "picking" });
+  }, []);
+
+  const handlePickConfirm = useCallback(
+    (picked: { lat: number; lng: number; address: string | null }) => {
+      setMode({
+        kind: "create",
+        seed: {
+          lat: picked.lat,
+          lng: picked.lng,
+          address: picked.address ?? undefined,
+        },
+      });
+    },
+    []
+  );
+
+  const handleUseMyLocation = useCallback((coords: { lat: number; lng: number }) => {
+    mapRef.current?.panTo(coords.lat, coords.lng);
+  }, []);
 
   const handleSearchPick = useCallback((pick: SearchPick) => {
     mapRef.current?.panTo(pick.lat, pick.lng);
@@ -140,6 +165,8 @@ export default function MapShell() {
     window.localStorage.setItem(LAST_CENTER_KEY, JSON.stringify(c));
   };
 
+  const isPicking = mode.kind === "picking";
+
   return (
     <div className="relative h-full w-full" onMouseLeave={persistCenter}>
       <KakaoMap
@@ -148,11 +175,21 @@ export default function MapShell() {
         initialCenter={initialCenter}
         onMarkerClick={(place) => setMode({ kind: "detail", place })}
         onError={(msg) => setBanner(`지도 로드 실패: ${msg}`)}
+        onIdle={handleMapIdle}
       />
 
-      <PlaceSearchBox onPick={handleSearchPick} />
+      {/* Search + FAB are hidden while picking a location */}
+      {!isPicking ? <PlaceSearchBox onPick={handleSearchPick} /> : null}
+      {!isPicking ? <AddPlaceFab onClick={handleAdd} /> : null}
 
-      <AddPlaceFab onClick={handleAdd} />
+      {isPicking ? (
+        <LocationPicker
+          center={mapCenter ?? initialCenter}
+          onCancel={() => setMode({ kind: "idle" })}
+          onConfirm={handlePickConfirm}
+          onUseMyLocation={handleUseMyLocation}
+        />
+      ) : null}
 
       {mode.kind === "detail" ? (
         <PlaceDetailSheet
