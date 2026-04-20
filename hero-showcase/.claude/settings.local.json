@@ -35,7 +35,17 @@
       "Bash(curl -s \"https://heroarchive.pages.dev/_next/static/chunks/026ut0pspjs84.css\")",
       "Bash(curl -sv \"https://heroarchive.pages.dev/_next/static/chunks/026ut0pspjs84.css\")",
       "Bash(node -e \" const mod = require\\('/Users/izowooi/git/crispy-web/hero-showcase/node_modules/@opennextjs/cloudflare/dist/api/config.js'\\); console.log\\(Object.keys\\(mod\\)\\); \")",
-      "Bash(curl -sI \"https://heroarchive.pages.dev/_next/static/chunks/0xdu70t~_wlrn.css\")"
+      "Bash(curl -sI \"https://heroarchive.pages.dev/_next/static/chunks/0xdu70t~_wlrn.css\")",
+      "Bash(node -e \"const semver = require\\('semver'\\); console.log\\('4.80.0 >= 4.59.2?', semver.gte\\('4.80.0', '4.59.2'\\)\\)\")",
+      "Bash(npm show:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8788/)",
+      "Bash(kill %1)",
+      "Bash(curl -sv http://localhost:8789/)",
+      "Bash(curl -s -o /tmp/response.txt -w \"%{http_code}\" http://localhost:8788/)",
+      "Read(//tmp/**)",
+      "Bash(node:*)",
+      "Bash(find /Users/izowooi/git/crispy-web/hero-showcase -path \"*/node_modules/next/dist/*\" -name \"*.d.ts\" -exec grep -l \"RouteContext\" {} \\\\;)",
+      "mcp__supabase__list_projects"
     ]
   }
 }
