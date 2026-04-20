@@ -1,0 +1,76 @@
+import type { Preset } from "./types";
+
+export const PRESETS: Preset[] = [
+  {
+    id: "marvel-battle",
+    title: "마블 영웅 대전",
+    description: "아이언맨 vs 캡틴 아메리카, 뉴욕 하늘 위 서사적 전투",
+    emoji: "⚡",
+    prompt:
+      "Iron Man and Captain America in an epic aerial battle over the New York City skyline, wide shot, dramatic cinematic lighting, action-packed, explosions and repulsor blasts, cinematic realism style",
+    settings: { duration: 8, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+  },
+  {
+    id: "disney-adventure",
+    title: "디즈니 모험",
+    description: "미키 마우스와 친구들의 마법 숲 탐험",
+    emoji: "🏰",
+    prompt:
+      "Mickey Mouse and his friends exploring an enchanted magical forest, playful whimsical mood, soft diffused lighting, medium shot, Disney animation style, vibrant colors",
+    settings: { duration: 7, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+  },
+  {
+    id: "cute-hamster",
+    title: "귀여운 햄스터",
+    description: "거대한 주방을 탐험하는 작은 햄스터",
+    emoji: "🐹",
+    prompt:
+      "Tiny hamster on an adventure through a giant kitchen, close-up tracking shot, soft bokeh background, warm cozy lighting, playful whimsical mood, cinematic realism",
+    settings: { duration: 5, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+  },
+  {
+    id: "dragon-flight",
+    title: "용의 비행",
+    description: "눈 덮인 산 위를 날아다니는 장엄한 용",
+    emoji: "🐉",
+    prompt:
+      "Majestic dragon soaring over snow-capped mountain peaks, wide aerial shot, dramatic cinematic shadows, epic action-packed mood, fantasy magical visual style, misty clouds",
+    settings: { duration: 8, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+  },
+  {
+    id: "tokyo-rain",
+    title: "도쿄 빗속 야경",
+    description: "빗속 네온 도쿄 거리, 사이버펑크 분위기",
+    emoji: "🌃",
+    prompt:
+      "Neon-lit Tokyo street in rain at night, tracking shot, cyberpunk neon lighting, mysterious tense atmosphere, cinematic realism, reflections on wet asphalt, puddles glowing with neon signs",
+    settings: { duration: 7, resolution: "720p", aspectRatio: "9:16", generateAudio: true },
+  },
+  {
+    id: "space-walk",
+    title: "우주 유영",
+    description: "지구를 배경으로 우주를 유영하는 우주비행사",
+    emoji: "🚀",
+    prompt:
+      "Astronaut floating in outer space with Earth in the background, wide shot, dramatic studio lighting, peaceful serene mood, cinematic realism, slowly rotating Earth, stars",
+    settings: { duration: 8, resolution: "720p", aspectRatio: "16:9", generateAudio: false },
+  },
+  {
+    id: "beach-sunset",
+    title: "해변 선셋",
+    description: "황금빛 석양이 물드는 아름다운 해변",
+    emoji: "🌅",
+    prompt:
+      "Golden sunset over ocean waves on a beautiful beach, wide shot, golden hour lighting, peaceful serene romantic mood, cinematic realism, camera slowly pushing toward the horizon",
+    settings: { duration: 7, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+  },
+  {
+    id: "cyberpunk-chase",
+    title: "사이버펑크 추격전",
+    description: "미래 도시 밤거리의 긴장감 넘치는 자동차 추격전",
+    emoji: "🏎️",
+    prompt:
+      "Futuristic cyberpunk city car chase at night, low angle tracking shot, neon cyberpunk lighting, tense dramatic intense mood, cinematic realism, rain-slicked streets, holographic billboards",
+    settings: { duration: 10, resolution: "720p", aspectRatio: "21:9", generateAudio: true },
+  },
+];
