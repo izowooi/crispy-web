@@ -22,6 +22,13 @@ export interface Preset {
   prompt: string;
   settings: VideoSettings;
   emoji: string;
+  subject?: string;
+  action?: string;
+  setting?: string;
+  cameraShot?: string;
+  lighting?: string;
+  mood?: string;
+  visualStyle?: string;
 }
 
 export type PredictionStatus = "starting" | "processing" | "succeeded" | "failed" | "canceled";

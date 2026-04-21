@@ -9,6 +9,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Iron Man and Captain America in an epic aerial battle over the New York City skyline, wide shot, dramatic cinematic lighting, action-packed, explosions and repulsor blasts, cinematic realism style",
     settings: { duration: 8, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+    subject: "Iron Man and Captain America",
+    action: "epic aerial battle with explosions and repulsor blasts",
+    setting: "New York City skyline",
+    cameraShot: "wide shot",
+    lighting: "dramatic shadows",
+    mood: "epic action-packed",
+    visualStyle: "cinematic realism",
   },
   {
     id: "disney-adventure",
@@ -18,6 +25,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Mickey Mouse and his friends exploring an enchanted magical forest, playful whimsical mood, soft diffused lighting, medium shot, Disney animation style, vibrant colors",
     settings: { duration: 7, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+    subject: "Mickey Mouse and his friends",
+    action: "exploring an enchanted magical forest",
+    setting: "enchanted magical forest with vibrant colors",
+    cameraShot: "medium shot",
+    lighting: "soft diffused",
+    mood: "playful whimsical",
+    visualStyle: "painterly artistic",
   },
   {
     id: "cute-hamster",
@@ -27,6 +41,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Tiny hamster on an adventure through a giant kitchen, close-up tracking shot, soft bokeh background, warm cozy lighting, playful whimsical mood, cinematic realism",
     settings: { duration: 5, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+    subject: "Tiny hamster",
+    action: "on an adventure through a giant kitchen",
+    setting: "giant kitchen with warm bokeh background",
+    cameraShot: "close-up",
+    lighting: "soft diffused",
+    mood: "playful whimsical",
+    visualStyle: "soft bokeh",
   },
   {
     id: "dragon-flight",
@@ -36,6 +57,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Majestic dragon soaring over snow-capped mountain peaks, wide aerial shot, dramatic cinematic shadows, epic action-packed mood, fantasy magical visual style, misty clouds",
     settings: { duration: 8, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+    subject: "Majestic dragon",
+    action: "soaring through misty clouds over snow-capped mountain peaks",
+    setting: "snow-capped mountain peaks",
+    cameraShot: "aerial bird's eye shot",
+    lighting: "dramatic shadows",
+    mood: "epic action-packed",
+    visualStyle: "fantasy magical",
   },
   {
     id: "tokyo-rain",
@@ -45,6 +73,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Neon-lit Tokyo street in rain at night, tracking shot, cyberpunk neon lighting, mysterious tense atmosphere, cinematic realism, reflections on wet asphalt, puddles glowing with neon signs",
     settings: { duration: 7, resolution: "720p", aspectRatio: "9:16", generateAudio: true },
+    subject: "Neon-lit Tokyo street in rain",
+    action: "rain falling at night with reflections on wet asphalt",
+    setting: "Tokyo cyberpunk street at night with glowing neon puddles",
+    cameraShot: "tracking shot",
+    lighting: "neon cyberpunk",
+    mood: "mysterious",
+    visualStyle: "cinematic realism",
   },
   {
     id: "space-walk",
@@ -54,6 +89,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Astronaut floating in outer space with Earth in the background, wide shot, dramatic studio lighting, peaceful serene mood, cinematic realism, slowly rotating Earth, stars",
     settings: { duration: 8, resolution: "720p", aspectRatio: "16:9", generateAudio: false },
+    subject: "Astronaut",
+    action: "floating in outer space, slowly drifting",
+    setting: "outer space with Earth in the background and stars",
+    cameraShot: "wide shot",
+    lighting: "studio lighting",
+    mood: "peaceful serene",
+    visualStyle: "cinematic realism",
   },
   {
     id: "beach-sunset",
@@ -63,6 +105,13 @@ export const PRESETS: Preset[] = [
     prompt:
       "Golden sunset over ocean waves on a beautiful beach, wide shot, golden hour lighting, peaceful serene romantic mood, cinematic realism, camera slowly pushing toward the horizon",
     settings: { duration: 7, resolution: "720p", aspectRatio: "16:9", generateAudio: true },
+    subject: "Ocean waves on a beautiful beach",
+    action: "camera slowly pushing toward the horizon",
+    setting: "golden sunset over the ocean",
+    cameraShot: "wide shot",
+    lighting: "golden hour",
+    mood: "peaceful serene",
+    visualStyle: "cinematic realism",
   },
   {
     id: "cyberpunk-chase",
@@ -72,5 +121,12 @@ export const PRESETS: Preset[] = [
     prompt:
       "Futuristic cyberpunk city car chase at night, low angle tracking shot, neon cyberpunk lighting, tense dramatic intense mood, cinematic realism, rain-slicked streets, holographic billboards",
     settings: { duration: 10, resolution: "720p", aspectRatio: "21:9", generateAudio: true },
+    subject: "Futuristic cars",
+    action: "high-speed chase through rain-slicked streets with holographic billboards",
+    setting: "futuristic cyberpunk city at night",
+    cameraShot: "low angle shot",
+    lighting: "neon cyberpunk",
+    mood: "tense dramatic",
+    visualStyle: "cinematic realism",
   },
 ];

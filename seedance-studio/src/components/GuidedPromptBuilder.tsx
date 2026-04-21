@@ -87,9 +87,9 @@ export function GuidedPromptBuilder({
   const builtPrompt = useMemo(() => buildPrompt(guided), [guided]);
 
   const inputClass =
-    "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder-foreground/30 focus:border-accent focus:outline-none";
+    "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted focus:border-accent focus:outline-none transition-colors";
   const selectClass =
-    "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none";
+    "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none transition-colors";
 
   return (
     <div className="space-y-6">
@@ -194,12 +194,14 @@ export function GuidedPromptBuilder({
       </div>
 
       {/* 프롬프트 미리보기 */}
-      {builtPrompt && (
-        <div className="rounded-lg border border-border bg-card/30 p-3">
-          <p className="text-xs text-foreground/50 mb-1">생성될 프롬프트 미리보기</p>
-          <p className="text-sm text-foreground/80 italic">&quot;{builtPrompt}&quot;</p>
-        </div>
-      )}
+      <div className="rounded-lg border border-border bg-background p-3">
+        <p className="text-xs text-muted mb-1">최종 프롬프트 미리보기</p>
+        {builtPrompt ? (
+          <p className="text-sm text-foreground/80 italic break-words">&quot;{builtPrompt}&quot;</p>
+        ) : (
+          <p className="text-sm text-muted italic">위 필드를 채우면 프롬프트가 자동 생성됩니다.</p>
+        )}
+      </div>
 
       {/* 비디오 설정 */}
       <div className="border-t border-border pt-4">
@@ -263,8 +265,8 @@ export function GuidedPromptBuilder({
               onClick={() => onSettingsChange({ generateAudio: !settings.generateAudio })}
               className={`w-full rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 settings.generateAudio
-                  ? "border-accent bg-accent/20 text-accent"
-                  : "border-border bg-card text-foreground/60"
+                  ? "border-accent bg-accent/15 text-accent"
+                  : "border-border bg-background text-muted"
               }`}
             >
               {settings.generateAudio ? "🔊 오디오 켜짐" : "🔇 오디오 꺼짐"}
