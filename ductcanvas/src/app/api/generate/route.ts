@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
       quality = "auto",
       number_of_images = 1,
       output_format = "webp",
-      background = "auto",
     } = body;
 
     if (!prompt?.trim()) {
@@ -34,11 +33,12 @@ export async function POST(request: NextRequest) {
         quality,
         number_of_images: Math.min(4, Math.max(1, Number(number_of_images))),
         output_format,
-        background,
       },
     });
 
-    return NextResponse.json({ images: output });
+    // FileOutput 객체를 URL 문자열로 변환 (SDK v1.x 대응)
+    const images = (Array.isArray(output) ? output : [output]).map((item) => String(item));
+    return NextResponse.json({ images });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

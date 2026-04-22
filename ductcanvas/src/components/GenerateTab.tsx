@@ -1,11 +1,42 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 
 const ASPECT_RATIOS = ["1:1", "3:2", "2:3"] as const;
 const QUALITIES = ["auto", "low", "medium", "high"] as const;
 const OUTPUT_FORMATS = ["webp", "png", "jpeg"] as const;
+
+const LOADING_MESSAGES = [
+  { emoji: "🖌️", text: "AI가 붓을 들었습니다" },
+  { emoji: "🐝", text: "픽셀들이 열심히 모이는 중" },
+  { emoji: "✨", text: "상상력을 현실로 변환 중" },
+  { emoji: "🔥", text: "GPU가 땀 흘리는 소리 들리시나요?" },
+  { emoji: "🤔", text: "AI 화가가 구도를 고민 중" },
+  { emoji: "🌌", text: "우주에서 영감을 받아오는 중" },
+  { emoji: "🎨", text: "색깔들이 캔버스로 달려가고 있어요" },
+  { emoji: "☕", text: "커피 한 잔 마시고 오세요" },
+  { emoji: "🏆", text: "마스터피스 완성까지 조금만 더" },
+  { emoji: "😅", text: "이 정도면 직접 그리는 게 더 빠를 것 같기도..." },
+  { emoji: "🎭", text: "완벽한 작품을 위해 최선을 다하고 있어요" },
+  { emoji: "🚀", text: "빠른 AI도 예술 앞에선 잠시 멈춥니다" },
+];
+
+async function downloadBlob(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
 
 export function GenerateTab() {
   const [prompt, setPrompt] = useState("");
@@ -13,10 +44,18 @@ export function GenerateTab() {
   const [quality, setQuality] = useState<(typeof QUALITIES)[number]>("auto");
   const [numImages, setNumImages] = useState(1);
   const [outputFormat, setOutputFormat] = useState<(typeof OUTPUT_FORMATS)[number]>("webp");
-  const [background, setBackground] = useState<"auto" | "opaque">("auto");
   const [loading, setLoading] = useState(false);
+  const [msgIndex, setMsgIndex] = useState(0);
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!loading) { setMsgIndex(0); return; }
+    const interval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const generate = async () => {
     if (!prompt.trim()) return;
@@ -34,7 +73,6 @@ export function GenerateTab() {
           quality,
           number_of_images: numImages,
           output_format: outputFormat,
-          background,
         }),
       });
 
@@ -124,59 +162,61 @@ export function GenerateTab() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-muted">배경</label>
-        {(["auto", "opaque"] as const).map((b) => (
-          <button
-            key={b}
-            onClick={() => setBackground(b)}
-            className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-              background === b
-                ? "border-accent bg-accent text-white"
-                : "border-border hover:border-accent"
-            }`}
-          >
-            {b}
-          </button>
-        ))}
-      </div>
-
       {/* Generate button */}
       <button
         onClick={generate}
         disabled={loading || !prompt.trim()}
         className="w-full py-3 bg-accent hover:bg-accent-hover text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "생성 중..." : "이미지 생성"}
+        이미지 생성
       </button>
 
       {error && (
         <p className="text-red-500 text-sm text-center">{error}</p>
       )}
 
+      {/* Loading */}
+      {loading && (
+        <div className="flex flex-col items-center gap-5 py-10">
+          <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin" />
+
+          <div key={msgIndex} className="animate-msg-in text-center px-4">
+            <div className="text-4xl mb-2">{LOADING_MESSAGES[msgIndex].emoji}</div>
+            <p className="text-sm text-muted">{LOADING_MESSAGES[msgIndex].text}</p>
+          </div>
+
+          <div className="flex gap-1.5">
+            {LOADING_MESSAGES.map((_, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                  i === msgIndex ? "bg-accent" : "bg-border"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Results */}
-      {images.length > 0 && (
+      {!loading && images.length > 0 && (
         <div className={`grid gap-4 ${images.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
           {images.map((url, i) => (
             <div key={i} className="relative group rounded-xl overflow-hidden border border-border bg-card">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={url}
                 alt={`Generated ${i + 1}`}
-                width={1024}
-                height={1024}
-                className="w-full h-auto"
+                className="w-full h-auto block"
               />
-              <a
-                href={url}
-                download={`ductcanvas-${i + 1}.${outputFormat}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+              <button
+                onClick={() => downloadBlob(url, `ductcanvas-${i + 1}.${outputFormat}`)}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               >
                 <span className="px-4 py-2 bg-white text-black rounded-lg font-medium text-sm">
                   다운로드
                 </span>
-              </a>
+              </button>
             </div>
           ))}
         </div>
