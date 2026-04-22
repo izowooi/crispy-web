@@ -4,7 +4,7 @@
 
 > 🇰🇷 [한국어 README](./README.md)
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-ductcanvas.pages.dev-6366f1?style=for-the-badge)](https://ductcanvas.pages.dev)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-ducttape.pages.dev-6366f1?style=for-the-badge)](https://ducttape.pages.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
@@ -49,7 +49,7 @@
 
 ```mermaid
 graph TD
-    A[🌐 Visit ductcanvas.pages.dev] --> B[🔒 Enter password]
+    A[🌐 Visit ducttape.pages.dev] --> B[🔒 Enter password]
     B -->|Authenticated| C[🎨 Main studio]
     C --> D{Choose a tab}
     D -->|✨ Generate| E[Write prompt<br/>Set ratio · quality · count · format]
@@ -301,6 +301,6 @@ Bug reports and suggestions are welcome via [Issues](https://github.com/izowooi/
 
 Made with ❤️ using Next.js · Cloudflare Pages · GPT Image 2
 
-[🩹 Try it now](https://ductcanvas.pages.dev)
+[🩹 Try it now](https://ducttape.pages.dev)
 
 </div>

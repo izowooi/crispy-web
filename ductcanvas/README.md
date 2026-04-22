@@ -4,7 +4,7 @@
 
 > 🇺🇸 [English README](./README_EN.md)
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-ductcanvas.pages.dev-6366f1?style=for-the-badge)](https://ductcanvas.pages.dev)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-ducttape.pages.dev-6366f1?style=for-the-badge)](https://ducttape.pages.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
@@ -49,7 +49,7 @@
 
 ```mermaid
 graph TD
-    A[🌐 ductcanvas.pages.dev 접속] --> B[🔒 암호 입력]
+    A[🌐 ducttape.pages.dev 접속] --> B[🔒 암호 입력]
     B -->|인증 성공| C[🎨 메인 스튜디오]
     C --> D{탭 선택}
     D -->|✨ 이미지 생성| E[프롬프트 입력<br/>비율·품질·개수·포맷 설정]
@@ -301,6 +301,6 @@ MIT License
 
 Made with ❤️ using Next.js · Cloudflare Pages · GPT Image 2
 
-[🩹 지금 사용하기](https://ductcanvas.pages.dev)
+[🩹 지금 사용하기](https://ducttape.pages.dev)
 
 </div>
