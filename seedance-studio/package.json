@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "pages:build": "npx @opennextjs/cloudflare build && node scripts/assemble-pages.mjs",
     "preview": "npm run pages:build && npx wrangler pages dev .pages-out",
