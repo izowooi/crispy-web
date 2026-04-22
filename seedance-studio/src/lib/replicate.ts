@@ -9,6 +9,10 @@ export function getReplicateClient(): Replicate {
     throw new Error("REPLICATE_API_TOKEN 환경 변수가 설정되지 않았습니다.");
   }
   const client = new Replicate({ auth: token });
-  client.fetch = (url, options) => fetch(url, { ...options, cache: "no-store" });
+  // Cloudflare Workers는 RequestInit.cache 필드를 지원하지 않으므로 제거한다.
+  client.fetch = (url, options) => {
+    const { cache: _cache, ...rest } = (options ?? {}) as RequestInit;
+    return fetch(url, rest);
+  };
   return client;
 }
