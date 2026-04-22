@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { GuidedPromptState, VideoSettings } from "@/lib/types";
-import { buildPrompt } from "@/lib/prompt";
 
 const CAMERA_SHOTS = [
   { value: "", label: "선택 안함" },
@@ -78,139 +77,184 @@ interface GuidedPromptBuilderProps {
   onSettingsChange: (updates: Partial<VideoSettings>) => void;
 }
 
+// 드롭박스 선택 또는 직접 입력을 모두 지원하는 콤보 컴포넌트
+function ComboSelect({
+  value,
+  options,
+  onChange,
+  placeholder,
+  className,
+}: {
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (val: string) => void;
+  placeholder?: string;
+  className: string;
+}) {
+  const inList = options.some((o) => o.value === value);
+  const [customMode, setCustomMode] = useState(!inList && value !== "");
+
+  // 외부(프리셋 로드)에서 목록에 있는 값으로 바뀌면 드롭박스 모드로 복귀
+  useEffect(() => {
+    if (options.some((o) => o.value === value) || value === "") {
+      setCustomMode(false);
+    }
+  }, [value, options]);
+
+  if (customMode) {
+    return (
+      <div className="flex gap-1">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoFocus
+          placeholder={placeholder ?? "직접 입력..."}
+          className={`${className} flex-1 min-w-0`}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setCustomMode(false);
+            onChange("");
+          }}
+          className="shrink-0 rounded-lg border border-border px-2 text-xs text-muted hover:text-foreground transition-colors"
+          title="목록으로 돌아가기"
+        >
+          ↩
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => {
+        if (e.target.value === "__custom__") {
+          setCustomMode(true);
+          onChange("");
+        } else {
+          onChange(e.target.value);
+        }
+      }}
+      className={className}
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+      <option value="__custom__">✏️ 직접 입력...</option>
+    </select>
+  );
+}
+
 export function GuidedPromptBuilder({
   guided,
   settings,
   onGuidedChange,
   onSettingsChange,
 }: GuidedPromptBuilderProps) {
-  const builtPrompt = useMemo(() => buildPrompt(guided), [guided]);
-
   const inputClass =
     "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted focus:border-accent focus:outline-none transition-colors";
   const selectClass =
     "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none transition-colors";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* 텍스트 입력 3개 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">
-            주제/캐릭터 <span className="text-foreground/40 text-xs">(Subject)</span>
+            주제/캐릭터 <span className="text-muted text-xs">(Subject)</span>
           </label>
           <input
             type="text"
             value={guided.subject}
             onChange={(e) => onGuidedChange({ subject: e.target.value })}
-            placeholder="예: Iron Man, 귀여운 햄스터"
+            placeholder="예: 아이언맨, 귀여운 햄스터"
             className={inputClass}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">
-            행동/움직임 <span className="text-foreground/40 text-xs">(Action)</span>
+            행동/스토리 <span className="text-muted text-xs">(Action)</span>
           </label>
           <input
             type="text"
             value={guided.action}
             onChange={(e) => onGuidedChange({ action: e.target.value })}
-            placeholder="예: flying through the city"
+            placeholder="예: 도시 위를 날아다니는"
             className={inputClass}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">
-            배경/환경 <span className="text-foreground/40 text-xs">(Setting)</span>
+            배경/환경 <span className="text-muted text-xs">(Setting)</span>
           </label>
           <input
             type="text"
             value={guided.setting}
             onChange={(e) => onGuidedChange({ setting: e.target.value })}
-            placeholder="예: Tokyo neon streets at night"
+            placeholder="예: 도쿄 네온 거리, 우주"
             className={inputClass}
           />
         </div>
       </div>
 
-      {/* 셀렉트 4개 */}
+      {/* 드롭박스 + 직접 입력 4개 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">카메라 샷</label>
-          <select
+          <ComboSelect
             value={guided.cameraShot}
-            onChange={(e) => onGuidedChange({ cameraShot: e.target.value })}
+            options={CAMERA_SHOTS}
+            onChange={(v) => onGuidedChange({ cameraShot: v })}
+            placeholder="예: drone shot..."
             className={selectClass}
-          >
-            {CAMERA_SHOTS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">조명</label>
-          <select
+          <ComboSelect
             value={guided.lighting}
-            onChange={(e) => onGuidedChange({ lighting: e.target.value })}
+            options={LIGHTING_OPTIONS}
+            onChange={(v) => onGuidedChange({ lighting: v })}
+            placeholder="예: blue hour..."
             className={selectClass}
-          >
-            {LIGHTING_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">분위기</label>
-          <select
+          <ComboSelect
             value={guided.mood}
-            onChange={(e) => onGuidedChange({ mood: e.target.value })}
+            options={MOOD_OPTIONS}
+            onChange={(v) => onGuidedChange({ mood: v })}
+            placeholder="예: melancholic..."
             className={selectClass}
-          >
-            {MOOD_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1">비주얼 스타일</label>
-          <select
+          <ComboSelect
             value={guided.visualStyle}
-            onChange={(e) => onGuidedChange({ visualStyle: e.target.value })}
+            options={STYLE_OPTIONS}
+            onChange={(v) => onGuidedChange({ visualStyle: v })}
+            placeholder="예: oil painting..."
             className={selectClass}
-          >
-            {STYLE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          />
         </div>
-      </div>
-
-      {/* 프롬프트 미리보기 */}
-      <div className="rounded-lg border border-border bg-background p-3">
-        <p className="text-xs text-muted mb-1">최종 프롬프트 미리보기</p>
-        {builtPrompt ? (
-          <p className="text-sm text-foreground/80 italic break-words">&quot;{builtPrompt}&quot;</p>
-        ) : (
-          <p className="text-sm text-muted italic">위 필드를 채우면 프롬프트가 자동 생성됩니다.</p>
-        )}
       </div>
 
       {/* 비디오 설정 */}
       <div className="border-t border-border pt-4">
-        <h3 className="text-xs font-semibold text-foreground/50 mb-3 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-muted mb-3 uppercase tracking-wider">
           비디오 설정
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-foreground/60 mb-1">Duration</label>
+            <label className="block text-xs font-medium text-muted mb-1">Duration</label>
             <select
               value={settings.duration}
               onChange={(e) =>
@@ -226,7 +270,7 @@ export function GuidedPromptBuilder({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-foreground/60 mb-1">Resolution</label>
+            <label className="block text-xs font-medium text-muted mb-1">Resolution</label>
             <select
               value={settings.resolution}
               onChange={(e) =>
@@ -242,9 +286,7 @@ export function GuidedPromptBuilder({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-foreground/60 mb-1">
-              Aspect Ratio
-            </label>
+            <label className="block text-xs font-medium text-muted mb-1">Aspect Ratio</label>
             <select
               value={settings.aspectRatio}
               onChange={(e) =>
@@ -260,7 +302,7 @@ export function GuidedPromptBuilder({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-foreground/60 mb-1">Audio</label>
+            <label className="block text-xs font-medium text-muted mb-1">Audio</label>
             <button
               onClick={() => onSettingsChange({ generateAudio: !settings.generateAudio })}
               className={`w-full rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
