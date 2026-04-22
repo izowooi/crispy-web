@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { getReplicateClient } from "@/lib/replicate";
 import type { CreatePredictionRequest } from "@/lib/types";
 
-export const runtime = "edge";
-
 export async function POST(request: Request) {
   try {
     const body: CreatePredictionRequest = await request.json();

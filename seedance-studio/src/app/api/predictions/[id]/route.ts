@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getReplicateClient } from "@/lib/replicate";
 
-export const runtime = "edge";
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
