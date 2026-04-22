@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { replicate } from "@/lib/replicate";
+import { getReplicateClient } from "@/lib/replicate";
 
 export const runtime = "edge";
 
@@ -17,7 +17,7 @@ export async function GET(
       );
     }
 
-    const prediction = await replicate.predictions.get(id);
+    const prediction = await getReplicateClient().predictions.get(id);
 
     return NextResponse.json({
       id: prediction.id,

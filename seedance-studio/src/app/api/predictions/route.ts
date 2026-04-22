@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { replicate } from "@/lib/replicate";
+import { getReplicateClient } from "@/lib/replicate";
 import type { CreatePredictionRequest } from "@/lib/types";
 
 export const runtime = "edge";
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const prediction = await replicate.predictions.create({
+    const prediction = await getReplicateClient().predictions.create({
       model: "bytedance/seedance-2.0",
       input: {
         prompt,
