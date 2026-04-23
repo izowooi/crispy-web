@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const images = output as string[];
+    // FileOutput 객체를 URL 문자열로 변환 (SDK v1.x 대응)
+    const images = (Array.isArray(output) ? output : [output]).map((item) => String(item));
     return NextResponse.json({ image: images[0] });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
