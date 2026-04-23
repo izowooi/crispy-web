@@ -1,0 +1,26 @@
+name: toprest - Slack 랜덤 추천
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # 10분마다 (테스트용)
+  workflow_dispatch:           # 수동 실행 버튼
+
+concurrency:
+  group: toprest-slack
+  cancel-in-progress: false
+
+jobs:
+  recommend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Send random pick to Slack
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node mama/toprest/scripts/daily-recommend.mjs
