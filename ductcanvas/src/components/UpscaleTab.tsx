@@ -1,15 +1,39 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+
+const LOADING_MESSAGES = [
+  { emoji: "🔬", text: "픽셀 하나하나를 확대경으로 들여다보는 중" },
+  { emoji: "💎", text: "이미지를 다이아몬드처럼 갈고닦는 중" },
+  { emoji: "🧬", text: "화소 DNA를 재조합하고 있어요" },
+  { emoji: "🔭", text: "디테일을 우주 끝까지 끌어올리는 중" },
+  { emoji: "🏋️", text: "AI가 해상도를 열심히 키우는 중" },
+  { emoji: "🎯", text: "잃어버린 디테일을 찾아서..." },
+  { emoji: "🌊", text: "노이즈를 잠재우고 선명함을 깨우는 중" },
+  { emoji: "🪄", text: "저해상도야, 이제 안녕" },
+  { emoji: "🔍", text: "흐릿함을 선명함으로 번역 중" },
+  { emoji: "🏗️", text: "픽셀 빌딩을 4배 크기로 증축 중" },
+  { emoji: "😤", text: "AI가 이미지 품질에 진심입니다" },
+  { emoji: "🌟", text: "별처럼 빛나게 만들어드리겠습니다" },
+];
 
 export function UpscaleTab() {
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [msgIndex, setMsgIndex] = useState(0);
   const [error, setError] = useState("");
   const [prompt, setPrompt] = useState("Upscale to maximum resolution, preserve all details");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!loading) { setMsgIndex(0); return; }
+    const interval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -105,9 +129,29 @@ export function UpscaleTab() {
             disabled={loading}
             className="w-full py-3 bg-accent hover:bg-accent-hover text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "업스케일 중... (30–60초 소요)" : "업스케일"}
+            업스케일
           </button>
         </>
+      )}
+
+      {loading && (
+        <div className="flex flex-col items-center gap-5 py-10">
+          <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin" />
+          <div key={msgIndex} className="animate-msg-in text-center px-4">
+            <div className="text-4xl mb-2">{LOADING_MESSAGES[msgIndex].emoji}</div>
+            <p className="text-sm text-muted">{LOADING_MESSAGES[msgIndex].text}</p>
+          </div>
+          <div className="flex gap-1.5">
+            {LOADING_MESSAGES.map((_, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                  i === msgIndex ? "bg-accent" : "bg-border"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}

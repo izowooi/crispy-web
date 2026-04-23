@@ -1,7 +1,22 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+
+const LOADING_MESSAGES = [
+  { emoji: "🗺️", text: "이미지 세계를 넓혀가는 중" },
+  { emoji: "🌅", text: "캔버스 너머의 풍경을 상상 중" },
+  { emoji: "🎨", text: "AI 화가가 빈 공간에 붓질을 시작했어요" },
+  { emoji: "🔮", text: "없던 배경을 만들어내는 마법 시전 중" },
+  { emoji: "🌍", text: "사진의 지평선을 확장하는 중" },
+  { emoji: "🏞️", text: "원본 너머의 세상을 창조 중" },
+  { emoji: "🧩", text: "빠진 퍼즐 조각을 AI가 만들고 있어요" },
+  { emoji: "🌌", text: "상상력으로 프레임을 넓히는 중" },
+  { emoji: "🏗️", text: "화면 밖의 세계를 건축 중" },
+  { emoji: "😮", text: "\"저 밖에 뭐가 있을까?\" AI가 고민 중" },
+  { emoji: "🪄", text: "없는 것을 있게 만드는 중... 진짜로" },
+  { emoji: "✨", text: "가장자리에서 새로운 세계가 태어나고 있어요" },
+];
 
 const OUTPAINT_PRESETS = [
   { label: "가로 확장 (1:1 → 3:2)", ratio: "3:2", direction: "horizontal" },
@@ -14,10 +29,19 @@ export function OutpaintTab() {
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [msgIndex, setMsgIndex] = useState(0);
   const [error, setError] = useState("");
   const [selectedPreset, setSelectedPreset] = useState(0);
   const [customPrompt, setCustomPrompt] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!loading) { setMsgIndex(0); return; }
+    const interval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -148,9 +172,29 @@ export function OutpaintTab() {
             disabled={loading}
             className="w-full py-3 bg-accent hover:bg-accent-hover text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "아웃페인팅 중... (30–60초 소요)" : "아웃페인팅"}
+            아웃페인팅
           </button>
         </>
+      )}
+
+      {loading && (
+        <div className="flex flex-col items-center gap-5 py-10">
+          <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin" />
+          <div key={msgIndex} className="animate-msg-in text-center px-4">
+            <div className="text-4xl mb-2">{LOADING_MESSAGES[msgIndex].emoji}</div>
+            <p className="text-sm text-muted">{LOADING_MESSAGES[msgIndex].text}</p>
+          </div>
+          <div className="flex gap-1.5">
+            {LOADING_MESSAGES.map((_, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                  i === msgIndex ? "bg-accent" : "bg-border"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
