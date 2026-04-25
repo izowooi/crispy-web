@@ -43,7 +43,7 @@ export default function RootLayout({
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors underline underline-offset-2"
             >
-              소스 코드 보러가기 →
+              소스 코드
             </a>
           </div>
         </footer>
