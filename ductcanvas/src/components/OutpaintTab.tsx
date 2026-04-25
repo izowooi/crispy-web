@@ -25,6 +25,21 @@ const OUTPAINT_PRESETS = [
   { label: "세로로 2배 (1:1 → 1:2)", ratio: "custom-1:2", direction: "vertical" },
 ] as const;
 
+async function pollPrediction(id: string): Promise<string> {
+  while (true) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const res = await fetch(`/api/status?id=${id}`);
+    const data = await res.json();
+    if (data.status === "succeeded") {
+      const output = Array.isArray(data.output) ? data.output : [data.output];
+      return String(output[0]);
+    }
+    if (data.status === "failed" || data.status === "canceled") {
+      throw new Error(data.error || "아웃페인팅 실패");
+    }
+  }
+}
+
 export function OutpaintTab() {
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -83,8 +98,9 @@ export function OutpaintTab() {
         throw new Error(data.error || "아웃페인팅 실패");
       }
 
-      const data = await res.json();
-      setOutputImage(data.image);
+      const { id } = await res.json();
+      const imageUrl = await pollPrediction(id);
+      setOutputImage(imageUrl);
     } catch (e) {
       setError(e instanceof Error ? e.message : "알 수 없는 오류");
     } finally {

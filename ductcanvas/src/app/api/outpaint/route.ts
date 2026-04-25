@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     const aspectRatio = RATIO_MAP[ratio] ?? "3:2";
     const prompt = buildPrompt(direction, custom_prompt);
 
-    const output = await replicate.run("openai/gpt-image-2", {
+    const prediction = await replicate.predictions.create({
+      model: "openai/gpt-image-2",
       input: {
         prompt,
         input_images: [image],
@@ -48,9 +49,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // FileOutput 객체를 URL 문자열로 변환 (SDK v1.x 대응)
-    const images = (Array.isArray(output) ? output : [output]).map((item) => String(item));
-    return NextResponse.json({ image: images[0] });
+    return NextResponse.json({ id: prediction.id });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

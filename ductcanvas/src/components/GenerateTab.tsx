@@ -38,6 +38,21 @@ async function downloadBlob(url: string, filename: string) {
   }
 }
 
+async function pollPrediction(id: string): Promise<string[]> {
+  while (true) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const res = await fetch(`/api/status?id=${id}`);
+    const data = await res.json();
+    if (data.status === "succeeded") {
+      const output = Array.isArray(data.output) ? data.output : [data.output];
+      return output.map(String);
+    }
+    if (data.status === "failed" || data.status === "canceled") {
+      throw new Error(data.error || "생성 실패");
+    }
+  }
+}
+
 export function GenerateTab() {
   const [prompt, setPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState<(typeof ASPECT_RATIOS)[number]>("1:1");
@@ -81,8 +96,9 @@ export function GenerateTab() {
         throw new Error(data.error || "생성 실패");
       }
 
-      const data = await res.json();
-      setImages(data.images);
+      const { id } = await res.json();
+      const imageUrls = await pollPrediction(id);
+      setImages(imageUrls);
     } catch (e) {
       setError(e instanceof Error ? e.message : "알 수 없는 오류");
     } finally {

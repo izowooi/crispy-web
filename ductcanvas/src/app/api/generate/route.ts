@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "프롬프트를 입력하세요" }, { status: 400 });
     }
 
-    const output = await replicate.run("openai/gpt-image-2", {
+    const prediction = await replicate.predictions.create({
+      model: "openai/gpt-image-2",
       input: {
         prompt,
         aspect_ratio,
@@ -36,9 +37,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // FileOutput 객체를 URL 문자열로 변환 (SDK v1.x 대응)
-    const images = (Array.isArray(output) ? output : [output]).map((item) => String(item));
-    return NextResponse.json({ images });
+    return NextResponse.json({ id: prediction.id });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
