@@ -18,6 +18,23 @@ const LOADING_MESSAGES = [
   { emoji: "🌟", text: "별처럼 빛나게 만들어드리겠습니다" },
 ];
 
+async function downloadBlob(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
+
 async function pollPrediction(id: string): Promise<string> {
   while (true) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -197,17 +214,14 @@ export function UpscaleTab() {
                 height={600}
                 className="w-full h-auto object-contain"
               />
-              <a
-                href={outputImage}
-                download="ductcanvas-upscale.webp"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+              <button
+                onClick={() => downloadBlob(outputImage, "ductcanvas-upscale.webp")}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               >
                 <span className="px-4 py-2 bg-white text-black rounded-lg font-medium text-sm">
                   다운로드
                 </span>
-              </a>
+              </button>
             </div>
           </div>
         </div>

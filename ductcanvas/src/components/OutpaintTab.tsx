@@ -25,6 +25,23 @@ const OUTPAINT_PRESETS = [
   { label: "세로로 2배 (1:1 → 1:2)", ratio: "custom-1:2", direction: "vertical" },
 ] as const;
 
+async function downloadBlob(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
+
 async function pollPrediction(id: string): Promise<string> {
   while (true) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -227,17 +244,14 @@ export function OutpaintTab() {
               height={800}
               className="w-full h-auto"
             />
-            <a
-              href={outputImage}
-              download="ductcanvas-outpaint.webp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+            <button
+              onClick={() => downloadBlob(outputImage, "ductcanvas-outpaint.webp")}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
             >
               <span className="px-4 py-2 bg-white text-black rounded-lg font-medium text-sm">
                 다운로드
               </span>
-            </a>
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
