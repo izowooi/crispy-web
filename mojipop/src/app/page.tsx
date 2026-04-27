@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { CONCEPTS, DEFAULT_CONCEPT_IDS, type Quality } from "@/lib/concepts";
+import { PasswordGate } from "@/components/PasswordGate";
 
 interface GenerationSlot {
   conceptId: number;
@@ -36,7 +37,10 @@ async function downloadBlob(url: string, filename: string) {
   }
 }
 
+const AUTH_KEY = "mojipop-auth";
+
 export default function Home() {
+  const [authed, setAuthed] = useState(false);
   const [refImages, setRefImages] = useState<string[]>([]);
   const [quality, setQuality] = useState<Quality>("low");
   const [slots, setSlots] = useState<GenerationSlot[]>([]);
@@ -45,6 +49,17 @@ export default function Home() {
   const [msgIndex, setMsgIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem(AUTH_KEY) === "1") {
+      setAuthed(true);
+    }
+  }, []);
+
+  const handleAuth = () => {
+    sessionStorage.setItem(AUTH_KEY, "1");
+    setAuthed(true);
+  };
 
   useEffect(() => {
     if (!isGenerating) return;
@@ -192,6 +207,10 @@ export default function Home() {
 
     setIsGenerating(false);
   };
+
+  if (!authed) {
+    return <PasswordGate onSuccess={handleAuth} />;
+  }
 
   const succeededSlots = slots.filter((s) => s.status === "succeeded");
 
