@@ -42,7 +42,8 @@ const AUTH_KEY = "mojipop-auth";
 export default function Home() {
   const [authed, setAuthed] = useState(false);
   const [refImages, setRefImages] = useState<string[]>([]);
-  const [quality, setQuality] = useState<Quality>("low");
+  // TODO(admin): Google 로그인 관리자 권한 추가 시 useState<Quality>로 변경하여 medium/high 선택 활성화
+  const quality: Quality = "low";
   const [slots, setSlots] = useState<GenerationSlot[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [globalError, setGlobalError] = useState("");
@@ -313,7 +314,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Step 2: Quality */}
+        {/* QUALITY_SELECTOR_DISABLED: 현재 low 고정. 관리자(Google 로그인) 기능 추가 시 아래 주석 해제
         <section>
           <h2 className="text-sm font-semibold text-muted mb-3 uppercase tracking-wide">
             STEP 2 — 이미지 품질
@@ -345,6 +346,7 @@ export default function Home() {
             ))}
           </div>
         </section>
+        */}
 
         {/* Generate Button */}
         <button
