@@ -66,22 +66,24 @@ Agent(
 - ../ductcanvas/AGENTS.md
 - ../ductcanvas/package.json
 - ../ductcanvas/src 구조
+- ../ductcanvas/.env.local (REPLICATE_API_TOKEN 복사 출처)
 
-산출물: _workspace/00_architect_decisions.md
-  - 테스트 프레임워크: Vitest 권장
-  - 상태관리: useReducer
-  - Replicate 모델 전략: 단일 모델 + per-style prompt (확장 포인트는 명시만)
-  - 스타일 프리셋 위치: src/config/styles.ts
-  - 이미지 전송: base64 dataURL + JSON body
-  - 동시 생성: 클라이언트 N개 병렬 요청
-  - 환경변수 매핑: PRD의 키 + MCP 발급 가능 여부
-  - 컴포넌트 배치: src/components/ 평탄
-  - EXIF 제거: canvas 재인코딩
+확정된 결정값 (D1~D4, 사용자 승인 완료 — 변경 금지, 그대로 적용):
+  - D1 테스트: Vitest(단위) + Playwright MCP(E2E). Phase 1 시작 시 `claude mcp list | grep playwright`로 가용성 검증.
+  - D2 스타일: 7 카테고리 × ~2-3개 = 약 15개. 카테고리는 증명사진/일러스트·페인팅/캐릭터·피규어/애니메이션·만화/흑백·조각/글래머·뷰티/예술·실험.
+  - D3 배포: 사용자가 Cloudflare 대시보드에서 수동 업로드. wrangler login·CLOUDFLARE_* env 키 사용 안 함. PRD의 §환경변수에서 Cloudflare 키를 "선택"으로 강등.
+  - D4 Firebase: Firebase MCP로 `crispy-web` 프로젝트에 snapmany web app 자동 생성 시도. firebase_list_projects → firebase_list_apps → 없으면 firebase_create_app → firebase_get_sdk_config로 4개 키 추출 → .env.local 기록. MCP 실패 시 placeholder + 진행(사용자가 추후 수정).
 
-환경변수 중 MCP로 발급 불가능한 것은 산출물에 "사용자에게 발급 요청" 섹션으로 명시.
-.claude/skills/nextjs-cloudflare-edge/SKILL.md, replicate-proxy/SKILL.md를 참고하라.
+산출물: _workspace/00_architect_decisions.md (architect.md의 "Phase 1 산출물 명세" 표 전 항목 채워 기록)
 
-작업 종료 후 _workspace/00_architect_decisions.md 경로를 명시한 한 줄 보고.
+추가 작업: docs/prd.md 보강
+  - §스타일 트리: 7 카테고리 × ~15개 명시 (각 카테고리별 세부 스타일 ID + label + description, prompt는 제외)
+  - §MVP vs v2 스코프: MVP는 클립보드 복사·sticky 버튼·반응형까지. v2는 검색·즐겨찾기·셔플·비교 슬라이더·콜라주 등.
+  - §환경변수: Cloudflare 키를 "선택"으로 강등하고 사유 명시(D3).
+
+.claude/skills/nextjs-cloudflare-edge/SKILL.md, replicate-proxy/SKILL.md, firebase-remote-config/SKILL.md를 참고하라.
+
+작업 종료 후 _workspace/00_architect_decisions.md 경로 + PRD 보강 완료 + Firebase MCP 호출 결과(성공/placeholder)를 한 묶음으로 보고.
   """
 )
 ```
@@ -228,7 +230,7 @@ qa를 단독 서브로 호출, 모든 `_workspace/03_*` 산출물과 `src/` 코�
 
 ## Phase 5 — 배포 + 커밋 (서브)
 
-### 5-A. architect 최종 빌드
+### 5-A. architect 최종 빌드 (D3: 수동 대시보드 업로드)
 
 ```
 Agent(
@@ -236,15 +238,32 @@ Agent(
   subagent_type: "general-purpose",
   model: "opus",
   prompt: """
-README.md를 완성하라 (개발/빌드/배포 절차, 환경변수 발급 가이드).
+README.md를 완성하라:
+  - 개발 절차 (npm install, npm run dev)
+  - 빌드 절차 (npm run pages:build)
+  - **배포 절차 (수동 대시보드 업로드)**:
+    1) https://dash.cloudflare.com → Workers & Pages → Create application → Pages → Upload assets
+    2) 프로젝트 이름: snapmany (충돌 시 snap-many)
+    3) 빌드 결과 폴더 `.vercel/output/static`을 그대로 업로드 (또는 zip)
+    4) Settings → Environment variables에 주입:
+       - REPLICATE_API_TOKEN (Production + Preview)
+       - NEXT_PUBLIC_FIREBASE_API_KEY
+       - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+       - NEXT_PUBLIC_FIREBASE_PROJECT_ID
+       - NEXT_PUBLIC_FIREBASE_APP_ID
+    5) Redeploy
+  - 환경변수 발급 가이드 (Firebase Console URL, Replicate URL)
 
 실행:
   npm run pages:build
-  npx wrangler pages dev .vercel/output/static  (백그라운드, 부팅 확인 후 종료)
+  npx wrangler pages dev .vercel/output/static  (백그라운드, 부팅 확인 후 종료. wrangler login 불필요한 dev 모드)
+
+**금지:** wrangler login, npm run deploy (D3: 자동 배포 안 함)
 
 산출물: _workspace/05_architect_deploy.md
-  - 빌드 결과
-  - 사용자가 수동으로 해야 할 작업 (Cloudflare 대시보드 env 주입, Firebase Console 설정 등)
+  - 빌드 결과 (성공/실패, 출력 폴더 크기)
+  - 사용자가 대시보드에서 처리할 작업 체크리스트 (위 1~5)
+  - 주입할 환경변수 4개 + REPLICATE_API_TOKEN 명세
   """
 )
 ```
@@ -269,13 +288,32 @@ Agent(
 )
 ```
 
-### 5-C. verify-and-commit
+### 5-C. verify-and-commit (최종)
 
 `.claude/skills/verify-and-commit/SKILL.md`를 따라 시크릿 grep → 스테이징 → 커밋 → 푸시.
 
 커밋 메시지:
-- 초기 구축: `snapmany: 사진 다중 스타일 변환 MVP 초기 구현`
+- 초기 구축: `snapmany: 사진 다중 스타일 변환 MVP 초기 구현 (배포 가능 상태)`
 - 부분 수정: `snapmany: <변경 의도 한 줄>`
+
+## 커밋 정책 (incremental — 단계마다 자주 커밋)
+
+사용자 정책: **동작 가능한 상태마다 커밋·푸시**. 깨진 상태 커밋 금지. verify-and-commit의 풀 파이프라인 게이트(typecheck/lint/test/build)를 통과한 시점에만 커밋한다. 초기 구축 시 다음 6개 시점에서 incremental 커밋:
+
+| 시점 | 커밋 메시지 (예시) | 검증 게이트 |
+|------|------------------|------------|
+| Phase 2 통과 직후 (스캐폴딩 + 1차 게이트) | `snapmany: Next.js + Tailwind v4 + Cloudflare Pages 스캐폴딩` | typecheck + lint |
+| Phase 3 R1 통과 직후 (styles.ts, replicate.ts, UploadPanel) | `snapmany: 스타일 config + Replicate wrapper + 업로드 컴포넌트` | typecheck + lint + test |
+| Phase 3 R2 통과 직후 (route.ts, remoteConfig.ts, StylePicker, GenerationCard) | `snapmany: /api/generate 프록시 + Firebase RC + 스타일 선택 UI` | typecheck + lint + test + build |
+| Phase 3 R3 통과 직후 (ResultGallery, page.tsx) | `snapmany: 결과 갤러리 + 메인 페이지 통합` | 풀 파이프라인 |
+| Phase 4 통합 QA 통과 직후 | `snapmany: 통합 정합성 검증 통과 + E2E 시나리오` | 풀 파이프라인 + Playwright E2E |
+| Phase 5 최종 게이트 통과 직후 | `snapmany: 사진 다중 스타일 변환 MVP 초기 구현 (배포 가능 상태)` | 풀 파이프라인 + pages:build |
+
+**금지:**
+- 풀 파이프라인 통과 전 커밋
+- `.env.local` 같은 시크릿 파일 staging (verify-and-commit의 grep으로 차단)
+- 새 브랜치/저장소 생성 (모노레포 main 직접 푸시)
+- `--no-verify`, `--amend`, force push
 
 ## 에러 핸들링
 

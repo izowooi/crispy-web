@@ -13,7 +13,7 @@ snapmany 프로젝트의 **기술적 결정자**이자 **스캐폴딩 담당자*
 
 1. **분석(Phase 1)** — `docs/prd.md`와 `../ductcanvas/` 참조를 읽고, 잠가야 할 결정 항목을 모두 결정해 `_workspace/00_architect_decisions.md`에 기록한다.
 2. **스캐폴딩(Phase 2)** — Next.js 16 + Tailwind v4 + TypeScript + Replicate + Cloudflare Pages 보일러플레이트를 만든다. `wrangler.jsonc`, `next.config.ts`, `eslint.config.mjs`, `tsconfig.json`, `postcss.config.mjs`, `src/app/{layout,page}.tsx`, `src/app/globals.css` 까지.
-3. **배포 검증(Phase 5)** — `npm run pages:build`와 `wrangler pages dev`가 무사히 통과하는지, README/배포 절차가 명료한지 확인한다.
+3. **배포 검증(Phase 5)** — `npm run pages:build`가 `.vercel/output/static`을 깨끗하게 생성하는지, `wrangler pages dev` 로컬 부팅이 정상인지 확인한다. **단, 자동 배포는 수행하지 않는다** (D3 결정: 사용자가 Cloudflare 대시보드에서 수동 업로드). README에 대시보드 절차 + 환경변수 주입 가이드를 명시한다.
 
 ## 작업 원칙
 
@@ -28,15 +28,19 @@ snapmany 프로젝트의 **기술적 결정자**이자 **스캐폴딩 담당자*
 
 | 항목 | 값 결정 |
 |------|--------|
-| 테스트 프레임워크 | Vitest 권장 (Next.js 16 + edge runtime 호환, ESM 친화). Jest는 SWC 설정 추가 필요. |
+| 테스트 프레임워크 | **Vitest(단위) + Playwright MCP(E2E)**. Playwright MCP는 이미 설치된 것으로 추정 — Phase 1 시작 시 `claude mcp list \| grep playwright`로 확인. 없으면 사용자에게 보고 후 일시정지(또는 `@playwright/test` npm로 폴백 합의). |
 | 상태 관리 | React `useState`/`useReducer`로 시작. 페이지 1개·갤러리 1개 규모면 Zustand 불필요. |
 | Replicate 모델 전략 | **기본: 단일 모델(`openai/gpt-image-2`) + per-style prompt**. `StylePreset.model?`은 확장 포인트로만 남겨둔다. |
-| 스타일 프리셋 위치 | `src/config/styles.ts` (Remote Config로 enabled_styles만 토글) |
-| 이미지 전송 방식 | 클라이언트에서 base64 데이터 URL로 인코딩 → multipart 대신 JSON `{ image, styleIds[] }`로 `/api/generate` 전송 |
+| 스타일 카테고리 구조 | **7 카테고리 × ~2-3개 = 약 15개**. 카테고리: 증명사진 / 일러스트·페인팅 / 캐릭터·피규어 / 애니메이션·만화 / 흑백·조각 / 글래머·뷰티 / 예술·실험. 50개 풀 비전은 v1.1에서 RC `show_beta_styles` 토글로 확장. |
+| 스타일 프리셋 위치 (분리) | `src/config/styles.ts`(클라이언트 노출: `id/label/category/thumb/description`만) + `src/lib/stylePrompts.ts`(서버 전용: `prompt/negativePrompt`). 분리 이유: 클라이언트 번들에 prompt가 들어가면 카피·abuse 위험. |
+| 이미지 전송 방식 | 클라이언트에서 base64 데이터 URL로 인코딩 → multipart 대신 JSON `{ image, styleId }`로 `/api/generate` 전송 (1요청 = 1스타일). |
 | 동시 생성 처리 | 클라이언트가 styleIds별로 N개 요청을 병렬 전송, 서버는 1요청 = 1스타일. UI는 `GenerationItem[]` 배열로 개별 상태 추적 |
-| 환경변수 키 매핑 | PRD에 명시된 키를 그대로 `.env.example`로 옮기되, MCP 발급 가능 여부를 검토 후 기록 |
-| 컴포넌트 배치 | `src/components/` 평탄 (`UploadPanel.tsx`, `StylePicker.tsx`, `ResultGallery.tsx`, `GenerationCard.tsx`) — ductcanvas와 동일 컨벤션 |
+| 환경변수 키 매핑 | `REPLICATE_API_TOKEN`은 `../ductcanvas/.env.local`에서 복사. Firebase 4개 키는 Firebase MCP(`firebase_get_sdk_config`)로 자동 추출 시도. **Cloudflare `ACCOUNT_ID`/`API_TOKEN`은 사용하지 않음**(D3 결정: 수동 대시보드 업로드). PRD §환경변수에서 Cloudflare 키를 "선택"으로 강등 + 그 사유를 PRD에 명시. |
+| Firebase 발급 절차 | (1) `firebase_list_projects`로 `crispy-web` 존재 확인 → (2) `firebase_list_apps(project: crispy-web)`로 snapmany 앱 유무 확인 → (3) 없으면 `firebase_create_app(displayName: 'snapmany', platform: 'WEB')` → (4) `firebase_get_sdk_config(appId)`로 4개 키 추출 → (5) `.env.local`에 기록. MCP 실패 시 코드에 placeholder + 사용자에게 `https://console.firebase.google.com/u/1/project/crispy-web` 가이드 후 일시 정지(사용자 notes: "MCP가 안 되면 코드에 박아주세요, 추후 수정"). |
+| 컴포넌트 배치 | `src/components/` 평탄 (`UploadPanel.tsx`, `StylePicker.tsx`, `ResultGallery.tsx`, `GenerationCard.tsx`, `CategoryTabs.tsx`) — ductcanvas와 동일 컨벤션 + 카테고리 탭 추가 |
 | EXIF 제거 방식 | 클라이언트 canvas 재인코딩 (업로드 시 적용) |
+| MVP 인터랙션 범위 | **포함:** 클립보드 복사, sticky 모바일 생성 버튼, 기본 반응형. **v1.1로 미룸:** 검색·즐겨찾기·랜덤 셔플·비교 슬라이더·콜라주 다운로드·한 스타일 재생성. |
+| 디자인 톤 | 모노레포 일관: 다크모드(localStorage + `<html class="dark">`) + 오렌지 액센트 + sticky 헤더(border-b) + 그리드 + group-hover 다운로드 오버레이. ductcanvas의 `ThemeToggle` 패턴 참고. |
 
 ## Phase 2 스캐폴딩 체크리스트
 
@@ -62,11 +66,13 @@ snapmany 프로젝트의 **기술적 결정자**이자 **스캐폴딩 담당자*
 - **입력**: `docs/prd.md`, `docs/llms-gpt-image2.txt`, `../ductcanvas/` (참고)
 - **출력 (Phase 1)**: `_workspace/00_architect_decisions.md`
 - **출력 (Phase 2)**: 프로젝트 루트의 스캐폴딩 파일들 + `_workspace/02_architect_scaffold.md` (어떤 파일을 어떤 의도로 만들었는지 요약)
-- **출력 (Phase 5)**: `_workspace/05_architect_deploy.md` (배포 검증 결과, 남은 수동 작업)
+- **출력 (Phase 5)**: `_workspace/05_architect_deploy.md` (`pages:build` 결과 경로, 사용자에게 안내할 대시보드 업로드 절차, 주입할 환경변수 4개 목록)
 
 ## 에러 핸들링
 
-- 환경변수를 MCP로 발급할 수 없으면 → 작업 중단, 사용자에게 발급처와 필요한 권한 안내 후 대기.
+- Firebase MCP 미가용 또는 권한 부족 → 사용자 notes 적용("코드에 박아주세요, 추후 수정"). `.env.local`에 placeholder 박고 `_workspace/00_architect_decisions.md`에 명시 후 일시 정지하지 말고 진행(단, qa Phase 5 게이트에서 placeholder 잔존을 사용자에게 알릴 의무).
+- Playwright MCP 미설치 → 사용자에게 보고 후 `@playwright/test` npm 폴백 합의 또는 일시 정지.
+- Replicate 토큰이 ductcanvas에도 없으면 → 작업 중단, 사용자에게 https://replicate.com/account/api-tokens 안내 후 대기.
 - 참조 프로젝트(`../ductcanvas/`)가 사라졌거나 접근 불가하면 → 패턴은 PRD와 일반 지식으로 진행하되 `_workspace/00_architect_decisions.md`에 "ductcanvas 참조 불가" 명시.
 
 ## 협업

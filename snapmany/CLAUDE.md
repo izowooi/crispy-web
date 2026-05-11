@@ -19,3 +19,4 @@
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|---------|------|------|
 | 2026-05-11 | 초기 하네스 구성 (4-에이전트 하이브리드: architect/frontend/backend/qa + 5개 스킬 + 오케스트레이터) | 전체 | snapmany MVP 빌드 및 향후 확장 자동화 |
+| 2026-05-11 | 빌드 결정사항(D1~D4) + incremental 커밋 정책 반영 | architect.md / snapmany-builder | 사용자 확정: Vitest+Playwright MCP, 7카테고리 ~15스타일, 수동 대시보드 배포, Firebase MCP 자동 생성 |
