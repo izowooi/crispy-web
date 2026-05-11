@@ -21,6 +21,9 @@ node_modules/
 dist/
 out/
 
+# Playwright MCP cache (모노레포 공통 패턴 — 다른 프로젝트와 동일)
+.playwright-mcp/
+
 # tests / coverage
 coverage/
 
