@@ -80,11 +80,13 @@ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 
-Cloudflare 사용 시:
+선택 (자동 배포 시에만 사용. 본 MVP는 Cloudflare 대시보드 수동 업로드이므로 불필요):
 CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
 
-선택:
+> **사유 (D3 결정, 사용자 승인):** 배포는 사용자가 Cloudflare 대시보드에서 `.vercel/output/static`을 직접 업로드하고 환경변수를 주입하는 방식으로 진행한다. `wrangler login`을 사용한 자동 `npm run deploy`는 사용하지 않으므로 `CLOUDFLARE_*` 환경변수는 본 MVP에서 발급·주입할 필요가 없다. v1.1 이후 자동 배포를 도입하면 그 때 필수로 승격한다.
+
+선택 (운영/관측):
 NEXT_PUBLIC_APP_ENV=
 SENTRY_DSN=
 
@@ -106,28 +108,100 @@ Remote Config fetch 실패 시 기본 local config로 동작해야 한다.
 
 ## 스타일 프리셋
 
-스타일 프리셋은 config로 분리한다.
+스타일 프리셋은 config로 분리한다. **클라이언트 노출 메타데이터**(id/label/category/description/thumb)와 **서버 전용 prompt**를 분리한다.
 
-type StylePreset = {
+```ts
+// src/config/styles.ts (클라이언트 노출 가능)
+export type StyleMeta = {
   id: string;
   label: string;
+  category: StyleCategoryId;
   description: string;
-  prompt: string;
-  negativePrompt?: string;
-  model?: string;
+  thumb?: string;
 };
 
-초기 스타일:
-- 캐리커처
-- 3D 캐릭터
-- 애니메이션풍
-- 증명사진
-- 여권사진 스타일
-- 운전면허증 사진 스타일
-- 비즈니스 프로필
-- SNS 프로필
-- 귀여운 스티커
-- 흑백 스튜디오
+// src/lib/stylePrompts.ts (서버 전용, 절대 클라이언트 번들 금지)
+export type StylePrompt = {
+  id: string;
+  prompt: string;
+  negativePrompt?: string;
+  model?: string;          // 기본은 openai/gpt-image-2
+  aspectRatio?: '1:1' | '3:2' | '2:3';
+};
+```
+
+## 스타일 트리 (D2 결정: 7 카테고리 × ~2-3개 = 15개)
+
+v1.0 MVP에서 노출하는 스타일은 아래 15개로 잠근다. 50개 풀 비전은 v1.1에서 RC `show_beta_styles` 토글로 확장한다.
+
+| 카테고리 ID | 카테고리 라벨 | 포함 스타일 ID |
+|------------|--------------|---------------|
+| `id_photo` | 증명사진 | `id_photo_basic`, `passport`, `business_profile` |
+| `illust_paint` | 일러스트·페인팅 | `watercolor`, `oil_painting` |
+| `character_figure` | 캐릭터·피규어 | `3d_character`, `chibi_sticker` |
+| `anime_manga` | 애니메이션·만화 | `anime_pastel`, `manga_inking` |
+| `bw_sculpture` | 흑백·조각 | `bw_studio`, `marble_bust` |
+| `glamour_beauty` | 글래머·뷰티 | `kbeauty_glow`, `editorial_glam` |
+| `art_experimental` | 예술·실험 | `pixel_8bit`, `lowpoly_geo` |
+
+세부 스타일 (id / label / description) — `prompt`는 서버 전용 `src/lib/stylePrompts.ts`에 분리:
+
+증명사진 (3):
+- `id_photo_basic` — 일반 증명사진 — 단정한 정면 구도, 무채색 배경, 자연광 ID 사진.
+- `passport` — 여권사진 — 무표정·정면·흰 배경의 표준 여권 규격 사진.
+- `business_profile` — 비즈니스 프로필 — 회사 홈페이지/링크드인용 정장 프로필.
+
+일러스트·페인팅 (2):
+- `watercolor` — 수채화 일러스트 — 번짐 효과와 부드러운 색감의 손그림 풍.
+- `oil_painting` — 유화 — 두꺼운 질감의 클래식 유화 초상화.
+
+캐릭터·피규어 (2):
+- `3d_character` — 3D 캐릭터 — 픽사풍 셀룰로이드 셰이딩의 3D 캐릭터.
+- `chibi_sticker` — 치비 스티커 — 큰 머리·작은 몸의 귀여운 스티커.
+
+애니메이션·만화 (2):
+- `anime_pastel` — 파스텔 애니메이션 — 일본 애니풍 부드러운 파스텔 셀.
+- `manga_inking` — 흑백 만화 — 잉크 라인과 스크린톤의 흑백 만화 컷.
+
+흑백·조각 (2):
+- `bw_studio` — 흑백 스튜디오 — 고대비 흑백 스튜디오 포트레이트.
+- `marble_bust` — 대리석 흉상 — 그리스 조각상 스타일의 대리석 흉상.
+
+글래머·뷰티 (2):
+- `kbeauty_glow` — K-뷰티 글로우 — 윤기 있는 피부와 자연스러운 메이크업의 K-뷰티 룩.
+- `editorial_glam` — 에디토리얼 글램 — 패션지 표지풍 강한 라이팅의 글래머 컷.
+
+예술·실험 (2):
+- `pixel_8bit` — 8비트 픽셀 — 레트로 게임 도트풍 픽셀 아바타.
+- `lowpoly_geo` — 로우폴리 — 기하학적 면 분할의 로우폴리 3D.
+
+## MVP vs v2 스코프
+
+v1.0 MVP에 **포함**:
+- 단일 이미지 업로드 + 미리보기 (jpg/png/webp, 최대 10MB)
+- 7카테고리 탭 + 카테고리별 다중 스타일 선택
+- 다중 스타일 동시 생성 (스타일 수 × 1개 = N개의 병렬 `/api/generate` 호출)
+- 결과 갤러리(스타일별 카드, 개별 상태: idle/uploading/generating/completed/failed)
+- 결과 이미지 다운로드 (group-hover 오버레이 + sticky 모바일 다운로드 버튼)
+- **결과 URL 클립보드 복사 버튼**
+- **sticky 모바일 생성 버튼** (스크롤해도 화면 하단에 고정)
+- 기본 반응형(모바일 1열 / 태블릿 2열 / 데스크탑 3-4열)
+- 다크모드 토글 (localStorage + `<html class="dark">`)
+- Firebase Remote Config fetch + 8개 키 정의 + local fallback
+- 점검 모드 배너 (`maintenance_mode`)
+- Vitest 단위 테스트 + Playwright MCP E2E 1개 (mock flow)
+
+v1.1 이후로 **미룸**:
+- 검색·필터 UI (15개에서는 불필요)
+- 즐겨찾기·핀 고정
+- 랜덤 셔플·자동 다양화
+- before/after 비교 슬라이더
+- 콜라주 다운로드(여러 결과를 한 장 PNG로 합치기)
+- 한 스타일만 재생성 버튼
+- 50개 풀 스타일 풀 + `show_beta_styles` 토글 노출
+- 사용자 계정·이력·결제
+- IP 기반 rate limit
+- 비용 추적/사용량 대시보드
 
 ## 중요한 보안 조건
 

@@ -1,0 +1,40 @@
+{
+  "name": "snapmany",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pages:build": "npx @cloudflare/next-on-pages@1",
+    "preview": "npm run pages:build && npx wrangler pages dev .vercel/output/static"
+  },
+  "dependencies": {
+    "firebase": "^11.0.0",
+    "next": "15.5.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "replicate": "^1.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1",
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6",
+    "@testing-library/react": "^16",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "@vitest/coverage-v8": "^2",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.2",
+    "jsdom": "^25",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^2"
+  }
+}

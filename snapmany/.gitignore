@@ -1,0 +1,43 @@
+# snapmany .gitignore
+# 주의: _workspace/ 는 감사 추적용 — 깃에 포함시킨다(여기에 포함하지 말 것).
+
+# env (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# secrets / keys
+*.key
+*.pem
+id_rsa
+id_rsa.pub
+
+# node / build artifacts
+node_modules/
+.next/
+.vercel/
+.wrangler/
+.turbo/
+dist/
+out/
+
+# tests / coverage
+coverage/
+
+# tsbuild
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# logs
+*.log
+firebase-debug.log
+firebase-debug.*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+.vscode/
