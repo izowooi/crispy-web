@@ -424,11 +424,6 @@ export default function Home() {
         </button>
       </div>
 
-      <footer className="border-t border-border bg-background mt-auto">
-        <div className="max-w-5xl mx-auto px-4 py-6 text-xs text-muted text-center">
-          SnapMany · 한 장의 사진으로 여러 스타일을 한 번에
-        </div>
-      </footer>
     </main>
   );
 }
