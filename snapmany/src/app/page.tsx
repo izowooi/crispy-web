@@ -10,6 +10,7 @@ import {
 import { UploadPanel } from "@/components/UploadPanel";
 import { StylePicker } from "@/components/StylePicker";
 import { ResultGallery } from "@/components/ResultGallery";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type {
   GenerationItem,
   GenerationStatus,
@@ -425,49 +426,5 @@ export default function Home() {
       </div>
 
     </main>
-  );
-}
-
-// --- ThemeToggle (inline; ductcanvas pattern) ---
-
-function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
-  }, []);
-
-  const toggle = () => {
-    const next = !dark;
-    setDark(next);
-    if (typeof document === "undefined") return;
-    if (next) {
-      document.documentElement.classList.add("dark");
-      try {
-        localStorage.setItem("theme", "dark");
-      } catch {
-        /* ignore */
-      }
-    } else {
-      document.documentElement.classList.remove("dark");
-      try {
-        localStorage.setItem("theme", "light");
-      } catch {
-        /* ignore */
-      }
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={toggle}
-      data-testid="theme-toggle"
-      className="rounded-lg border border-border p-2 text-muted hover:text-foreground hover:border-accent transition-colors text-sm"
-      aria-label={dark ? "라이트 모드로 전환" : "다크 모드로 전환"}
-      title={dark ? "라이트 모드로 전환" : "다크 모드로 전환"}
-    >
-      {dark ? "라이트" : "다크"}
-    </button>
   );
 }
