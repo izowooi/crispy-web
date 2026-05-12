@@ -233,4 +233,72 @@ describe("lib/replicate — predictions.create + polling wrapper", () => {
     });
     expect(result.imageUrl).toBe("https://replicate.delivery/jkl/plain.webp");
   });
+
+  // -- 429 rate-limit retry (D-RL-1) ---------------------------------------
+
+  it("retries predictions.create once after retry_after when first call returns 429", async () => {
+    const apiError = Object.assign(
+      new Error(
+        'Request to https://api.replicate.com/v1/models/openai/gpt-image-2/predictions failed with status 429 Too Many Requests: {"detail":"Request was throttled...","status":429,"retry_after":1}'
+      ),
+      { name: "ApiError" }
+    );
+    mockCreate.mockRejectedValueOnce(apiError);
+    mockCreate.mockResolvedValueOnce(
+      makePrediction({ status: "succeeded", output: ["https://replicate.delivery/retried/ok.webp"] })
+    );
+
+    const mod = await import("@/lib/replicate");
+    const result = await mod.generateStyledImage({
+      image: SAMPLE_IMAGE,
+      styleId: "id_photo_basic",
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(result.imageUrl).toBe("https://replicate.delivery/retried/ok.webp");
+  }, 10_000);
+
+  it("throws when 429 retry also fails (no infinite loop)", async () => {
+    const apiError = Object.assign(
+      new Error(
+        'Request failed with status 429 Too Many Requests: {"retry_after":1}'
+      ),
+      { name: "ApiError" }
+    );
+    mockCreate.mockRejectedValueOnce(apiError);
+    mockCreate.mockRejectedValueOnce(apiError);
+
+    const mod = await import("@/lib/replicate");
+    await expect(
+      mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "id_photo_basic" })
+    ).rejects.toThrow(/429/);
+
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  }, 10_000);
+
+  it("does not retry on non-429 errors", async () => {
+    mockCreate.mockRejectedValueOnce(new Error("upstream 401 Unauthorized"));
+
+    const mod = await import("@/lib/replicate");
+    await expect(
+      mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "id_photo_basic" })
+    ).rejects.toThrow(/401/);
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it("parseRateLimit recognizes status property as well as message pattern", async () => {
+    const mod = await import("@/lib/replicate");
+    expect(mod.parseRateLimit(Object.assign(new Error("x"), { status: 429 }))).toEqual({
+      isRateLimit: true,
+      retryAfterSec: 11, // default 10 + 1 buffer
+    });
+    expect(mod.parseRateLimit(new Error("status 500"))).toEqual({
+      isRateLimit: false,
+      retryAfterSec: 0,
+    });
+    expect(
+      mod.parseRateLimit(new Error('429 Too Many Requests: {"retry_after":5}'))
+    ).toEqual({ isRateLimit: true, retryAfterSec: 6 });
+  });
 });

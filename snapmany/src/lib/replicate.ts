@@ -22,6 +22,15 @@ const POLL_INTERVAL_MS = 1_500;
 // 폴링 시작 전 첫 대기. 첫 predictions.create 직후 보통 즉시는 starting 상태이므로
 // 곧바로 polling 하면 무의미한 라운드트립이 1번 발생. 1 s 정도 둠.
 const FIRST_POLL_DELAY_MS = 1_000;
+// Rate-limit 재시도 정책 (D-RL-1):
+//   Replicate는 신용 잔액이 적으면 "burst: 1, 6 RPM"으로 강하게 throttle한다.
+//   응답이 429이면 메시지에 retry_after 초가 포함되므로 그만큼 sleep 후 1회 재시도.
+//   재시도까지 실패하면 호출자에게 throw → route handler가 502로 변환.
+const MAX_RATE_LIMIT_RETRIES = 1;
+// retry_after를 못 읽었을 때의 안전 기본값.
+const DEFAULT_RETRY_AFTER_SEC = 10;
+// retry_after 상한. 비정상 큰 값으로 인한 사용자 대기 폭증 방지.
+const MAX_RETRY_AFTER_SEC = 30;
 
 export type GenerateStyledImageInput = {
   readonly image: string;
@@ -99,6 +108,66 @@ function isTerminal(status: Prediction["status"]): status is TerminalStatus {
   return status === "succeeded" || status === "failed" || status === "canceled";
 }
 
+/**
+ * Replicate ApiError에서 rate-limit (429) 여부와 retry_after 초를 뽑아낸다.
+ *
+ * SDK 1.x의 ApiError는 status 속성을 가질 수도 있고 안 가질 수도 있다.
+ * 메시지 패턴이 가장 확실 — 사용자 production 로그 기준:
+ *   "Request to ... failed with status 429 Too Many Requests: {"detail":"...","status":429,"retry_after":9}"
+ */
+export function parseRateLimit(err: unknown): { isRateLimit: boolean; retryAfterSec: number } {
+  if (err == null || typeof err !== "object") {
+    return { isRateLimit: false, retryAfterSec: 0 };
+  }
+
+  // 1) ApiError 객체의 status 속성 (있으면 가장 신뢰)
+  const maybeStatus = (err as { status?: unknown }).status;
+  // 2) 메시지 패턴
+  const message = err instanceof Error ? err.message : "";
+
+  const looks429 =
+    maybeStatus === 429 ||
+    /\bstatus\s+429\b/i.test(message) ||
+    /429\s+Too\s+Many/i.test(message);
+
+  if (!looks429) return { isRateLimit: false, retryAfterSec: 0 };
+
+  // retry_after는 응답 본문 JSON에 들어있다. 메시지에서 `"retry_after":N` 패턴 추출.
+  // 못 찾으면 안전 기본값.
+  let raw = DEFAULT_RETRY_AFTER_SEC;
+  const m = message.match(/"retry_after"\s*:\s*(\d+(?:\.\d+)?)/);
+  if (m) {
+    const v = Number(m[1]);
+    if (Number.isFinite(v) && v > 0) raw = Math.ceil(v);
+  }
+  // 사용자 대기 시간이 폭증하지 않도록 cap. 또한 +1초 버퍼.
+  const retryAfterSec = Math.min(raw + 1, MAX_RETRY_AFTER_SEC);
+  return { isRateLimit: true, retryAfterSec };
+}
+
+/**
+ * predictions.create를 호출하되, 429 응답일 때만 retry_after 초만큼 sleep 후 1회 재시도.
+ * 그 외 에러는 즉시 throw — route handler의 일반 retry/timeout 로직이 처리한다.
+ */
+async function createPredictionWithRateLimitRetry(
+  client: Replicate,
+  options: Parameters<Replicate["predictions"]["create"]>[0]
+): Promise<Prediction> {
+  for (let attempt = 0; attempt <= MAX_RATE_LIMIT_RETRIES; attempt++) {
+    try {
+      return await client.predictions.create(options);
+    } catch (err) {
+      const { isRateLimit, retryAfterSec } = parseRateLimit(err);
+      if (!isRateLimit || attempt >= MAX_RATE_LIMIT_RETRIES) {
+        throw err;
+      }
+      await sleep(retryAfterSec * 1000);
+    }
+  }
+  // 이 라인은 도달 불가 (위 루프가 return 또는 throw). 타입 안전을 위해 throw.
+  throw new Error("createPredictionWithRateLimitRetry: unreachable");
+}
+
 export async function generateStyledImage(
   input: GenerateStyledImageInput
 ): Promise<GenerateStyledImageResult> {
@@ -112,7 +181,8 @@ export async function generateStyledImage(
   const start = Date.now();
 
   // 1) prediction 생성 — 짧은 단일 fetch. edge에서 안정적.
-  let prediction = await client.predictions.create({
+  //    429 응답이면 retry_after 초 sleep 후 1회 재시도.
+  let prediction = await createPredictionWithRateLimitRetry(client, {
     model: DEFAULT_MODEL,
     input: {
       prompt: stylePrompt.prompt,

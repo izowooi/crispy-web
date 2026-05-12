@@ -198,7 +198,9 @@ describe("page — generation flow", () => {
     fireEvent.click(btn);
 
     // Two fetch calls (one per styleId)
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+    // page.tsx는 다중 styleId 호출을 STAGGER_MS=1500ms 간격으로 분산한다 (D-RL-1).
+    // 두 번째 fetch는 첫 fetch + 1.5s 후이므로 waitFor의 기본 timeout(1000ms)을 초과 — 명시적으로 늘림.
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2), { timeout: 4000 });
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
     const calls = fetchMock.mock.calls.map(
       (c) => JSON.parse(String((c[1] as RequestInit).body)) as { styleId: string },
@@ -254,7 +256,9 @@ describe("page — generation flow", () => {
 
     fireEvent.click(screen.getByTestId("generate-button"));
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+    // page.tsx는 다중 styleId 호출을 STAGGER_MS=1500ms 간격으로 분산한다 (D-RL-1).
+    // 두 번째 fetch는 첫 fetch + 1.5s 후이므로 waitFor의 기본 timeout(1000ms)을 초과 — 명시적으로 늘림.
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2), { timeout: 4000 });
 
     // One card succeeded
     await waitFor(() => {

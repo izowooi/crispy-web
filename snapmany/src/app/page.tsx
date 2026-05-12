@@ -75,6 +75,11 @@ const INITIAL_STATE: State = {
 
 // --- Helpers ---
 
+// 동시 생성 요청을 1.5 s 간격으로 분산해서 Replicate burst(=1, 6 RPM at low credit) 제한과 충돌하지 않도록 한다.
+// 서버 wrapper에 429 retry 안전망이 있으므로 분산은 정중한 정도면 충분.
+// 단일 호출이면 지연 0 — 즉시 시작.
+const STAGGER_MS = 1500;
+
 function labelOf(styleId: string): string {
   return STYLES.find((s) => s.id === styleId)?.label ?? styleId;
 }
@@ -208,8 +213,22 @@ export default function Home() {
     }));
     dispatch({ type: "start_generation", payload: { items: fresh } });
 
+    // 각 fetch를 STAGGER_MS 간격으로 시작 (Replicate burst 제한 회피).
+    // 응답은 여전히 병렬 — 시작 시점만 분산.
     void Promise.allSettled(
-      fresh.map((it) => runGeneration(it.id, it.styleId, image.dataUrl)),
+      fresh.map(
+        (it, i) =>
+          new Promise<void>((resolve) => {
+            const delay = i * STAGGER_MS;
+            const start = () => {
+              runGeneration(it.id, it.styleId, image.dataUrl).finally(() =>
+                resolve(),
+              );
+            };
+            if (delay <= 0) start();
+            else setTimeout(start, delay);
+          }),
+      ),
     );
   }, [canGenerate, image, selectedIds, runGeneration]);
 
