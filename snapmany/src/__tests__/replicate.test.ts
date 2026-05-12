@@ -2,8 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Replicate SDK는 CommonJS default export 형태 (`import Replicate from 'replicate'`)
 // vi.mock의 factory는 반드시 { default: ... } shape를 반환해야 한다.
-const mockRun = vi.fn();
-const mockConstructor = vi.fn().mockImplementation(() => ({ run: mockRun }));
+// 새 wrapper는 client.run() 대신 client.predictions.create + client.predictions.get
+// 폴링 패턴을 사용한다 (Cloudflare edge 호환성).
+const mockCreate = vi.fn();
+const mockGet = vi.fn();
+const mockConstructor = vi.fn().mockImplementation(() => ({
+  predictions: {
+    create: mockCreate,
+    get: mockGet,
+  },
+}));
 
 vi.mock("replicate", () => ({
   default: mockConstructor,
@@ -12,9 +20,21 @@ vi.mock("replicate", () => ({
 const SAMPLE_IMAGE =
   "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==";
 
-describe("lib/replicate — Replicate SDK wrapper", () => {
+type Prediction = {
+  id: string;
+  status: "starting" | "processing" | "succeeded" | "failed" | "canceled";
+  output?: unknown;
+  error?: string | null;
+};
+
+function makePrediction(p: Partial<Prediction> & Pick<Prediction, "status">): Prediction {
+  return { id: "pred_test_1", error: null, ...p };
+}
+
+describe("lib/replicate — predictions.create + polling wrapper", () => {
   beforeEach(() => {
-    mockRun.mockReset();
+    mockCreate.mockReset();
+    mockGet.mockReset();
     mockConstructor.mockClear();
     vi.resetModules();
     vi.stubEnv("REPLICATE_API_TOKEN", "r8_test_dummy_token_for_unit_test");
@@ -32,8 +52,10 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
     ).rejects.toThrow();
   });
 
-  it("calls Replicate with openai/gpt-image-2 and the expected input shape", async () => {
-    mockRun.mockResolvedValueOnce(["https://replicate.delivery/example/out.webp"]);
+  it("calls predictions.create with the expected model and input shape", async () => {
+    mockCreate.mockResolvedValueOnce(
+      makePrediction({ status: "succeeded", output: ["https://replicate.delivery/example/out.webp"] })
+    );
 
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
@@ -41,30 +63,33 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
       styleId: "id_photo_basic",
     });
 
-    expect(mockRun).toHaveBeenCalledTimes(1);
-    const [model, options] = mockRun.mock.calls[0];
-    expect(model).toBe("openai/gpt-image-2");
-    expect(options).toBeDefined();
-    expect(options.input).toBeDefined();
-    expect(typeof options.input.prompt).toBe("string");
-    expect(options.input.prompt.length).toBeGreaterThan(10);
-    expect(options.input.input_images).toEqual([SAMPLE_IMAGE]);
-    expect(options.input.number_of_images).toBe(1);
-    expect(options.input.output_format).toBe("webp");
-    expect(options.input.output_compression).toBe(90);
-    expect(options.input.quality).toBe("auto");
-    expect(options.input.moderation).toBe("auto");
-    // aspect_ratio는 string이어야 한다 (스타일에서 가져오거나 기본 1:1)
-    expect(typeof options.input.aspect_ratio).toBe("string");
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    const opts = mockCreate.mock.calls[0][0];
+    expect(opts.model).toBe("openai/gpt-image-2");
+    expect(opts.input).toBeDefined();
+    expect(typeof opts.input.prompt).toBe("string");
+    expect(opts.input.prompt.length).toBeGreaterThan(10);
+    expect(opts.input.input_images).toEqual([SAMPLE_IMAGE]);
+    expect(opts.input.number_of_images).toBe(1);
+    expect(opts.input.output_format).toBe("webp");
+    expect(opts.input.output_compression).toBe(90);
+    expect(opts.input.quality).toBe("auto");
+    expect(opts.input.moderation).toBe("auto");
+    expect(typeof opts.input.aspect_ratio).toBe("string");
 
     expect(result).toEqual({ imageUrl: "https://replicate.delivery/example/out.webp" });
   });
 
-  it("returns the first URL when Replicate responds with string[]", async () => {
-    mockRun.mockResolvedValueOnce([
-      "https://replicate.delivery/example/first.webp",
-      "https://replicate.delivery/example/second.webp",
-    ]);
+  it("returns the first URL when prediction.output is string[]", async () => {
+    mockCreate.mockResolvedValueOnce(
+      makePrediction({
+        status: "succeeded",
+        output: [
+          "https://replicate.delivery/example/first.webp",
+          "https://replicate.delivery/example/second.webp",
+        ],
+      })
+    );
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
       image: SAMPLE_IMAGE,
@@ -73,8 +98,10 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
     expect(result.imageUrl).toBe("https://replicate.delivery/example/first.webp");
   });
 
-  it("returns the URL when Replicate responds with a plain string", async () => {
-    mockRun.mockResolvedValueOnce("https://replicate.delivery/example/single.webp");
+  it("returns the URL when prediction.output is a plain string", async () => {
+    mockCreate.mockResolvedValueOnce(
+      makePrediction({ status: "succeeded", output: "https://replicate.delivery/example/single.webp" })
+    );
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
       image: SAMPLE_IMAGE,
@@ -88,19 +115,19 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
     await expect(
       mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "no_such_style" })
     ).rejects.toThrow();
-    expect(mockRun).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 
-  it("throws when Replicate returns an empty array", async () => {
-    mockRun.mockResolvedValueOnce([]);
+  it("throws when prediction.output is an empty array", async () => {
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "succeeded", output: [] }));
     const mod = await import("@/lib/replicate");
     await expect(
       mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "id_photo_basic" })
     ).rejects.toThrow();
   });
 
-  it("propagates Replicate SDK errors", async () => {
-    mockRun.mockRejectedValueOnce(new Error("upstream 422"));
+  it("propagates Replicate SDK errors from predictions.create", async () => {
+    mockCreate.mockRejectedValueOnce(new Error("upstream 422"));
     const mod = await import("@/lib/replicate");
     await expect(
       mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "id_photo_basic" })
@@ -108,24 +135,63 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
   });
 
   it("uses aspect_ratio from style metadata when defined (e.g. 2:3 for passport)", async () => {
-    mockRun.mockResolvedValueOnce(["https://replicate.delivery/example/passport.webp"]);
+    mockCreate.mockResolvedValueOnce(
+      makePrediction({ status: "succeeded", output: ["https://replicate.delivery/example/passport.webp"] })
+    );
     const mod = await import("@/lib/replicate");
     await mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "passport" });
-    const [, options] = mockRun.mock.calls[0];
-    expect(options.input.aspect_ratio).toBe("2:3");
+    const opts = mockCreate.mock.calls[0][0];
+    expect(opts.input.aspect_ratio).toBe("2:3");
   });
 
-  // Replicate SDK 1.x는 `openai/gpt-image-2` 같은 모델에서
-  // `client.run()`이 `FileOutput[]`을 반환한다.
-  // FileOutput은 ReadableStream을 확장한 객체이며 `.url(): URL` 메서드를 노출한다.
-  // wrapper가 이를 정확히 처리해야 한다.
-  it("extracts URL from FileOutput[] whose .url() returns a URL object", async () => {
-    const fakeFileOutput = {
-      url() {
-        return new URL("https://replicate.delivery/abc/result.webp");
-      },
-    };
-    mockRun.mockResolvedValueOnce([fakeFileOutput]);
+  // -- Polling 케이스 ----------------------------------------------------
+
+  it("polls predictions.get until status is succeeded", async () => {
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "starting" }));
+    mockGet.mockResolvedValueOnce(makePrediction({ status: "processing" }));
+    mockGet.mockResolvedValueOnce(
+      makePrediction({ status: "succeeded", output: ["https://replicate.delivery/poll/ok.webp"] })
+    );
+
+    const mod = await import("@/lib/replicate");
+    const result = await mod.generateStyledImage({
+      image: SAMPLE_IMAGE,
+      styleId: "id_photo_basic",
+    });
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(mockGet).toHaveBeenCalledTimes(2);
+    expect(mockGet.mock.calls[0][0]).toBe("pred_test_1");
+    expect(result.imageUrl).toBe("https://replicate.delivery/poll/ok.webp");
+  });
+
+  it("throws when polling reaches a failed prediction", async () => {
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "processing" }));
+    mockGet.mockResolvedValueOnce(
+      makePrediction({ status: "failed", error: "moderation_rejected" })
+    );
+
+    const mod = await import("@/lib/replicate");
+    await expect(
+      mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "id_photo_basic" })
+    ).rejects.toThrow(/failed/);
+  });
+
+  it("throws when polling reaches a canceled prediction", async () => {
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "processing" }));
+    mockGet.mockResolvedValueOnce(makePrediction({ status: "canceled" }));
+
+    const mod = await import("@/lib/replicate");
+    await expect(
+      mod.generateStyledImage({ image: SAMPLE_IMAGE, styleId: "id_photo_basic" })
+    ).rejects.toThrow(/canceled/);
+  });
+
+  // -- FileOutput shape 회귀 ---------------------------------------------
+
+  it("extracts URL from prediction.output of FileOutput[] (.url returns URL)", async () => {
+    const fake = { url() { return new URL("https://replicate.delivery/abc/result.webp"); } };
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "succeeded", output: [fake] }));
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
       image: SAMPLE_IMAGE,
@@ -134,13 +200,9 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
     expect(result.imageUrl).toBe("https://replicate.delivery/abc/result.webp");
   });
 
-  it("extracts URL from FileOutput[] whose .url() returns a string", async () => {
-    const fakeFileOutput = {
-      url() {
-        return "https://replicate.delivery/def/result.webp";
-      },
-    };
-    mockRun.mockResolvedValueOnce([fakeFileOutput]);
+  it("extracts URL from prediction.output of FileOutput[] (.url returns string)", async () => {
+    const fake = { url() { return "https://replicate.delivery/def/result.webp"; } };
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "succeeded", output: [fake] }));
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
       image: SAMPLE_IMAGE,
@@ -150,12 +212,8 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
   });
 
   it("extracts URL from a single FileOutput-like object (no array wrapper)", async () => {
-    const fakeFileOutput = {
-      url() {
-        return new URL("https://replicate.delivery/ghi/single.webp");
-      },
-    };
-    mockRun.mockResolvedValueOnce(fakeFileOutput);
+    const fake = { url() { return new URL("https://replicate.delivery/ghi/single.webp"); } };
+    mockCreate.mockResolvedValueOnce(makePrediction({ status: "succeeded", output: fake }));
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
       image: SAMPLE_IMAGE,
@@ -165,9 +223,9 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
   });
 
   it("extracts URL from a plain object with `url: string` property", async () => {
-    mockRun.mockResolvedValueOnce([
-      { url: "https://replicate.delivery/jkl/plain.webp" },
-    ]);
+    mockCreate.mockResolvedValueOnce(
+      makePrediction({ status: "succeeded", output: [{ url: "https://replicate.delivery/jkl/plain.webp" }] })
+    );
     const mod = await import("@/lib/replicate");
     const result = await mod.generateStyledImage({
       image: SAMPLE_IMAGE,

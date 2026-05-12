@@ -133,6 +133,16 @@ export async function POST(req: Request): Promise<Response> {
     const { imageUrl } = await callWithRetry(rawImage, styleId);
     return jsonResponse({ ok: true, styleId, imageUrl }, 200);
   } catch (err) {
+    // 영구 진단 — Cloudflare Real-time Logs / Next dev stdout에 캡처되어
+    // 실패 원인 추적이 가능하도록. 본문에는 토큰이 포함될 수 없으므로 안전.
+    const detail =
+      err instanceof Error
+        ? `${err.name}: ${err.message}`
+        : typeof err === "string"
+          ? err
+          : JSON.stringify(err);
+    console.error("[/api/generate] caught error:", detail);
+
     if (isTimeoutError(err)) {
       return jsonResponse({ ok: false, styleId, error: ERROR_TIMEOUT }, 504);
     }
