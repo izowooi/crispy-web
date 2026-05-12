@@ -46,6 +46,7 @@ cp .env.example .env.local
 #   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 #   NEXT_PUBLIC_FIREBASE_PROJECT_ID
 #   NEXT_PUBLIC_FIREBASE_APP_ID
+#   ACCESS_PASSWORD              (서버 전용. 첫 화면 게이트에서 사용자가 입력하는 암호)
 
 # 3. 개발 서버
 npm run dev
@@ -89,6 +90,7 @@ npm run pages:build
 | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | 동일 | |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 동일 | |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 동일 | |
+| `ACCESS_PASSWORD` | 운영자가 정함 | **서버 전용** — 첫 화면 PasswordGate가 검증하는 암호. `NEXT_PUBLIC_*` 접두어 금지 |
 | `NEXT_PUBLIC_APP_ENV` | `production` (선택) | 클라이언트 환경 분기용 |
 
 ### 4) Redeploy
@@ -112,6 +114,7 @@ npm run pages:build
 | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | 예 | 클라이언트 | 동일 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 예 | 클라이언트 | 동일 |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 예 | 클라이언트 | 동일 |
+| `ACCESS_PASSWORD` | 예 | **서버 전용** | 운영자가 정한 문자열 — 첫 화면 PasswordGate가 검증 |
 | `NEXT_PUBLIC_APP_ENV` | 아니오 | 클라이언트 | (수동 지정) `development` / `production` |
 
 `.env.local`은 `.gitignore`로 보호된다. 절대 커밋하지 않는다.
