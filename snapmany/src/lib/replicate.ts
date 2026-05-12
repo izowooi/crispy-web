@@ -8,7 +8,9 @@ import { getStylePrompt, type AspectRatio } from "@/lib/stylePrompts";
 
 const DEFAULT_MODEL = "openai/gpt-image-2" as const;
 const DEFAULT_ASPECT_RATIO: AspectRatio = "1:1";
-const DEFAULT_TIMEOUT_MS = 60_000;
+// gpt-image-2는 일반적으로 30~90초가 걸린다. 60초로 두면 정상 응답도 잘림.
+// 120초로 두고, 1회 재시도까지 총 약 240초가 최대치(클라이언트는 부분 실패를 격리한다).
+const DEFAULT_TIMEOUT_MS = 120_000;
 
 export type GenerateStyledImageInput = {
   readonly image: string;
@@ -35,15 +37,47 @@ function getReplicateClient(): Replicate {
 }
 
 function extractFirstUrl(output: unknown): string | null {
-  if (typeof output === "string" && output.length > 0) {
-    return output;
+  if (output == null) return null;
+
+  // 1) 평문 URL 문자열
+  if (typeof output === "string") {
+    return output.length > 0 ? output : null;
   }
-  if (Array.isArray(output) && output.length > 0) {
-    const first = output[0];
-    if (typeof first === "string" && first.length > 0) {
-      return first;
+
+  // 2) 배열 → 첫 원소를 재귀 처리 (Replicate SDK 1.x는 보통 길이 1의 배열)
+  if (Array.isArray(output)) {
+    return output.length > 0 ? extractFirstUrl(output[0]) : null;
+  }
+
+  // 3) 객체 형태 — Replicate SDK 1.x의 FileOutput은 ReadableStream을 확장하며
+  //    `.url(): URL` 메서드를 노출한다. 일부 변형은 `url: string` 속성으로 노출.
+  if (typeof output === "object") {
+    const maybeUrl = (output as { url?: unknown }).url;
+
+    if (typeof maybeUrl === "function") {
+      try {
+        const u = (maybeUrl as () => unknown).call(output);
+        if (typeof u === "string" && u.length > 0) return u;
+        if (u && typeof u === "object" && typeof (u as URL).href === "string" && (u as URL).href.length > 0) {
+          return (u as URL).href;
+        }
+      } catch {
+        // ignore — toString 폴백으로 진행
+      }
+    }
+    if (typeof maybeUrl === "string" && maybeUrl.length > 0) {
+      return maybeUrl;
+    }
+
+    // 4) 마지막 폴백: toString이 http(s) URL을 반환하는 경우
+    try {
+      const str = String(output);
+      if (/^https?:\/\//.test(str)) return str;
+    } catch {
+      // ignore
     }
   }
+
   return null;
 }
 

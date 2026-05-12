@@ -114,4 +114,65 @@ describe("lib/replicate — Replicate SDK wrapper", () => {
     const [, options] = mockRun.mock.calls[0];
     expect(options.input.aspect_ratio).toBe("2:3");
   });
+
+  // Replicate SDK 1.x는 `openai/gpt-image-2` 같은 모델에서
+  // `client.run()`이 `FileOutput[]`을 반환한다.
+  // FileOutput은 ReadableStream을 확장한 객체이며 `.url(): URL` 메서드를 노출한다.
+  // wrapper가 이를 정확히 처리해야 한다.
+  it("extracts URL from FileOutput[] whose .url() returns a URL object", async () => {
+    const fakeFileOutput = {
+      url() {
+        return new URL("https://replicate.delivery/abc/result.webp");
+      },
+    };
+    mockRun.mockResolvedValueOnce([fakeFileOutput]);
+    const mod = await import("@/lib/replicate");
+    const result = await mod.generateStyledImage({
+      image: SAMPLE_IMAGE,
+      styleId: "id_photo_basic",
+    });
+    expect(result.imageUrl).toBe("https://replicate.delivery/abc/result.webp");
+  });
+
+  it("extracts URL from FileOutput[] whose .url() returns a string", async () => {
+    const fakeFileOutput = {
+      url() {
+        return "https://replicate.delivery/def/result.webp";
+      },
+    };
+    mockRun.mockResolvedValueOnce([fakeFileOutput]);
+    const mod = await import("@/lib/replicate");
+    const result = await mod.generateStyledImage({
+      image: SAMPLE_IMAGE,
+      styleId: "id_photo_basic",
+    });
+    expect(result.imageUrl).toBe("https://replicate.delivery/def/result.webp");
+  });
+
+  it("extracts URL from a single FileOutput-like object (no array wrapper)", async () => {
+    const fakeFileOutput = {
+      url() {
+        return new URL("https://replicate.delivery/ghi/single.webp");
+      },
+    };
+    mockRun.mockResolvedValueOnce(fakeFileOutput);
+    const mod = await import("@/lib/replicate");
+    const result = await mod.generateStyledImage({
+      image: SAMPLE_IMAGE,
+      styleId: "id_photo_basic",
+    });
+    expect(result.imageUrl).toBe("https://replicate.delivery/ghi/single.webp");
+  });
+
+  it("extracts URL from a plain object with `url: string` property", async () => {
+    mockRun.mockResolvedValueOnce([
+      { url: "https://replicate.delivery/jkl/plain.webp" },
+    ]);
+    const mod = await import("@/lib/replicate");
+    const result = await mod.generateStyledImage({
+      image: SAMPLE_IMAGE,
+      styleId: "id_photo_basic",
+    });
+    expect(result.imageUrl).toBe("https://replicate.delivery/jkl/plain.webp");
+  });
 });
