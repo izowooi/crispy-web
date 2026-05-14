@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { OptionsPanel } from "@/components/OptionsPanel";
+import { PasswordChecker } from "@/components/PasswordChecker";
 import { PasswordDisplay } from "@/components/PasswordDisplay";
 import { StrengthMeter } from "@/components/StrengthMeter";
 import { Theme, ThemeToggle } from "@/components/ThemeToggle";
@@ -127,6 +128,8 @@ export default function Page() {
         minLength={MIN_LENGTH}
         maxLength={MAX_LENGTH}
       />
+
+      <PasswordChecker dict={dict} />
 
       {toast && (
         <Toast

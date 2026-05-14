@@ -35,4 +35,11 @@ export const ja: Dictionary = {
   themeDark: "ダークモードに切替",
   languageSelector: "言語を選択",
   minOneCharType: "少なくとも1種類の文字を選択してください",
+  checkerTitle: "あなたのパスワードの強度をチェック",
+  checkerPlaceholder: "使用中のパスワードを入力",
+  checkerHide: "パスワードを隠す",
+  checkerShow: "パスワードを表示",
+  checkerPrivacyNote: "入力はブラウザ内でのみ処理され、どこにも保存・送信されません",
+  checkerEntropyNote: "文字種ベースの推定値 — 辞書単語や繰り返しパターンは考慮していません",
+  checkerEmptyHint: "パスワードを入力すると強度が即座に表示されます",
 };

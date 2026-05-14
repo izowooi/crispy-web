@@ -35,4 +35,11 @@ export const ar: Dictionary = {
   themeDark: "التبديل إلى الوضع الداكن",
   languageSelector: "اختر اللغة",
   minOneCharType: "يجب اختيار نوع حرف واحد على الأقل",
+  checkerTitle: "تحقق من قوة كلمة المرور الخاصة بك",
+  checkerPlaceholder: "أدخل كلمة المرور التي تستخدمها",
+  checkerHide: "إخفاء كلمة المرور",
+  checkerShow: "إظهار كلمة المرور",
+  checkerPrivacyNote: "تتم معالجة الإدخال داخل المتصفح فقط ولا يتم تخزينه أو إرساله إلى أي مكان",
+  checkerEntropyNote: "تقدير يعتمد على فئات الأحرف — لا تُحتسب كلمات القاموس والأنماط المتكررة",
+  checkerEmptyHint: "اكتب كلمة المرور لعرض القوة فورًا",
 };

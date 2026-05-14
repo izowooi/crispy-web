@@ -35,4 +35,11 @@ export const en: Dictionary = {
   themeDark: "Switch to dark mode",
   languageSelector: "Select language",
   minOneCharType: "At least one character type must be selected",
+  checkerTitle: "Check your password strength",
+  checkerPlaceholder: "Type a password you use",
+  checkerHide: "Hide password",
+  checkerShow: "Show password",
+  checkerPrivacyNote: "Your input stays in your browser — nothing is stored or sent anywhere",
+  checkerEntropyNote: "Estimate based on character classes — dictionary words and patterns are not considered",
+  checkerEmptyHint: "Type a password and strength shows instantly",
 };

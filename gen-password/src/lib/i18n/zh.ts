@@ -35,4 +35,11 @@ export const zh: Dictionary = {
   themeDark: "切换到深色模式",
   languageSelector: "选择语言",
   minOneCharType: "请至少选择一种字符类型",
+  checkerTitle: "检测我的密码强度",
+  checkerPlaceholder: "输入您正在使用的密码",
+  checkerHide: "隐藏密码",
+  checkerShow: "显示密码",
+  checkerPrivacyNote: "输入仅在浏览器内处理,不会被保存或发送到任何地方",
+  checkerEntropyNote: "基于字符类型的估算 — 不考虑字典词汇和重复模式",
+  checkerEmptyHint: "输入密码后立即显示强度",
 };

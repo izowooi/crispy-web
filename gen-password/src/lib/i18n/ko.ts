@@ -35,4 +35,11 @@ export const ko: Dictionary = {
   themeDark: "다크 모드로 전환",
   languageSelector: "언어 선택",
   minOneCharType: "최소 한 가지 문자 종류는 선택해야 해요",
+  checkerTitle: "내 암호 강도 확인하기",
+  checkerPlaceholder: "사용 중인 암호를 입력하세요",
+  checkerHide: "암호 가리기",
+  checkerShow: "암호 보기",
+  checkerPrivacyNote: "입력값은 브라우저 안에서만 처리되고 어디에도 저장·전송되지 않습니다",
+  checkerEntropyNote: "문자 종류 기반 추정치예요 (사전 단어·반복 패턴은 별도 고려하지 않습니다)",
+  checkerEmptyHint: "암호를 입력하면 강도가 즉시 표시됩니다",
 };

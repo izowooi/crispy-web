@@ -42,4 +42,11 @@ export interface Dictionary {
   themeDark: string;
   languageSelector: string;
   minOneCharType: string;
+  checkerTitle: string;
+  checkerPlaceholder: string;
+  checkerHide: string;
+  checkerShow: string;
+  checkerPrivacyNote: string;
+  checkerEntropyNote: string;
+  checkerEmptyHint: string;
 }
