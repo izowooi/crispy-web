@@ -49,4 +49,5 @@ export interface Dictionary {
   checkerPrivacyNote: string;
   checkerEntropyNote: string;
   checkerEmptyHint: string;
+  sourceCode: string;
 }

@@ -4,7 +4,7 @@
 
 > 🇰🇷 [한국어 README](./README.md)
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-gen--password.pages.dev-6366f1?style=for-the-badge)](https://gen-password.pages.dev)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-genpassword.pages.dev-6366f1?style=for-the-badge)](https://genpassword.pages.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
@@ -50,7 +50,7 @@
 
 ```mermaid
 graph TD
-    A[🌐 Visit gen-password.pages.dev] --> B[🔐 Default 6-char password generated instantly]
+    A[🌐 Visit genpassword.pages.dev] --> B[🔐 Default 6-char password generated instantly]
     B --> C{Adjust options}
     C -->|📏 Length slider| D[Auto-regenerate]
     C -->|🔤 Character checkboxes| D
@@ -326,6 +326,6 @@ Report bugs or suggest features via [Issues](https://github.com/izowooi/crispy-w
 
 Made with ❤️ using Next.js · React · Tailwind CSS · Web Crypto API
 
-[🔐 Try it now](https://gen-password.pages.dev)
+[🔐 Try it now](https://genpassword.pages.dev)
 
 </div>

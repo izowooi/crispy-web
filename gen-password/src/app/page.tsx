@@ -131,6 +131,18 @@ export default function Page() {
 
       <PasswordChecker dict={dict} />
 
+      <footer className="mt-4 border-t border-stone-200 pt-6 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
+        <a
+          href="https://github.com/izowooi/crispy-web/tree/main/gen-password"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 underline underline-offset-2 transition hover:text-stone-700 dark:hover:text-stone-200"
+        >
+          <span aria-hidden="true">💻</span>
+          {dict.sourceCode}
+        </a>
+      </footer>
+
       {toast && (
         <Toast
           message={toast.message}

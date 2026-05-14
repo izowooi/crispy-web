@@ -42,4 +42,5 @@ export const en: Dictionary = {
   checkerPrivacyNote: "Your input stays in your browser — nothing is stored or sent anywhere",
   checkerEntropyNote: "Estimate based on character classes — dictionary words and patterns are not considered",
   checkerEmptyHint: "Type a password and strength shows instantly",
+  sourceCode: "Source code",
 };

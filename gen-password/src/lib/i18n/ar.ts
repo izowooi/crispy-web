@@ -42,4 +42,5 @@ export const ar: Dictionary = {
   checkerPrivacyNote: "تتم معالجة الإدخال داخل المتصفح فقط ولا يتم تخزينه أو إرساله إلى أي مكان",
   checkerEntropyNote: "تقدير يعتمد على فئات الأحرف — لا تُحتسب كلمات القاموس والأنماط المتكررة",
   checkerEmptyHint: "اكتب كلمة المرور لعرض القوة فورًا",
+  sourceCode: "الكود المصدري",
 };

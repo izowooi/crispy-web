@@ -42,4 +42,5 @@ export const ja: Dictionary = {
   checkerPrivacyNote: "入力はブラウザ内でのみ処理され、どこにも保存・送信されません",
   checkerEntropyNote: "文字種ベースの推定値 — 辞書単語や繰り返しパターンは考慮していません",
   checkerEmptyHint: "パスワードを入力すると強度が即座に表示されます",
+  sourceCode: "ソースコード",
 };

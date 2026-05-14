@@ -42,4 +42,5 @@ export const zh: Dictionary = {
   checkerPrivacyNote: "输入仅在浏览器内处理,不会被保存或发送到任何地方",
   checkerEntropyNote: "基于字符类型的估算 — 不考虑字典词汇和重复模式",
   checkerEmptyHint: "输入密码后立即显示强度",
+  sourceCode: "源代码",
 };

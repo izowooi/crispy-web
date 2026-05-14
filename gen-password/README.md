@@ -4,7 +4,7 @@
 
 > 🇺🇸 [English README](./README_EN.md)
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-gen--password.pages.dev-6366f1?style=for-the-badge)](https://gen-password.pages.dev)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-genpassword.pages.dev-6366f1?style=for-the-badge)](https://genpassword.pages.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
@@ -50,7 +50,7 @@
 
 ```mermaid
 graph TD
-    A[🌐 gen-password.pages.dev 접속] --> B[🔐 기본 암호 6자리 즉시 생성]
+    A[🌐 genpassword.pages.dev 접속] --> B[🔐 기본 암호 6자리 즉시 생성]
     B --> C{옵션 조정}
     C -->|📏 길이 슬라이더| D[자동 재생성]
     C -->|🔤 문자 종류 체크박스| D
@@ -326,6 +326,6 @@ MIT License
 
 Made with ❤️ using Next.js · React · Tailwind CSS · Web Crypto API
 
-[🔐 지금 사용하기](https://gen-password.pages.dev)
+[🔐 지금 사용하기](https://genpassword.pages.dev)
 
 </div>

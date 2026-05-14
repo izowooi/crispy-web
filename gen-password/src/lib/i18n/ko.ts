@@ -42,4 +42,5 @@ export const ko: Dictionary = {
   checkerPrivacyNote: "입력값은 브라우저 안에서만 처리되고 어디에도 저장·전송되지 않습니다",
   checkerEntropyNote: "문자 종류 기반 추정치예요 (사전 단어·반복 패턴은 별도 고려하지 않습니다)",
   checkerEmptyHint: "암호를 입력하면 강도가 즉시 표시됩니다",
+  sourceCode: "소스 코드",
 };
