@@ -1,0 +1,23 @@
+{
+  "name": "gennai-queue",
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-01-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "MIN_INTERVAL_MS": "10000"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NOVELAI_QUEUE",
+        "class_name": "NovelAiQueueDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["NovelAiQueueDO"]
+    }
+  ]
+}

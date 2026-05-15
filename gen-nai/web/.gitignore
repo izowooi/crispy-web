@@ -1,0 +1,34 @@
+node_modules
+.next
+.vercel
+.open-next
+.wrangler
+out
+build
+dist
+
+# Secrets — never commit
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+!.env.example
+
+# Test artifacts
+coverage
+playwright-report
+test-results
+
+# Workspace (agent intermediate outputs)
+_workspace
+_workspace_prev
+
+# OS
+.DS_Store
+*.log
+firebase-debug.log
+firebase-debug.*.log
+
+# IDE
+.idea
+.vscode/settings.json
