@@ -1,0 +1,3767 @@
+[
+  {
+    "work": "강철의 연금술사",
+    "kor": "러스트",
+    "eng": "Lust"
+  },
+  {
+    "work": "강철의 연금술사",
+    "kor": "리자 호크아이",
+    "eng": "Riza_Hawkeye"
+  },
+  {
+    "work": "강철의 연금술사",
+    "kor": "올리비에 밀라 암스트롱",
+    "eng": "Olivier_Mira_Armstrong"
+  },
+  {
+    "work": "강철의 연금술사",
+    "kor": "윈리 록벨",
+    "eng": "Winry_Rockbell"
+  },
+  {
+    "work": "강철의 연금술사",
+    "kor": "이즈미 카터스",
+    "eng": "Izumi_Curtis"
+  },
+  {
+    "work": "고블린 슬레이어",
+    "kor": "검의 처녀",
+    "eng": "Sword_Maiden"
+  },
+  {
+    "work": "고블린 슬레이어",
+    "kor": "소치기 소녀",
+    "eng": "Cow_Girl(Goblin_Slayer)"
+  },
+  {
+    "work": "고블린 슬레이어",
+    "kor": "엘프 궁수",
+    "eng": "High_Elf_Archer(Goblin_Slayer)"
+  },
+  {
+    "work": "고블린 슬레이어",
+    "kor": "여신관",
+    "eng": "Priestess(Goblin_Slayer)"
+  },
+  {
+    "work": "고블린 슬레이어",
+    "kor": "접수원 아가씨",
+    "eng": "Guild_Girl(Goblin_Slayer)"
+  },
+  {
+    "work": "귀멸의 칼날",
+    "kor": "다키",
+    "eng": "Daki"
+  },
+  {
+    "work": "귀멸의 칼날",
+    "kor": "마키오",
+    "eng": "Makio"
+  },
+  {
+    "work": "귀멸의 칼날",
+    "kor": "츠마",
+    "eng": "Suma"
+  },
+  {
+    "work": "귀멸의 칼날",
+    "kor": "츠유리 카나에",
+    "eng": "Kanao_Tsuyuri"
+  },
+  {
+    "work": "귀멸의 칼날",
+    "kor": "카마도 네지로",
+    "eng": "Nezuko_Kamado"
+  },
+  {
+    "work": "귀멸의 칼날",
+    "kor": "코쵸 시노부",
+    "eng": "Shinobu_Kocho"
+  },
+  {
+    "work": "나루토",
+    "kor": "노하라 린",
+    "eng": "Rin_Nohara"
+  },
+  {
+    "work": "나루토",
+    "kor": "니이 유기토",
+    "eng": "Yugito_Nii"
+  },
+  {
+    "work": "나루토",
+    "kor": "마부이",
+    "eng": "Mabui"
+  },
+  {
+    "work": "나루토",
+    "kor": "마츠이",
+    "eng": "Matsuri"
+  },
+  {
+    "work": "나루토",
+    "kor": "미타라시 앙코",
+    "eng": "Anko_Mitarashi"
+  },
+  {
+    "work": "나루토",
+    "kor": "사무이",
+    "eng": "Samui"
+  },
+  {
+    "work": "나루토",
+    "kor": "시즈네",
+    "eng": "Shizune"
+  },
+  {
+    "work": "나루토",
+    "kor": "아마네",
+    "eng": "Ayame"
+  },
+  {
+    "work": "나루토",
+    "kor": "야마나카 이노",
+    "eng": "Ino_Yamanaka"
+  },
+  {
+    "work": "나루토",
+    "kor": "오오츠츠키 카구야",
+    "eng": "Kaguya_Otsutsuki"
+  },
+  {
+    "work": "나루토",
+    "kor": "우즈마키 미토",
+    "eng": "Mito_Uzumaki"
+  },
+  {
+    "work": "나루토",
+    "kor": "우즈마키 카린",
+    "eng": "Karin_Uzumaki"
+  },
+  {
+    "work": "나루토",
+    "kor": "우즈마키 쿠시나",
+    "eng": "Kushina_Uzumaki"
+  },
+  {
+    "work": "나루토",
+    "kor": "우치하 미코토",
+    "eng": "Mikoto_Uchiha"
+  },
+  {
+    "work": "나루토",
+    "kor": "유우히 쿠레나이",
+    "eng": "Yuuhi_Kurenai"
+  },
+  {
+    "work": "나루토",
+    "kor": "츠나데",
+    "eng": "Tsunade"
+  },
+  {
+    "work": "나루토",
+    "kor": "카루이",
+    "eng": "Karui"
+  },
+  {
+    "work": "나루토",
+    "kor": "코난",
+    "eng": "Konan"
+  },
+  {
+    "work": "나루토",
+    "kor": "쿠로츠치",
+    "eng": "Kurotsuchi"
+  },
+  {
+    "work": "나루토",
+    "kor": "타유야",
+    "eng": "Tayuya"
+  },
+  {
+    "work": "나루토",
+    "kor": "테루미 메이",
+    "eng": "Mei_Terumi"
+  },
+  {
+    "work": "나루토",
+    "kor": "테마리",
+    "eng": "Temari"
+  },
+  {
+    "work": "나루토",
+    "kor": "텐텐",
+    "eng": "Tenten"
+  },
+  {
+    "work": "나루토",
+    "kor": "파쿠라",
+    "eng": "Pakura"
+  },
+  {
+    "work": "나루토",
+    "kor": "하루노 사쿠라",
+    "eng": "Sakura_Haruno"
+  },
+  {
+    "work": "나루토",
+    "kor": "후우",
+    "eng": "Fuu"
+  },
+  {
+    "work": "나루토",
+    "kor": "휴우가",
+    "eng": "히나타_Hinata_Hyuuga"
+  },
+  {
+    "work": "나루토",
+    "kor": "휴우카",
+    "eng": "히나비_Hanabi_Hyuuga"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "나카가메 타타미",
+    "eng": "Tatami_Nakagame"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "러브러버",
+    "eng": "lovelover"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "레이디 나강",
+    "eng": "_Lady_Nagant"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "렉돌",
+    "eng": "Ragdoll"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "류쿠",
+    "eng": "Ryukyu"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "마운트 레이디",
+    "eng": "Mt._Lady"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "만달레이",
+    "eng": "Mandalay"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "멜리사 실드",
+    "eng": "Melissa_Shield"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "미드나이트",
+    "eng": "Midnight"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "미르코",
+    "eng": "Mirko"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "바쿠고 미츠키",
+    "eng": "Mitsuki_Bakugo"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "버닝",
+    "eng": "Burnin"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "시무라 나나",
+    "eng": "Nana_Shimura"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "아스이 츠유",
+    "eng": "Tsuyu_Asui"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "아시도 미나",
+    "eng": "Mina_Ashido"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "야나기 레이코",
+    "eng": "Reiko_Yanagi"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "야오요로즈 모모",
+    "eng": "Momo_Yaoyorozu"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "우라라카 오챠코",
+    "eng": "Ochaco_Uraraka"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "우사바미",
+    "eng": "Uwabami"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "우츠시미 케미",
+    "eng": "Camie_Utsushimi"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "지로 쿄카",
+    "eng": "Kyoka_Jiro"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "켄도 이츠카",
+    "eng": "Itsuka_Kendo"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "큐리어스",
+    "eng": "Chitose_Kizuki"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "토가",
+    "eng": "히미코_Himiko_Toga"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "토도로키 레이",
+    "eng": "Rei_Todoroki"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "토도로키 후유미",
+    "eng": "Fuyumi_Todoroki"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "토카게 세츠나",
+    "eng": "Setsuna_Tokage"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "픽시 팝",
+    "eng": "Pixie-Bob"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "하가쿠레 토오루",
+    "eng": "Toru_Hagakure"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "하도 네지레",
+    "eng": "Nejire_Hado"
+  },
+  {
+    "work": "나의 히어로 아카데미아",
+    "kor": "하츠메 메이",
+    "eng": "Mei_Hatsume"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "미카츠키 요조라",
+    "eng": "Yozora_Mikazuki"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "시구마 리카",
+    "eng": "Rika_Shiguma"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "카시와자키 세나",
+    "eng": "Sena_Kashiwazaki"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "쿠스노키 유키무라",
+    "eng": "Yukimura_Kusunoki"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "타카먀아 케이트",
+    "eng": "Kate_Takayama"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "타카야마 마리아",
+    "eng": "Maria_Takayama"
+  },
+  {
+    "work": "나는 친구가 적다",
+    "kor": "하세가와 코바토",
+    "eng": "Kobato_Hasegawa"
+  },
+  {
+    "work": "낙제기사의 영웅담",
+    "kor": "스텔라 버밀리온",
+    "eng": "Stella_Vermillion"
+  },
+  {
+    "work": "낙제기사의 영웅담",
+    "kor": "쿠로가네 시즈쿠",
+    "eng": "Shizuku_Kurogane"
+  },
+  {
+    "work": "낙제기사의 영웅담",
+    "kor": "아야츠지 아야세",
+    "eng": "Ayase_Ayatsuji"
+  },
+  {
+    "work": "낙제기사의 영웅담",
+    "kor": "토도 토카",
+    "eng": "Touka_Toudou"
+  },
+  {
+    "work": "단간론파",
+    "kor": "나나미 치아키",
+    "eng": "Chiaki_Nanami"
+  },
+  {
+    "work": "단간론파",
+    "kor": "마이조노 사야카",
+    "eng": "Sayaka_Maizono"
+  },
+  {
+    "work": "단간론파",
+    "kor": "미오다 이부키",
+    "eng": "Ibuki_Mioda"
+  },
+  {
+    "work": "단간론파",
+    "kor": "사이욘지 이요코",
+    "eng": "Hiyoko_Saionji"
+  },
+  {
+    "work": "단간론파",
+    "kor": "셀레스티아 루덴베르크",
+    "eng": "Celestia_Ludenberg"
+  },
+  {
+    "work": "단간론파",
+    "kor": "소니아 네버마인드",
+    "eng": "Sonia_Nevermind"
+  },
+  {
+    "work": "단간론파",
+    "kor": "시로가네 츠무기",
+    "eng": "Tsumugi_Shirogane"
+  },
+  {
+    "work": "단간론파",
+    "kor": "아사히나 아오이",
+    "eng": "Aoi_Asahina"
+  },
+  {
+    "work": "단간론파",
+    "kor": "아카마츠 카에데",
+    "eng": "Kaede_Akamatsu"
+  },
+  {
+    "work": "단간론파",
+    "kor": "에노시마 쥰코",
+    "eng": "Junko_Enoshima"
+  },
+  {
+    "work": "단간론파",
+    "kor": "오와리 아카네",
+    "eng": "Akane_Owari"
+  },
+  {
+    "work": "단간론파",
+    "kor": "요나가 안지",
+    "eng": "Angie_Yonaga"
+  },
+  {
+    "work": "단간론파",
+    "kor": "유메노",
+    "eng": "히미코_Himiko_Yumeno"
+  },
+  {
+    "work": "단간론파",
+    "kor": "이루마 미우",
+    "eng": "Miu_Iruma"
+  },
+  {
+    "work": "단간론파",
+    "kor": "이쿠사바 무쿠로",
+    "eng": "Mukuro_Ikusaba"
+  },
+  {
+    "work": "단간론파",
+    "kor": "챠바시라 텐코",
+    "eng": "Tenko_Chabashira"
+  },
+  {
+    "work": "단간론파",
+    "kor": "츠미키 미캉",
+    "eng": "Mikan_Tsumiki"
+  },
+  {
+    "work": "단간론파",
+    "kor": "코이즈미 마히루",
+    "eng": "Mahiru_Koizumi"
+  },
+  {
+    "work": "단간론파",
+    "kor": "키리기리 쿄코",
+    "eng": "Kyoko_Kirigiri"
+  },
+  {
+    "work": "단간론파",
+    "kor": "토죠 쿠루미",
+    "eng": "Kirumi_Tojo"
+  },
+  {
+    "work": "단간론파",
+    "kor": "페코야마 페코",
+    "eng": "Peko_Pekoyama"
+  },
+  {
+    "work": "단간론파",
+    "kor": "하라쿠와 마키",
+    "eng": "Maki_Harukawa"
+  },
+  {
+    "work": "단간론파",
+    "kor": "후카와 토코",
+    "eng": "Toko_Fukawa"
+  },
+  {
+    "work": "달링 인 더 프랑키스",
+    "kor": "이치고",
+    "eng": "Ichigo"
+  },
+  {
+    "work": "달링 인 더 프랑키스",
+    "kor": "제로투",
+    "eng": "Zero_Two"
+  },
+  {
+    "work": "달링 인 더 프랑키스",
+    "kor": "코코로",
+    "eng": "Kokoro"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "다프네 라우로스",
+    "eng": "Daphne_Lauros"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "데메테르",
+    "eng": "Demeter(DunMachi)"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "레비스",
+    "eng": "Revis"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "레피야 비리디스",
+    "eng": "Lefiya_Viridis"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "로키",
+    "eng": "Loki(DunMachi)"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "류 리온",
+    "eng": "Ryuu_Lion"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "리베리아 리요스 알브",
+    "eng": "Riveria_Ljos_Alf"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "산죠노 하루히메",
+    "eng": "Sanjouno_Haruhime"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "시르 플로버",
+    "eng": "Syr_Flova"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "아냐 프로멜",
+    "eng": "Anya_Fromel"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "아라시아 포레스트라이트",
+    "eng": "Alicia_Forestlight"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "아미드 테아사나레",
+    "eng": "Airmid_Teasanare"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "아스피 알 안드로메다",
+    "eng": "Asfi_Al_Andromeda"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "아이샤 벨카",
+    "eng": "Aisha_Belka"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "아이즈 발렌슈타인",
+    "eng": "Ais_Wallenstein"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "에이나 튤",
+    "eng": "Eina_Tulle"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "이슈타르",
+    "eng": "Ishtar(DunMachi)"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "카산드라 일리온",
+    "eng": "Cassandra_Ilion"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "티오나",
+    "eng": "히류테_Tiona_Hiryute"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "티오네",
+    "eng": "히류테_Tione_Hiryute"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "프레이야",
+    "eng": "Freya(DunMachi)"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "헤스티아",
+    "eng": "Hestia(DunMachi)"
+  },
+  {
+    "work": "던전에서 만남을 추구하면 안 되는 걸까?",
+    "kor": "헤파이스토스",
+    "eng": "Hephaestus(DunMachi)"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "샤오 진리",
+    "eng": "Ching-Li_Hsiao"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "야시후사 쿠로나",
+    "eng": ":_Kurona_Yasuhisa"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "요네바야시 사이코",
+    "eng": "Saiko_Yonebayashi"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "요시무라 에토",
+    "eng": "Eto_Yoshimura"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "우헤이 하이루",
+    "eng": "Hairu_Ihei"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "이토리",
+    "eng": "Itori"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "카미시로 리제",
+    "eng": "Rize_Kamishiro"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "키리시마 토우카",
+    "eng": "Touka_Kirishima"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "호이토 로마",
+    "eng": "Roma_Hoito"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "후에구치 류코",
+    "eng": "Ryouko_Fueguchi"
+  },
+  {
+    "work": "도쿄 구울",
+    "kor": "후에구치",
+    "eng": "히나미_Hinami_Fueguchi"
+  },
+  {
+    "work": "드래곤볼",
+    "kor": "마론",
+    "eng": "Maron"
+  },
+  {
+    "work": "드래곤볼",
+    "kor": "부라",
+    "eng": "Bulla"
+  },
+  {
+    "work": "드래곤볼",
+    "kor": "부르마",
+    "eng": "Bulma"
+  },
+  {
+    "work": "드래곤볼",
+    "kor": "인조인간 18호",
+    "eng": "Android_18"
+  },
+  {
+    "work": "드래곤볼",
+    "kor": "인조인간 21호",
+    "eng": "Android_21_Evil"
+  },
+  {
+    "work": "드래곤볼",
+    "kor": "인조인간 21호",
+    "eng": "Android_21_Good"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "나즈나",
+    "eng": "Nazuna"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "누레하",
+    "eng": "Nureha"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "로에",
+    "eng": "2_Roe2"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "아카츠키",
+    "eng": "Akatsuki"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "인틱스",
+    "eng": "Indicus"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "카나미",
+    "eng": "Kanami"
+  },
+  {
+    "work": "로그 호라이즌",
+    "kor": "테토라",
+    "eng": "Tetora"
+  },
+  {
+    "work": "마기",
+    "kor": "모르지아나",
+    "eng": "Morgiana"
+  },
+  {
+    "work": "마기",
+    "kor": "셰헤라자데",
+    "eng": "Scheherazade"
+  },
+  {
+    "work": "마기",
+    "kor": "시바",
+    "eng": "Sheba"
+  },
+  {
+    "work": "마기",
+    "kor": "아르바",
+    "eng": "Arba"
+  },
+  {
+    "work": "마기",
+    "kor": "야무라이히",
+    "eng": "Yamraiha"
+  },
+  {
+    "work": "마기",
+    "kor": "연백련",
+    "eng": "Hakuei_Ren"
+  },
+  {
+    "work": "마기",
+    "kor": "연홍옥",
+    "eng": "Kougyoku_Ren"
+  },
+  {
+    "work": "미래일기",
+    "kor": "가사이 유노",
+    "eng": "Yuno_Gasai"
+  },
+  {
+    "work": "미래일기",
+    "kor": "우류 미루네",
+    "eng": "Minene_Uryuu"
+  },
+  {
+    "work": "미래일기",
+    "kor": "카스가노 츠바키",
+    "eng": "Tsubaki_Kasugano"
+  },
+  {
+    "work": "방패용사 성공담",
+    "kor": "라프타리아",
+    "eng": "Raphtalia"
+  },
+  {
+    "work": "방패용사 성공담",
+    "kor": "마르티 메르로마르크",
+    "eng": "Malty_S_Melromarc"
+  },
+  {
+    "work": "방패용사 성공담",
+    "kor": "메르티 메르로마르크",
+    "eng": "Melty_Q_Melromarc"
+  },
+  {
+    "work": "벨제부브",
+    "kor": "쿠니에다 아오이",
+    "eng": "Aoi_Kunieda"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "레비",
+    "eng": "Revy(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "로베르타",
+    "eng": "Roberta(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "발라레이카",
+    "eng": "Balalaika(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "쉔호아",
+    "eng": "Shenhua(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "에다",
+    "eng": "Eda(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "제인",
+    "eng": "Jane(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "프레데리카 소여",
+    "eng": "Frederica_Sawyer(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 라군",
+    "kor": "헨젤과 그레텔",
+    "eng": "Hänsel_and_Gretel(Black_Lagoon)"
+  },
+  {
+    "work": "블랙 불릿",
+    "kor": "성천자",
+    "eng": "Seitenshi"
+  },
+  {
+    "work": "블랙 불릿",
+    "kor": "아이하라 엔쥬",
+    "eng": "Enju_Aihara"
+  },
+  {
+    "work": "블랙 불릿",
+    "kor": "텐도 키사라",
+    "eng": "Kisara_Tendo"
+  },
+  {
+    "work": "블랙 불릿",
+    "kor": "티나 스프라우트",
+    "eng": "Tina_Sprout"
+  },
+  {
+    "work": "블랙 클로버",
+    "kor": "노엘 실버",
+    "eng": "Noelle_Silva"
+  },
+  {
+    "work": "블랙 클로버",
+    "kor": "메레오레오나 버밀리온",
+    "eng": "Mereoleona_Vermillion"
+  },
+  {
+    "work": "블랙 클로버",
+    "kor": "미모사 버밀리온",
+    "eng": "Mimosa_Vermillion"
+  },
+  {
+    "work": "블랙 클로버",
+    "kor": "샬롯 로즈레이",
+    "eng": "Charlotte_Roselei"
+  },
+  {
+    "work": "블리치",
+    "kor": "네리엘 투 오델슈방크",
+    "eng": "Nelliel_Tu_Odelschwanck"
+  },
+  {
+    "work": "블리치",
+    "kor": "도쿠가미네 리루카",
+    "eng": "Riruka_Dokugamine"
+  },
+  {
+    "work": "블리치",
+    "kor": "리리넷 진저벅",
+    "eng": "Lilynette_Gingerbuck"
+  },
+  {
+    "work": "블리치",
+    "kor": "릴토토 램퍼드",
+    "eng": "Liltotto_Lamperd"
+  },
+  {
+    "work": "블리치",
+    "kor": "마츠모토 란기쿠",
+    "eng": "Rangiku_Matsumoto"
+  },
+  {
+    "work": "블리치",
+    "kor": "미니냐 매컬론",
+    "eng": "Meninas_McAllon"
+  },
+  {
+    "work": "블리치",
+    "kor": "밤비에타 바스터바인",
+    "eng": "Bambietta_Basterbine"
+  },
+  {
+    "work": "블리치",
+    "kor": "소이퐁",
+    "eng": "Suì-Fēng"
+  },
+  {
+    "work": "블리치",
+    "kor": "시바 쿠우카쿠",
+    "eng": "Kūkaku_Shiba"
+  },
+  {
+    "work": "블리치",
+    "kor": "시호인 요루이치",
+    "eng": "Yoruichi_Shihōin"
+  },
+  {
+    "work": "블리치",
+    "kor": "야도마루 리사",
+    "eng": "Lisa_Yadōmaru"
+  },
+  {
+    "work": "블리치",
+    "kor": "우나기야 이쿠미",
+    "eng": "Ikumi_Unagiya"
+  },
+  {
+    "work": "블리치",
+    "kor": "우노하나 레츠",
+    "eng": "Retsu_Unohana"
+  },
+  {
+    "work": "블리치",
+    "kor": "이노우에 오히리메",
+    "eng": "Orihime_Inoue"
+  },
+  {
+    "work": "블리치",
+    "kor": "이세 나아오",
+    "eng": "Nanao_Ise"
+  },
+  {
+    "work": "블리치",
+    "kor": "지젤 쥬엘",
+    "eng": "Giselle_Gewelle"
+  },
+  {
+    "work": "블리치",
+    "kor": "캔디스 캐트닙",
+    "eng": "Candice_Catnipp"
+  },
+  {
+    "work": "블리치",
+    "kor": "코테츠 이사네",
+    "eng": "Isane_Kotetsu"
+  },
+  {
+    "work": "블리치",
+    "kor": "쿠로츠지 네무",
+    "eng": "Nemu_Kurotsuchi"
+  },
+  {
+    "work": "블리치",
+    "kor": "쿠치키 루키아",
+    "eng": "Rukia_Kuchiki"
+  },
+  {
+    "work": "블리치",
+    "kor": "티아 할리벨",
+    "eng": "Tier_Harribel"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "나키리 레오노라",
+    "eng": "Leonora_Nakiri"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "나키리 아리스",
+    "eng": "Alice_Nakiri"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "나키리 에리나",
+    "eng": "Erina_Nakiri"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "미토 이쿠미",
+    "eng": "Ikumi_Mito"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "사사키 료코",
+    "eng": "Ryōko_Sakaki"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "요시노 유키",
+    "eng": "Yūki_Yoshino"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "코바야시 린도",
+    "eng": "Rindō_Kobayashi"
+  },
+  {
+    "work": "식극의 소마",
+    "kor": "타도코로 메구미",
+    "eng": "Megumi_Tadokoro"
+  },
+  {
+    "work": "새여동생 마왕의 계약자",
+    "kor": "나루세 마리아",
+    "eng": "Maria_Naruse"
+  },
+  {
+    "work": "새여동생 마왕의 계약자",
+    "kor": "나루세 미오",
+    "eng": "Mio_Naruse"
+  },
+  {
+    "work": "새여동생 마왕의 계약자",
+    "kor": "노나카 유키",
+    "eng": "Yuki_Nonaka"
+  },
+  {
+    "work": "새여동생 마왕의 계약자",
+    "kor": "노나카 쿠루미",
+    "eng": "Kurumi_Nonaka"
+  },
+  {
+    "work": "새여동생 마왕의 계약자",
+    "kor": "제스트",
+    "eng": "Zest"
+  },
+  {
+    "work": "새여동생 마왕의 계약자",
+    "kor": "하세가와 치사토",
+    "eng": "Chisato_Hasegawa"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "시노자키 리카",
+    "eng": "Shinozaki_Rika"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "아사다 시노",
+    "eng": "Asada_Shino"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "아야노 케이코",
+    "eng": "Ayano_Keiko"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "앨리스 신서시스 서티",
+    "eng": "Alice_Zuberg"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "유우키 아스나",
+    "eng": "Yuuki_Asuna"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "콘노 유우키",
+    "eng": "Konno_Yuuki"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "키리가하 스구하",
+    "eng": "Kirigaya_Suguha"
+  },
+  {
+    "work": "소드 아트 온라인",
+    "kor": "키리코",
+    "eng": "kiriko"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "나카츠카사 츠바키",
+    "eng": "Tsubaki_Nakatsukasa"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "마리에 묠니르",
+    "eng": "Marie_Mjolnir"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "마카 알반",
+    "eng": "Maka_Albarn"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "메두사 고르곤",
+    "eng": "Medusa_Gorgon"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "블레어",
+    "eng": "Blair"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "아라크네 고르곤",
+    "eng": "Arachne_Gorgon"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "엘리자베스 톰슨",
+    "eng": "Elizabeth_Thompson"
+  },
+  {
+    "work": "소울 이터",
+    "kor": "패트리시아 톰슨",
+    "eng": "Patricia_Thompson"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "라 포리아 리하바인",
+    "eng": "La_Folia_Rihavein"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "미나미야 나츠키",
+    "eng": "Natsuki_Minamiya"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "아브로라 프로레스티나",
+    "eng": "Avrora_Florestina"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "아스타르테",
+    "eng": "Astarte"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "아이바 아사기",
+    "eng": "Asagi_Aiba"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "아카츠키 나기사",
+    "eng": "Nagisa_Akatsuki"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "아카츠키 레이나",
+    "eng": "Reina_Akatsuki"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "카나세 카논",
+    "eng": "Kanon_Kanase"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "카스가야 시즈리 카스티엘라",
+    "eng": "Kasugaya_Shizuri_Castiella"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "키라사카 사야카",
+    "eng": "Sayaka_Kirasaka"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "키사키 키아하",
+    "eng": "Kiriha_Kisaki"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "토코요기 유마",
+    "eng": "Yuuma_Tokoyogi"
+  },
+  {
+    "work": "스트라이크 더 블러드",
+    "kor": "포리포니아 리하바인",
+    "eng": "Polifonia_Rihavein"
+  },
+  {
+    "work": "스파이 패밀리",
+    "kor": "베키 블랙벨",
+    "eng": "Becky_Blackbell"
+  },
+  {
+    "work": "스파이 패밀리",
+    "kor": "실비아 셔우드",
+    "eng": "Sylvia_Sherwood"
+  },
+  {
+    "work": "스파이 패밀리",
+    "kor": "아냐 포저",
+    "eng": "Anya_Forger"
+  },
+  {
+    "work": "스파이 패밀리",
+    "kor": "요르 포저",
+    "eng": "Yor_Forger"
+  },
+  {
+    "work": "스파이 패밀리",
+    "kor": "피오나 프로스트",
+    "eng": "Fiona_Frost"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "나젠다",
+    "eng": "Najenda"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "레오네",
+    "eng": "Leone"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "마인",
+    "eng": "Mine"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "셰레",
+    "eng": "Sheele"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "아카메",
+    "eng": "Akame"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "에스데스",
+    "eng": "Esdeath"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "첼시",
+    "eng": "Chelsea"
+  },
+  {
+    "work": "아카메가 벤다",
+    "kor": "쿠로메",
+    "eng": "Kurome"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "라스트 오더",
+    "eng": "Last_Order"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "레이비니아 버드웨이",
+    "eng": "Leivinia_Birdway"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "루치아",
+    "eng": "Lucia"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "무기노 시즈리",
+    "eng": "Mugino_Shizuri"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "미사카 미스즈",
+    "eng": "Misaka_Misuzu"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "미사카 미코토",
+    "eng": "Misaka_Mikoto"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "사샤 크로이체프",
+    "eng": "Sasha_Kreutzev"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "쇼쿠호 미사키",
+    "eng": "Shokuhou_Misaki"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "쉐리 크롬웰",
+    "eng": "Sherry_Cromwell"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "아녜제 상크티스",
+    "eng": "Agnese_Sanctis"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "안젤레네",
+    "eng": "Angelene"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "오티누스",
+    "eng": "Othinus"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "올리비아 톰슨",
+    "eng": "Oriana_Thomson"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "올소라 아퀴나스",
+    "eng": "Orsola_Aquinas"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "이츠와",
+    "eng": "Itsuwa"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "인덱스",
+    "eng": "Index_Librorum_Prohibitorum"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "카미조 시이나",
+    "eng": "Kamijou_Shiina"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "카자키리 호우카",
+    "eng": "Kazakiri_Hyouka"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "칸자키 카오리",
+    "eng": "Kanzaki_Kaori"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "프렌다 세이베른",
+    "eng": "Frenda_Seivelun"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "호카제 준코",
+    "eng": "Hokaze_Junko"
+  },
+  {
+    "work": "어떤 마술과학의 시리즈",
+    "kor": "후키요세 세이리",
+    "eng": "Fukiyose_Seiri"
+  },
+  {
+    "work": "에반게리온",
+    "kor": "마키나미 마리 일러스트리어스",
+    "eng": "Mari_Makinami_Illustrious"
+  },
+  {
+    "work": "에반게리온",
+    "kor": "소류 아스카 그랑에이",
+    "eng": "Asuka_Langley_Soryu"
+  },
+  {
+    "work": "에반게리온",
+    "kor": "시키나미 아스카 그랑레이",
+    "eng": "Asuka_Shikinami_Langley"
+  },
+  {
+    "work": "에반게리온",
+    "kor": "아야나미 레이",
+    "eng": "Rei_Ayanami"
+  },
+  {
+    "work": "에반게리온",
+    "kor": "아카기 리츠코",
+    "eng": "Ritsuko_Akagi"
+  },
+  {
+    "work": "에반게리온",
+    "kor": "카츠라기 미사토",
+    "eng": "Misato_Katsuragi"
+  },
+  {
+    "work": "오버로드",
+    "kor": "라나 티엘 샬드론 라일 바이셀프",
+    "eng": "Renner_Theiere_Chardelon_Ryle_Vaiself"
+  },
+  {
+    "work": "오버로드",
+    "kor": "루푸스레기나 베타",
+    "eng": "Lupusregina_Beta"
+  },
+  {
+    "work": "오버로드",
+    "kor": "마레 벨로 피오레",
+    "eng": "Mare_Bello_Fiore"
+  },
+  {
+    "work": "오버로드",
+    "kor": "샤르티아 블러드폴른",
+    "eng": "Shalltear_Bloodfallen"
+  },
+  {
+    "work": "오버로드",
+    "kor": "솔루션 엡실론",
+    "eng": "Solution_Epsilon"
+  },
+  {
+    "work": "오버로드",
+    "kor": "아우라 벨라 피오라",
+    "eng": "Aura_Bella_Fiora"
+  },
+  {
+    "work": "오버로드",
+    "kor": "알베도",
+    "eng": "Albedo"
+  },
+  {
+    "work": "오버로드",
+    "kor": "엔토마 바실리사 제타",
+    "eng": "Entoma_Vasilissa_Zeta"
+  },
+  {
+    "work": "오버로드",
+    "kor": "유리 알파",
+    "eng": "Yuri_Alpha"
+  },
+  {
+    "work": "오버로드",
+    "kor": "이블아이",
+    "eng": "Evileye"
+  },
+  {
+    "work": "오버로드",
+    "kor": "클레만티느",
+    "eng": "Clementine"
+  },
+  {
+    "work": "원펀맨",
+    "kor": "괴인공주 도S",
+    "eng": "Monster_Princess_Do-S"
+  },
+  {
+    "work": "원펀맨",
+    "kor": "모스키토 걸",
+    "eng": "Mosquito_Girl"
+  },
+  {
+    "work": "원펀맨",
+    "kor": "사이코스",
+    "eng": "Psykos"
+  },
+  {
+    "work": "원펀맨",
+    "kor": "캡틴 미즈키",
+    "eng": "Captain_Mizuki"
+  },
+  {
+    "work": "원펀맨",
+    "kor": "타츠마키",
+    "eng": "Tatsumaki"
+  },
+  {
+    "work": "원펀맨",
+    "kor": "후부키",
+    "eng": "Fubuki"
+  },
+  {
+    "work": "원피스",
+    "kor": "나미",
+    "eng": "Nami(One_Piece)"
+  },
+  {
+    "work": "원피스",
+    "kor": "니코 로빈",
+    "eng": "Nico_Robin"
+  },
+  {
+    "work": "원피스",
+    "kor": "니코 올리바",
+    "eng": "Nico_Olvia"
+  },
+  {
+    "work": "원피스",
+    "kor": "레베카",
+    "eng": "Rebecca(One_Piece)"
+  },
+  {
+    "work": "원피스",
+    "kor": "마가렛",
+    "eng": "Marguerite(One_Piece)"
+  },
+  {
+    "work": "원피스",
+    "kor": "모즈와 키위",
+    "eng": "Mozu_and_Kiwi"
+  },
+  {
+    "work": "원피스",
+    "kor": "바카라",
+    "eng": "Baccarat"
+  },
+  {
+    "work": "원피스",
+    "kor": "베이비",
+    "eng": "5_Baby_5"
+  },
+  {
+    "work": "원피스",
+    "kor": "벨로 베티",
+    "eng": "Belo_Betty"
+  },
+  {
+    "work": "원피스",
+    "kor": "벨메일",
+    "eng": "Bell-mère"
+  },
+  {
+    "work": "원피스",
+    "kor": "보아 행콕",
+    "eng": "Boa_hancock"
+  },
+  {
+    "work": "원피스",
+    "kor": "블랙 마리아",
+    "eng": "Black_Maria"
+  },
+  {
+    "work": "원피스",
+    "kor": "비올라",
+    "eng": "Viola(One_Piece)"
+  },
+  {
+    "work": "원피스",
+    "kor": "샬롯 갈렛",
+    "eng": "Charlotte_Galette"
+  },
+  {
+    "work": "원피스",
+    "kor": "샬롯 스무디",
+    "eng": "Charlotte_Smoothie"
+  },
+  {
+    "work": "원피스",
+    "kor": "샬롯 푸딩",
+    "eng": "Charlotte_Pudding"
+  },
+  {
+    "work": "원피스",
+    "kor": "아인",
+    "eng": "Ain(One_Piece)"
+  },
+  {
+    "work": "원피스",
+    "kor": "알비다",
+    "eng": "Alvida"
+  },
+  {
+    "work": "원피스",
+    "kor": "우타",
+    "eng": "Uta(One_Piece)"
+  },
+  {
+    "work": "원피스",
+    "kor": "쥬얼리 보니",
+    "eng": "Jewelry_Bonney"
+  },
+  {
+    "work": "원피스",
+    "kor": "진라미",
+    "eng": "Ginrummy"
+  },
+  {
+    "work": "원피스",
+    "kor": "카리나",
+    "eng": "Carina"
+  },
+  {
+    "work": "원피스",
+    "kor": "칼리파",
+    "eng": "Kalifa"
+  },
+  {
+    "work": "원피스",
+    "kor": "코즈키 토키",
+    "eng": "Kozuki_Toki"
+  },
+  {
+    "work": "원피스",
+    "kor": "코즈키",
+    "eng": "히요리_Kozuki_Hiyori"
+  },
+  {
+    "work": "원피스",
+    "kor": "쿠이나",
+    "eng": "Kuina"
+  },
+  {
+    "work": "원피스",
+    "kor": "페로나",
+    "eng": "Perona"
+  },
+  {
+    "work": "유녀전기",
+    "kor": "메어리 수",
+    "eng": "Mary_Sue"
+  },
+  {
+    "work": "유녀전기",
+    "kor": "빅토리야 이바노프나 세레브랴코프",
+    "eng": "Viktoriya_Ivanovna_Serebryakov"
+  },
+  {
+    "work": "유녀전기",
+    "kor": "타냐 데그레챠프",
+    "eng": "Tanya_von_Degurechaff"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "린",
+    "eng": "Rin(Yu_Gi_Oh)"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "미사카 안즈",
+    "eng": "Anzu_Mazaki"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "미즈키 코토리",
+    "eng": "Zuzu_Boyle"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "세레나",
+    "eng": "Serena(Yu_Gi_Oh)"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "이자요이 아키",
+    "eng": "Akiza_Izinski"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "쿠로사키 루리",
+    "eng": "Lulu_Obsidian"
+  },
+  {
+    "work": "유희왕 시리즈",
+    "kor": "텐죠인 아스카",
+    "eng": "Alexis_Rhodes"
+  },
+  {
+    "work": "은혼",
+    "kor": "사루토비 아야메",
+    "eng": "Sarutobi_Ayame"
+  },
+  {
+    "work": "은혼",
+    "kor": "야큐 큐베",
+    "eng": "Yagyuu_Kyuubei"
+  },
+  {
+    "work": "은혼",
+    "kor": "이마이 노부메",
+    "eng": "Imai_Nobume"
+  },
+  {
+    "work": "은혼",
+    "kor": "츠쿠요",
+    "eng": "Tsukuyo"
+  },
+  {
+    "work": "은혼",
+    "kor": "카구라",
+    "eng": "Kagura"
+  },
+  {
+    "work": "은혼",
+    "kor": "쿄우카",
+    "eng": "Kouka"
+  },
+  {
+    "work": "이누야샤",
+    "kor": "린",
+    "eng": "Rin(InuYasha)"
+  },
+  {
+    "work": "이누야샤",
+    "kor": "산고",
+    "eng": "Sango(InuYasha)"
+  },
+  {
+    "work": "이누야샤",
+    "kor": "셋쇼마루의 어머니",
+    "eng": "Sesshomaru's_mother(InuYasha)"
+  },
+  {
+    "work": "이누야샤",
+    "kor": "카구라",
+    "eng": "Kagura(InuYasha)"
+  },
+  {
+    "work": "이누야샤",
+    "kor": "칸나",
+    "eng": "Kanna(InuYasha)"
+  },
+  {
+    "work": "이누야샤",
+    "kor": "키쿄우",
+    "eng": "Kikyo(InuYasha)"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "라우라 보데비히",
+    "eng": "Laura_Bodewig"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "샤를로트 뒤노아",
+    "eng": "Charlotte_Dunois"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "세실리아 올코트",
+    "eng": "Cecilia_Alcott"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "시노노노 타바네",
+    "eng": "Tabane_Shinonono"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "시노노노 호우키",
+    "eng": "Houki_Shinonono"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "시라시키 칸자시",
+    "eng": "Kanzashi_Sarashiki"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "시라시키 타네나시",
+    "eng": "Tatenashi_Sarashiki"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "야마다 마야",
+    "eng": "Maya_Yamada"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "오리무라 마도카",
+    "eng": "Madoka_Orimura"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "오리무라 치후유",
+    "eng": "Chifuyu_Orimura"
+  },
+  {
+    "work": "인피니트 스트라토스",
+    "kor": "황 링인",
+    "eng": "Lingyin_Huang"
+  },
+  {
+    "work": "일곱 개의 대죄",
+    "kor": "다이앤",
+    "eng": "Diane"
+  },
+  {
+    "work": "일곱 개의 대죄",
+    "kor": "멀린",
+    "eng": "Merlin"
+  },
+  {
+    "work": "일곱 개의 대죄",
+    "kor": "엘리자베스 리오네스",
+    "eng": "Elizabeth_Liones"
+  },
+  {
+    "work": "전생했더니 슬라임이었던 건에 대하여",
+    "kor": "루미너스 발렌타인",
+    "eng": "Luminous_Valentine"
+  },
+  {
+    "work": "전생했더니 슬라임이었던 건에 대하여",
+    "kor": "밀림 나바",
+    "eng": "Milim_Nava"
+  },
+  {
+    "work": "전생했더니 슬라임이었던 건에 대하여",
+    "kor": "사카구치 히나타",
+    "eng": "Hinata_Sakaguchi"
+  },
+  {
+    "work": "전생했더니 슬라임이었던 건에 대하여",
+    "kor": "슈나",
+    "eng": "Shuna"
+  },
+  {
+    "work": "전생했더니 슬라임이었던 건에 대하여",
+    "kor": "시온",
+    "eng": "Shion"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "루이즈 드 라 발리에르",
+    "eng": "Louise_de_La_Vallière"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "시에스타",
+    "eng": "Siesta"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "카린느 드 라 발리에르",
+    "eng": "Karin, Duchesse_de_La_Vallière"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "카틀레아 드 라 폰티누",
+    "eng": "Cattleya_de_La_Fontaine"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "퀴르케",
+    "eng": "Kirche"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "타바사",
+    "eng": "Tabitha"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "티파니아",
+    "eng": "Tiffania"
+  },
+  {
+    "work": "제로의 사역마",
+    "kor": "헨리에타",
+    "eng": "Henrietta"
+  },
+  {
+    "work": "죠죠의 기묘한 모험",
+    "kor": "리사 리사",
+    "eng": "Lisa_Lisa"
+  },
+  {
+    "work": "죠죠의 기묘한 모험",
+    "kor": "머라이어",
+    "eng": "Mariah"
+  },
+  {
+    "work": "죠죠의 기묘한 모험",
+    "kor": "수지",
+    "eng": "Q_Suzie_Q"
+  },
+  {
+    "work": "죠죠의 기묘한 모험",
+    "kor": "에리나 펜들턴",
+    "eng": "Erina_Pendleton"
+  },
+  {
+    "work": "죠죠의 기묘한 모험",
+    "kor": "쿠죠 죠린",
+    "eng": "Jolyne_Cujoh"
+  },
+  {
+    "work": "죠죠의 기묘한 모험",
+    "kor": "홀리 죠스타",
+    "eng": "Holly_Joestar"
+  },
+  {
+    "work": "진격의 거인",
+    "kor": "미사카 알반",
+    "eng": "Mikasa_Ackermann"
+  },
+  {
+    "work": "진격의 거인",
+    "kor": "사샤 브라우스",
+    "eng": "Sasha_Braus"
+  },
+  {
+    "work": "진격의 거인",
+    "kor": "애니 레온한트",
+    "eng": "Annie_Leonhart"
+  },
+  {
+    "work": "진격의 거인",
+    "kor": "유미르",
+    "eng": "Ymi"
+  },
+  {
+    "work": "진격의 거인",
+    "kor": "피크 핑거",
+    "eng": "Pieck_Finger"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "니아 텟페린",
+    "eng": "Nia_Teppelin"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "데리 아다이",
+    "eng": "Darry_Adai"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "레이트 호킨",
+    "eng": "Leyte_Jokin"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "요코 리트나",
+    "eng": "Yoko_Littner"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "키논 바치카",
+    "eng": "Kinon_Bachika"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "키얄 바치카",
+    "eng": "Kiyal_Bachika"
+  },
+  {
+    "work": "천원돌파 그렌라간",
+    "kor": "키요 바치카",
+    "eng": "Kiyoh_Bachika"
+  },
+  {
+    "work": "청의 엑소시스트",
+    "kor": "모리야마 시에미",
+    "eng": "Shiemi_Moriyama"
+  },
+  {
+    "work": "청의 엑소시스트",
+    "kor": "유리 에긴",
+    "eng": "Yuri_Egin"
+  },
+  {
+    "work": "청의 엑소시스트",
+    "kor": "이즈모 카마키",
+    "eng": "Izumo_Kamiki"
+  },
+  {
+    "work": "청의 엑소시스트",
+    "kor": "키리가쿠레 슈라",
+    "eng": "Shura_Kirigakure"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "나나리 비 브리타니아",
+    "eng": "Nunnally_vi_Britannia"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "락샤타 챠우라",
+    "eng": "Rakshata_Chawla"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "마리안느 비 브리타니아",
+    "eng": "Marianne_vi_Britannia"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "밀리 애쉬포드",
+    "eng": "Milly_Ashford"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "비렛타 누",
+    "eng": "Villetta_Nu"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "유페미아 리 브리타니아",
+    "eng": "Euphemia_li_Britannia"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "코넬리아 리 브리타니아",
+    "eng": "Cornelia_li_Britannia"
+  },
+  {
+    "work": "코드 기어스",
+    "kor": "코우즈키 카렌",
+    "eng": "Kallen_Kōzuki"
+  },
+  {
+    "work": "킬 라 킬",
+    "kor": "마토이 류코",
+    "eng": "Ryūko_Matoi"
+  },
+  {
+    "work": "킬 라 킬",
+    "kor": "만칸쇼쿠 마코",
+    "eng": "Mako_Mankanshoku"
+  },
+  {
+    "work": "킬 라 킬",
+    "kor": "자쿠즈레 노논",
+    "eng": "Nonon_Jakuzure"
+  },
+  {
+    "work": "킬 라 킬",
+    "kor": "키류인 라교",
+    "eng": "Ragyō_Kiryūin"
+  },
+  {
+    "work": "킬 라 킬",
+    "kor": "키류인 사츠키",
+    "eng": "Satsuki_Kiryūin"
+  },
+  {
+    "work": "킬 라 킬",
+    "kor": "하리메 누이",
+    "eng": "Nui_Harime"
+  },
+  {
+    "work": "코바야시네 메이드래곤",
+    "kor": "이루루",
+    "eng": "Ilulu"
+  },
+  {
+    "work": "코바야시네 메이드래곤",
+    "kor": "칸나 카무이",
+    "eng": "Kanna_Kamui"
+  },
+  {
+    "work": "코바야시네 메이드래곤",
+    "kor": "케찰코아틀",
+    "eng": "Quetzalcoatl"
+  },
+  {
+    "work": "코바야시네 메이드래곤",
+    "kor": "코바야시",
+    "eng": "Kobayashi"
+  },
+  {
+    "work": "코바야시네 메이드래곤",
+    "kor": "토르",
+    "eng": "Tohru"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "리제로테 샬록",
+    "eng": "Lieselotte_Sherlock"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "아나스타샤=L",
+    "eng": "Anastasia-L"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "아사미 리리스",
+    "eng": "Lilith_Asami"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "아스틸",
+    "eng": "Astil_Manuscript"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "야마나 미라",
+    "eng": "Mira_Yamana"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "카스가",
+    "eng": "히지리_Hijiri_Kasuga"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "카자마 레비",
+    "eng": "Levi_Kazama"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "칸나즈키 아린",
+    "eng": "Arin_Kannazuki"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "쿠라타 유이",
+    "eng": "Yui_Kurata"
+  },
+  {
+    "work": "트리니티 세븐",
+    "kor": "후도 아키오",
+    "eng": "Akio_Fudo"
+  },
+  {
+    "work": "팬티&스타킹",
+    "kor": "야나기 팬티",
+    "eng": "Panty_Anarchy"
+  },
+  {
+    "work": "팬티&스타킹",
+    "kor": "야나기 스타킹",
+    "eng": "Stocking_Anarchy"
+  },
+  {
+    "work": "팬티&스타킹",
+    "kor": "스캔티 데이먼",
+    "eng": "Scanty_Daemon"
+  },
+  {
+    "work": "팬티&스타킹",
+    "kor": "니삭스 데이먼",
+    "eng": "Kneesocks_Daemon"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "디마리아 이에스타",
+    "eng": "Dimaria_C._Yesta"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "레비 맥거딘",
+    "eng": "Levy_McGarden"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "루시 하트필리아",
+    "eng": "Lucy_Heartfilia"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "리사나 스트라우스",
+    "eng": "Lisanna_strauss"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "메르디",
+    "eng": "Meredy"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "미네브라 올랜드",
+    "eng": "Minerva_Orland"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "미라젠 스트라우스",
+    "eng": "Mirajane_Strauss"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "밀리아나",
+    "eng": "Millianna"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "바르고",
+    "eng": "Virgo"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "브랜디쉬 뮤",
+    "eng": "Brandish_μ"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "비스카 무란",
+    "eng": "Biska_Mulan"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "세이라",
+    "eng": "Seilah"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "소라노 아그리아",
+    "eng": "sorano_agria"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "아리에스",
+    "eng": "Aries"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "아이린 베르세리온",
+    "eng": "Irene_Belserion"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "에버그린",
+    "eng": "Evergreen"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "엘자 스칼렛",
+    "eng": "Erza_Scarlet"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "울티아 밀코비치",
+    "eng": "Ultear_Milkovich"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "유키노 아그리아",
+    "eng": "Yukino_Agria"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "제니 레이라이트",
+    "eng": "Jenny_Realight"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "카구라 미카즈치",
+    "eng": "Kagura_Mikazuchi"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "카나 알베로나",
+    "eng": "Cana_Alberona"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "쿄우카",
+    "eng": "Kyoka"
+  },
+  {
+    "work": "페어리테일",
+    "kor": "플레어 코로나",
+    "eng": "Flare_Corona"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "개스퍼 블라디",
+    "eng": "Gaspar_Vladi"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "레이벨 피닉스",
+    "eng": "Ravel_Phoenix"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "리아스 그레모리",
+    "eng": "Rias_Gremory"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "시도우 이리나",
+    "eng": "Irina_Shidou"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "아시아 아르젠토",
+    "eng": "Asia_Argento"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "오피스",
+    "eng": "Ouroboros_Dragon_Ophis"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "제노비아 쿠아르타",
+    "eng": "Xenovia_Kwaruta"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "쿠로카",
+    "eng": "Kuroka"
+  },
+  {
+    "work": "하이스쿨 dxd",
+    "kor": "토죠 코네코",
+    "eng": "Koneko_Toujou"
+  },
+  {
+    "work": "하이스쿨 오브 더 데드",
+    "kor": "마리카와 시즈카",
+    "eng": "Shizuka_Marikawa"
+  },
+  {
+    "work": "하이스쿨 오브 더 데드",
+    "kor": "미나미 리카",
+    "eng": "Rika_Minami"
+  },
+  {
+    "work": "하이스쿨 오브 더 데드",
+    "kor": "미야모토 레이",
+    "eng": "Rei_Miyamoto"
+  },
+  {
+    "work": "하이스쿨 오브 더 데드",
+    "kor": "부스지마 사에코",
+    "eng": "Saeko_Busujima"
+  },
+  {
+    "work": "하이스쿨 오브 더 데드",
+    "kor": "타카기 사야",
+    "eng": "Saya_Takagi"
+  },
+  {
+    "work": "학전도시 아스터리스크",
+    "kor": "사사미야 사야",
+    "eng": "Sasamiya_Saya"
+  },
+  {
+    "work": "학전도시 아스터리스크",
+    "kor": "실비아 류네하임",
+    "eng": "Sylvia_Lyyneheym"
+  },
+  {
+    "work": "학전도시 아스터리스크",
+    "kor": "율리스 리스펠드",
+    "eng": "Julis_Riessfeld"
+  },
+  {
+    "work": "학전도시 아스터리스크",
+    "kor": "클로디아 엔필드",
+    "eng": "Claudia_Enfield"
+  },
+  {
+    "work": "학전도시 아스터리스크",
+    "kor": "토도 카린",
+    "eng": "Toudou_Kirin"
+  },
+  {
+    "work": "헌터x헌터",
+    "kor": "네페르피트",
+    "eng": "Neferpitou"
+  },
+  {
+    "work": "헌터x헌터",
+    "kor": "마치 코마치네",
+    "eng": "Machi_Komacine"
+  },
+  {
+    "work": "헌터x헌터",
+    "kor": "비스켓 크루거",
+    "eng": "Biscuit_Krueger"
+  },
+  {
+    "work": "헌터x헌터",
+    "kor": "시즈크 무라사키",
+    "eng": "Shizuku_Murasaki"
+  },
+  {
+    "work": "헌터x헌터",
+    "kor": "파크노다",
+    "eng": "Pakunoda"
+  },
+  {
+    "work": "헬싱",
+    "kor": "립 반 윙클",
+    "eng": "Rip_Van_Winkle"
+  },
+  {
+    "work": "헬싱",
+    "kor": "세라스 빅토리아",
+    "eng": "Seras_Victoria"
+  },
+  {
+    "work": "헬싱",
+    "kor": "잉테그라 헬싱",
+    "eng": "Wingates_Hellsing"
+  },
+  {
+    "work": "헬싱",
+    "kor": "타카기 유미에",
+    "eng": "Yumie_Takagi"
+  },
+  {
+    "work": "Fate/stay night",
+    "kor": "세이버 Saber",
+    "eng": "(Fate/stay_night)"
+  },
+  {
+    "work": "Fate/stay night",
+    "kor": "라이더 Rider",
+    "eng": "(Fate/stay_night)"
+  },
+  {
+    "work": "Fate/stay night",
+    "kor": "캐스터",
+    "eng": "Caster(Fate/stay_night)"
+  },
+  {
+    "work": "Fate/stay night",
+    "kor": "토오사카 린",
+    "eng": "Rin_Tohsaka_(Fate/stay_night)"
+  },
+  {
+    "work": "Fate/stay night",
+    "kor": "마토 사쿠라",
+    "eng": "Sakura_Matou_(Fate/stay_night)"
+  },
+  {
+    "work": "Fate/stay night",
+    "kor": "이리야스필 폰 아인츠베른",
+    "eng": "Illyasviel_von_Einzbern_(Fate/stay_night)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "BB",
+    "eng": "BB_BB"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "BB 수영복",
+    "eng": "BBBB_(Summer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "가레스",
+    "eng": "Gareth"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "가레스 수영복",
+    "eng": "Gareth_(Swimsuit_Saber)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "갈라테이아",
+    "eng": "Galatea"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "고르곤",
+    "eng": "Gorgon"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "그레이",
+    "eng": "Gray"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "나가오 카케토라",
+    "eng": "Nagao_Kagetora"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "나이팅게일",
+    "eng": "Nightingale"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "나이팅게일 산타",
+    "eng": "Nightingale_(Santa)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "나타",
+    "eng": "Nezha"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "네로 클라디우스",
+    "eng": "Nero_Claudius"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "네로 클라디우스 브라이드",
+    "eng": "Nero_Claudius_(Bride)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "네로 클라디우스 캐스터",
+    "eng": "Nero_Claudius_(Caster)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "니토크리스",
+    "eng": "Nitocris"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "니토크리스 수영복",
+    "eng": "Nitocris_(Assassin)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "도브리냐 니키티치",
+    "eng": "Dobrynya_Nikitich"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "락슈미바이",
+    "eng": "Lakshmibai"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "레오나르도 다 빈치",
+    "eng": "Leonardo_Da_Vinci"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "레오나르도 다 빈치 라이더",
+    "eng": "Leonardo_Da_Vinci_(Rider)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "레오나르도 다 빈치 룰러",
+    "eng": "Leonardo_Da_Vinci_(Ruler)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "료우기 시키",
+    "eng": "Ryōgi_Shiki_(Assassin)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "료우기 시키 기모노",
+    "eng": "Ryōgi_Shiki_(Saber)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마나난 막 리르",
+    "eng": "Manannán_mac_Lir_(Bazett)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마르타",
+    "eng": "Martha"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마르타 산타",
+    "eng": "Martha_(Santa)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마르타 수영복",
+    "eng": "Martha_(Ruler)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마리 앙투아네트",
+    "eng": "Marie_Antoinette"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마리 앙투아네트 수영복",
+    "eng": "Marie_Antoinette_(Swimsuit_Caster)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마슈 키리에라이트",
+    "eng": "Mashu_Kyrielight"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "마타 하리",
+    "eng": "Mata_Hari"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "멀린 프로토타입",
+    "eng": "Merlin_(Prototype)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "멀린 프로토타입 수영복",
+    "eng": "Lady_Avalon"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메데이아 릴리",
+    "eng": "Medea_(Lily)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메두사",
+    "eng": "Medea"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메두사 랜서",
+    "eng": "Medusa_(Lancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메이브",
+    "eng": "Queen_Medb"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메이브 수영복",
+    "eng": "Queen_Medb_(Swimsuit_Saber)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "멜뤼진",
+    "eng": "Mélusine"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "멜트릴리스",
+    "eng": "Meltlilith"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "멜트릴리스 수영복",
+    "eng": "Mysterious_Alter_Ego_Λ"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "모드레드",
+    "eng": "Mordred"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "모드레드 수영복",
+    "eng": "Mordred_(Swimsuit_Rider)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "모르간",
+    "eng": "Morgan"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "모치즈키 치요메",
+    "eng": "Mochizuki_Chiyome"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "무라사키 시키부",
+    "eng": "Murasaki_Shikibu"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "무라사키 시키부 수영복",
+    "eng": "Murasaki_Shikibu_(Swimsuit_Rider)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "무측천",
+    "eng": "Wu_Zetian"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "무측천 수영복",
+    "eng": "Wu_Zetian_(Swimsuit_Caster)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "미나모토노 라이코ō",
+    "eng": "Minamoto_no_Raikō"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "미나모토노 라이코 수영복",
+    "eng": "Minamoto_no_Raikō_(Swimsuit_Lancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "미스 크레인",
+    "eng": "Miss_Crane"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "미야모토 무사시",
+    "eng": "Miyamoto_Musashi"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "미야모토 무사시 수영복",
+    "eng": "Miyamoto_Musashi_(Swimsuit_Berserker)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "바게스트",
+    "eng": "Barghest"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "바반시",
+    "eng": "Baobhan_Sith"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "반 고흐",
+    "eng": "Van_Gogh"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "발키리",
+    "eng": "Valkyrie"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "백모의 핫산",
+    "eng": "Hassan_of_the_Hundred_Faces"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "베니 엔마 -",
+    "eng": "Beni-enma"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "부디카",
+    "eng": "Boudica"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "브라단만테",
+    "eng": "Bradamante"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "브륀힐데",
+    "eng": "Brynhildr"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "브륀힐데 수영복",
+    "eng": "Brynhildr_(Berserker)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "브리트라",
+    "eng": "Vritra"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "살로메",
+    "eng": "Salome"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "샤를로트 코르데",
+    "eng": "Charlotte_Corday"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "샤를로트 코르데 수영복",
+    "eng": "Charlotte_Corday_(Caster)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "세노 리큐",
+    "eng": "Sen_no_Rikyū"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "세미라미스",
+    "eng": "Semiramis"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "세이 쇼나곤",
+    "eng": "Sei_Shōnagon"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "세이 쇼나곤 수영복",
+    "eng": "Sei_Shōnagon_(Swimsuit_Berserker)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "셋쇼인 키아라",
+    "eng": "Sesshōin_Kiara"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "셋쇼인 키아라 수영복",
+    "eng": "Sesshōin_Kiara_(Swimsuit_Moon_Cancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "셰헤라자데",
+    "eng": "Scheherazade"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "수수께끼의 아이돌 얼터",
+    "eng": "XMysterious_Idol_X_(Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "수수께끼의 히로인",
+    "eng": "X_Mysterious_Heroine_X"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "수수께끼의 히로인 얼터",
+    "eng": "XMysterious_Heroine_X_(Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "수수께끼의 히로인",
+    "eng": "XX_Mysterious_Heroine_XX"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "슈텐도지",
+    "eng": "Shuten_Dōji"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "슈텐도지 캐스터",
+    "eng": "Shuten_Dōji_(Caster)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스즈카 고젠",
+    "eng": "Suzuka_Gozen"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스즈카 고젠 산타",
+    "eng": "Suzuka_Gozen_(Santa)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스카디",
+    "eng": "Scáthach-Skaði"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스카디 수영복",
+    "eng": "Scáthach-Skaði_(Swimsuit_Ruler)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스카사하",
+    "eng": "Scáthach"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스카사하 수영복",
+    "eng": "Scáthach_(Swimsuit_Assassin)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스텐노",
+    "eng": "Stheno"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "시바의 여왕",
+    "eng": "Queen_of_Sheba"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "시타",
+    "eng": "Sita"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "시토나이",
+    "eng": "Sitonai"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아나스타샤 & 비비 &",
+    "eng": "Anastasia_&_Viy"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아나스타샤",
+    "eng": "Anastasia"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 캐스터",
+    "eng": "Artoria_Caster"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤",
+    "eng": "Artoria_Pendragon"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 릴리",
+    "eng": "Artoria_Pendragon_(Lily)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 수영복",
+    "eng": "Artoria_Pendragon_(Swimsuit_Archer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 얼터",
+    "eng": "Artoria_Pendragon_(Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 얼터 수영복",
+    "eng": "Artoria_Pendragon_(Swimsuit_Rider_Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 얼터 (산타)",
+    "eng": "Artoria_Pendragon_(Santa_Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 랜서",
+    "eng": "Artoria_Pendragon_(Lancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 랜서 얼터",
+    "eng": "Artoria_Pendragon_(Lancer_Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아르토리아 펜드래곤 랜서 룰러",
+    "eng": "Artoria_Pendragon_(Ruler)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아비게일 윌리엄스",
+    "eng": "Abigail_Williams"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아비게일 윌리엄스(수영복)",
+    "eng": "Abigail_Williams_(Swimsuit_Summer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아사가미 후지노",
+    "eng": "Asagami_Fujino"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아스트레아",
+    "eng": "Astraea"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아탈란테",
+    "eng": "Atalanta"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "아탈란테 얼터",
+    "eng": "Atalanta_(Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "알테라",
+    "eng": "Altera"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "알테라 산 타",
+    "eng": "Altera_the_San(ta)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "앤 보니 & 메리 리드",
+    "eng": "Anne_Bonny_&_Mary_Read"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "앤 보니 & 메리 리드 수영복",
+    "eng": "Anne_Bonny_&_Mary_Read_(Archer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "양귀비",
+    "eng": "Yang_Guifei"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "에레쉬키갈",
+    "eng": "Ereshkigal"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "에우로페",
+    "eng": "Europa"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "에우리알레",
+    "eng": "Euryale"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘레나 블레바츠키",
+    "eng": "Helena_Blavatsky"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘레나 블레바츠키 수영복",
+    "eng": "Helena_Blavatsky_(Swimsuit_Archer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘레나 블레바크치 산타",
+    "eng": "Helena_Blavatsky_(Christmas)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘리자베스 바토리",
+    "eng": "Elizabeth_Báthory"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘리자베스 바토리 브레이브",
+    "eng": "Elizabeth_Báthory_(Brave)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘리자베스 바토리 신데렐라",
+    "eng": "Elizabeth_Báthory_(Cinderella)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "엘리자베스 바토리 할로윈",
+    "eng": "Elizabeth_Báthory_(Halloween)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메카 엘리자베트 1호",
+    "eng": "Mecha_Eli-chan"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "메카 엘리자베트 2호",
+    "eng": "Mecha_Eli-chan_Mk.II"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오다 노부나가",
+    "eng": "Oda_Nobunaga"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오다 노부나가 수영복",
+    "eng": "Oda_Nobunaga_(Swimsuit_Berserker)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오다 노부가나 어벤저",
+    "eng": "Oda_Nobunaga_(Avenger)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오사카베히메",
+    "eng": "Osakabehime"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오사카베히메 수영복",
+    "eng": "Osakabehime_(Archer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오키타 소지",
+    "eng": "Okita_Sōji"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오키타 J 소지",
+    "eng": "JOkita_J_Sōji_Swimsuit"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "오키타 소지 얼터",
+    "eng": "Okita_Sōji_(Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "우미인",
+    "eng": "Consort_Yu"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "우미인 수영복",
+    "eng": "Consort_Yu_(Swimsuit_Lancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "우시와카마루",
+    "eng": "Ushiwakamaru"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "우시와카마루 수영복",
+    "eng": "Ushiwakamaru_(Swimsuit_Assassin)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "우츠미 에리세",
+    "eng": "Utsumi_Erice"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "우츠미 에리세 수영복",
+    "eng": "Utsumi_Erice_(Swimsuit_Avenger)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이바라키도지",
+    "eng": "Ibaraki_Dōji"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이바라키도지 수영복",
+    "eng": "Ibaraki_Dōji_(Lancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이부키도지",
+    "eng": "Ibuki_Dōji"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이부키도지 수영복",
+    "eng": "Ibuki_Dōji_(Swimsuit_Berserker)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이슈타르",
+    "eng": "Ishtar"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이슈타르 수영복",
+    "eng": "Ishtar_(Swimsuit_Rider)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "스페이스 이슈타르",
+    "eng": "Space_Ishtar"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이요",
+    "eng": "Iyo"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "이즈모의 오쿠니",
+    "eng": "Izumo_no_Okuni"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "자크 데 몰레",
+    "eng": "Jacques_de_Molay"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "잔 다르크",
+    "eng": "Jeanne_d'Arc"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "잔 다르크 수영복",
+    "eng": "Jeanne_d'Arc_(Archer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "잔 다르크 얼터",
+    "eng": "Jeanne_d'Arc_(Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "잔 다르크 얼터 수영복",
+    "eng": "Jeanne_d'Arc_(Berserker_Alter)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "잔 다르크 얼터 산타 릴리",
+    "eng": "Jeanne_d'Arc_(Alter)_(Santa_Lily)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "재규어맨",
+    "eng": "Jaguar_Man"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "잭 더 리퍼",
+    "eng": "Jack_the_Ripper"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "정밀의 핫산",
+    "eng": "Hassan_of_the_Serenity"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "제노비아",
+    "eng": "Zenobia"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "지나코 카리기리",
+    "eng": "Jinako_Carigiri"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "진양옥",
+    "eng": "Qin_Liangyu"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "쯩 자매",
+    "eng": "Trung_Sisters"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "차차",
+    "eng": "Chacha"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "카마",
+    "eng": "Kame"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "카마 수영복",
+    "eng": "Kama_(Swimsuit_Avenger)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "카밀라",
+    "eng": "Carmilla"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "카밀라 수영복",
+    "eng": "Carmilla_(Rider)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "캘러미티 제인",
+    "eng": "Calamity_Jane"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "케찰코아틀",
+    "eng": "Quetzalcoatl"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "케찰코아틀 산타",
+    "eng": "Quetzalcoatl_(Samba/Santa)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "클레오파트라",
+    "eng": "Cleopatra"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "키르케",
+    "eng": "Circe"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "타마모 캣",
+    "eng": "Tamamo_Cat"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "타마모노마에",
+    "eng": "Tamamo_no_Mae"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "타마모노마에 수영복",
+    "eng": "Tamamo_no_Mae_(Swimsuit_Lancer)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "타마모빗치 코얀스카야",
+    "eng": "Tamamo_Vitch_Koyanskaya"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "타마모빗치 코얀스카야 포리너",
+    "eng": "Tamamo_Vitch_Koyanskaya_(Foreigner)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "타이마트",
+    "eng": "Tiamat"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "토모에 고젠",
+    "eng": "Tomoe_Gozen"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "토모에 고젠 수영복",
+    "eng": "Tomoe_Gozen_(Swimsuit_Saber)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "파르바티",
+    "eng": "Parvati"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "패션립",
+    "eng": "Passionlip"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "펜테실레이아",
+    "eng": "Penthesilea"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "풀 바니",
+    "eng": "Paul_Bunyan"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "프랑켄슈타인",
+    "eng": "Frankenstein"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "프랑켄슈타인 산타",
+    "eng": "Frankenstein_(Christmas)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "프랑켄슈타인 수영복",
+    "eng": "Frankenstein_(swimsuit_Saber)"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "프랜시스 드레이크",
+    "eng": "Francis_Drake"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "하베트롯",
+    "eng": "Habetrot"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "헤파이스티온",
+    "eng": "Hephaestion"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "현장 삼장",
+    "eng": "Xuanzang_Sanzang"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "형가",
+    "eng": "Jing_Ke"
+  },
+  {
+    "work": "Fate/Grand order",
+    "kor": "히메코",
+    "eng": "Himiko"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "듀엘라 덴트",
+    "eng": "Duela_Dent"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "레이디 블랙호크",
+    "eng": "Lady_Blackhawk"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "레이디 시바",
+    "eng": "Lady_Shiva"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "레이븐",
+    "eng": "Raven"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "로이스 레인",
+    "eng": "Lois_Lane"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "로즈 윌슨",
+    "eng": "Rose_Wilson"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "메라",
+    "eng": "Mera"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "미라클 몰리",
+    "eng": "Miracle_Molly"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "바바라 고든",
+    "eng": "Barbara_Gordon"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "배트걸",
+    "eng": "Batgirl"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "배트우먼",
+    "eng": "Batwoman"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "블랙카나리",
+    "eng": "Black_Canary"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "블랙파이어",
+    "eng": "Black_Fire"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "슈퍼걸",
+    "eng": "Super_Girl"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "슈퍼우먼",
+    "eng": "Super_Woman"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "스타걸",
+    "eng": "Stargirl"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "스타파이어",
+    "eng": "Starfire"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "스테파니 브라운",
+    "eng": "Stephanie_Brown"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "실버스완",
+    "eng": "Silver_Swan"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "원더걸",
+    "eng": "Wonder_Girl"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "원더우먼",
+    "eng": "Wonder_Woman"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "인첸트리스",
+    "eng": "Enchantress"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "자타나",
+    "eng": "Zatanna"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "제시카 크루즈",
+    "eng": "Jessica_Cruz"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "카산드라 케인",
+    "eng": "Cassandra_Cain"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "카타나",
+    "eng": "Katana"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "캣우먼",
+    "eng": "Catwoman"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "탈리아 알 굴",
+    "eng": "Talia_al_Ghul"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "파워걸",
+    "eng": "Power_Girl"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "펀치라인",
+    "eng": "Punchline"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "포이즌 아이비",
+    "eng": "Poison_Ivy"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "할리퀸",
+    "eng": "Harley_Quinn"
+  },
+  {
+    "work": "DC 코믹스",
+    "kor": "헌트리스",
+    "eng": "Huntress"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "그웬 스테이시",
+    "eng": "Gwen_Stacy"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "대거",
+    "eng": "Dagger"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "로그",
+    "eng": "Rogue"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "로라 키니",
+    "eng": "Laura_Kinney"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "루나 스노우",
+    "eng": "Luna_Snow"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "매직",
+    "eng": "Magik"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "메두사",
+    "eng": "Medusa"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "메리 제인",
+    "eng": "Mary_Jane"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "미스틱",
+    "eng": "Mystic"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "미즈마블",
+    "eng": "Ms._Marvel"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "발키리",
+    "eng": "Valkyrie"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "블랙 위도우",
+    "eng": "Black_Widow"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "블랙캣",
+    "eng": "Black_Cat"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "쉬헐크",
+    "eng": "She-Hulk"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "스칼렛 위치",
+    "eng": "Scarlet_Witch"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "스톰",
+    "eng": "Storm"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "스파이더 그웬",
+    "eng": "Spider-Gwen"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "실크",
+    "eng": "Silk"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "엘렉트라",
+    "eng": "Elektra"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "엠마 프로스트",
+    "eng": "Emma_Frost"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "인비저블 우먼",
+    "eng": "Invisible_Woman"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "제인 포스터",
+    "eng": "Jane_Foster"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "진 그레이",
+    "eng": "Jean_Grey"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "캡틴 마블",
+    "eng": "Captain_Marvel"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "케이트 비숍",
+    "eng": "Kate_Bishop"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "키티 프라이드",
+    "eng": "Kate_Pryde"
+  },
+  {
+    "work": "마블 코믹스",
+    "kor": "화이트 폭스",
+    "eng": "White_Fox"
+  }
+]
