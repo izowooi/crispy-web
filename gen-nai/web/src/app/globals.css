@@ -1,13 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: oklch(0.18 0.03 250);
-  --color-bg-elev: oklch(0.23 0.03 250);
-  --color-bg-elev-2: oklch(0.28 0.03 250);
-  --color-fg: oklch(0.95 0.01 250);
-  --color-fg-dim: oklch(0.7 0.02 250);
-  --color-accent: oklch(0.85 0.18 95);
-  --color-accent-2: oklch(0.7 0.18 280);
+  /* Light theme — 차분하고 깨끗한 톤 */
+  --color-bg: oklch(0.985 0.005 250);          /* almost white, slight cool */
+  --color-bg-elev: oklch(0.97 0.008 250);      /* card */
+  --color-bg-elev-2: oklch(0.94 0.01 250);     /* nested card / divider */
+  --color-border: oklch(0.88 0.012 250);
+  --color-border-strong: oklch(0.78 0.014 250);
+  --color-fg: oklch(0.25 0.02 260);            /* near-black, slightly cool */
+  --color-fg-dim: oklch(0.5 0.02 260);
+  --color-fg-mute: oklch(0.65 0.02 260);
+  --color-accent: oklch(0.65 0.18 285);        /* indigo/purple */
+  --color-accent-fg: oklch(0.99 0 0);
+  --color-accent-soft: oklch(0.94 0.04 285);
+  --color-danger: oklch(0.6 0.2 25);
+  --color-success: oklch(0.65 0.15 145);
 }
 
 html, body {
@@ -17,6 +24,11 @@ html, body {
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Pretendard", "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-fg);
 }

@@ -4,7 +4,7 @@
   "compatibility_date": "2025-01-15",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
-    "MIN_INTERVAL_MS": "10000"
+    "MIN_INTERVAL_MS": "2000"
   },
   "durable_objects": {
     "bindings": [
