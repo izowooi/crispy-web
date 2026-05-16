@@ -59,7 +59,7 @@ export function History({ batches, selectedId, onSelect, onClear }: Props) {
                   <div className="aspect-[832/1216] w-full bg-[var(--color-bg-elev-2)]">
                     {first?.imageKey ? (
                       <img
-                        src={`/api/img/${encodeURIComponent(first.imageKey)}`}
+                        src={`/api/img?key=${encodeURIComponent(first.imageKey)}`}
                         alt=""
                         className="h-full w-full object-cover"
                       />

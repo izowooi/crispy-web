@@ -36,7 +36,7 @@ export function BatchGrid({ slots, emptyHint }: Props) {
 
 function SlotCard({ slot }: { slot: BatchSlot }) {
   const ready = slot.status === "done" && slot.imageKey;
-  const url = slot.imageKey ? `/api/img/${encodeURIComponent(slot.imageKey)}` : undefined;
+  const url = slot.imageKey ? `/api/img?key=${encodeURIComponent(slot.imageKey)}` : undefined;
   return (
     <figure className="relative overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] aspect-[832/1216]">
       {ready && url ? (
