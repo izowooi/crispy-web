@@ -50,18 +50,17 @@ export default function Page() {
     return parts.filter(Boolean).join(", ");
   }, [characters, subject, scene]);
 
-  // 폴링 — pending이 있는 배치마다 jobId별로 별도 폴 루프
+  // 폴링 — 각 배치의 단일 jobId 만 추적
   const pollingRefs = useRef<Map<string, boolean>>(new Map());
   useEffect(() => {
     for (const batch of batches) {
-      for (const slot of batch.slots) {
-        if (slot.status === "done" || slot.status === "failed") continue;
-        if (pollingRefs.current.has(slot.jobId)) continue;
-        pollingRefs.current.set(slot.jobId, true);
-        void pollJob(slot.jobId);
-      }
+      const sample = batch.slots[0];
+      if (sample.status === "done" || sample.status === "failed") continue;
+      if (pollingRefs.current.has(batch.jobId)) continue;
+      pollingRefs.current.set(batch.jobId, true);
+      void pollJob(batch.id, batch.jobId);
     }
-    async function pollJob(jobId: string) {
+    async function pollJob(batchId: string, jobId: string) {
       try {
         while (true) {
           await new Promise((r) => setTimeout(r, 1500));
@@ -70,23 +69,40 @@ export default function Page() {
           const j = (await r.json()) as JobStatus;
           let stopped = false;
           setBatches((prev) =>
-            prev.map((b) => ({
-              ...b,
-              slots: b.slots.map((s) => {
-                if (s.jobId !== jobId) return s;
-                if (j.status === "queued") return { ...s, status: "queued", position: j.position };
-                if (j.status === "processing") return { ...s, status: "processing" };
-                if (j.status === "done") {
-                  stopped = true;
-                  return { ...s, status: "done", imageB64: j.imageB64 };
-                }
-                if (j.status === "failed") {
-                  stopped = true;
-                  return { ...s, status: "failed", error: j.error };
-                }
-                return s;
-              }),
-            })),
+            prev.map((b) => {
+              if (b.id !== batchId) return b;
+              if (j.status === "queued") {
+                return {
+                  ...b,
+                  slots: b.slots.map((s) => ({ ...s, status: "queued", position: j.position })),
+                };
+              }
+              if (j.status === "processing") {
+                return {
+                  ...b,
+                  slots: b.slots.map((s) => ({ ...s, status: "processing" })),
+                };
+              }
+              if (j.status === "done") {
+                stopped = true;
+                return {
+                  ...b,
+                  slots: b.slots.map((s, i) => ({
+                    ...s,
+                    status: "done",
+                    imageKey: j.imageKeys[i],
+                  })),
+                };
+              }
+              if (j.status === "failed") {
+                stopped = true;
+                return {
+                  ...b,
+                  slots: b.slots.map((s) => ({ ...s, status: "failed", error: j.error })),
+                };
+              }
+              return b;
+            }),
           );
           if (stopped) {
             pollingRefs.current.delete(jobId);
@@ -107,41 +123,42 @@ export default function Page() {
     setSubmitting(true);
     try {
       const res = RESOLUTIONS.find((r) => r.id === resolutionId) ?? DEFAULT_RESOLUTION;
-      const seedBase =
+      const seed =
         seedInput.trim() === "" ? undefined : Math.max(0, Number(seedInput.trim()) || 0);
 
-      const payloads: GenerateInput[] = [];
-      for (let i = 0; i < BATCH_SIZE; i++) {
-        payloads.push({
-          prompt: finalPrompt,
-          negativePrompt,
-          width: res.width,
-          height: res.height,
-          steps,
-          guidance,
-          seed: seedBase === undefined ? undefined : seedBase + i,
-          sampler,
-        });
-      }
+      const payload: GenerateInput = {
+        prompt: finalPrompt,
+        negativePrompt,
+        width: res.width,
+        height: res.height,
+        steps,
+        guidance,
+        seed,
+        sampler,
+      };
 
-      const slots: BatchSlot[] = [];
-      for (const p of payloads) {
-        const r = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(p),
-        });
-        if (!r.ok) {
-          const e = (await r.json().catch(() => ({}))) as { error?: string };
-          throw new Error(e.error ?? `HTTP ${r.status}`);
-        }
-        const { jobId, position } = (await r.json()) as { jobId: string; position: number };
-        slots.push({ jobId, status: "queued", position });
+      const r = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) {
+        const e = (await r.json().catch(() => ({}))) as { error?: string };
+        throw new Error(e.error ?? `HTTP ${r.status}`);
       }
+      const { jobId, position } = (await r.json()) as { jobId: string; position: number };
+
+      const slots: BatchSlot[] = Array.from({ length: BATCH_SIZE }, (_, i) => ({
+        slotIndex: i,
+        jobId,
+        status: "queued",
+        position,
+      }));
 
       const batch: HistoryBatch = {
         id: crypto.randomUUID(),
         createdAt: Date.now(),
+        jobId,
         slots,
         characters: characters.map((c) => c.kor),
       };
@@ -259,7 +276,7 @@ export default function Page() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Seed (4장 +0~+3)">
+                <Field label="Seed">
                   <input
                     type="number"
                     inputMode="numeric"
@@ -295,7 +312,7 @@ export default function Page() {
             </div>
           </details>
 
-          {/* 보낼 프롬프트 미리보기 (작게) */}
+          {/* 보낼 프롬프트 미리보기 */}
           <details className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]">
             <summary className="cursor-pointer select-none px-3 py-2 text-xs font-semibold text-[var(--color-fg-dim)]">
               실제로 보내는 프롬프트

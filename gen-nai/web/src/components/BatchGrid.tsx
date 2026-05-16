@@ -3,9 +3,10 @@
 import type { JobStatus } from "@/lib/types";
 
 export type BatchSlot = {
+  slotIndex: number;       // 0..3 within the batch
   jobId: string;
   status: JobStatus["status"];
-  imageB64?: string;
+  imageKey?: string;       // R2 key — URL is /api/img/<key>
   position?: number;
   error?: string;
 };
@@ -26,22 +27,23 @@ export function BatchGrid({ slots, emptyHint }: Props) {
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {slots.map((slot, i) => (
-        <SlotCard key={slot.jobId ?? i} slot={slot} index={i} />
+      {slots.map((slot) => (
+        <SlotCard key={slot.slotIndex} slot={slot} />
       ))}
     </div>
   );
 }
 
-function SlotCard({ slot, index }: { slot: BatchSlot; index: number }) {
-  const ready = slot.status === "done" && slot.imageB64;
+function SlotCard({ slot }: { slot: BatchSlot }) {
+  const ready = slot.status === "done" && slot.imageKey;
+  const url = slot.imageKey ? `/api/img/${encodeURIComponent(slot.imageKey)}` : undefined;
   return (
     <figure className="relative overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] aspect-[832/1216]">
-      {ready ? (
+      {ready && url ? (
         <img
           data-testid="result"
-          src={`data:image/png;base64,${slot.imageB64}`}
-          alt={`result ${index + 1}`}
+          src={url}
+          alt={`result ${slot.slotIndex + 1}`}
           className="block h-full w-full object-cover"
         />
       ) : (
@@ -66,10 +68,10 @@ function SlotCard({ slot, index }: { slot: BatchSlot; index: number }) {
           )}
         </div>
       )}
-      {ready && (
+      {ready && url && (
         <a
-          href={`data:image/png;base64,${slot.imageB64}`}
-          download={`gennai-${slot.jobId}.png`}
+          href={url}
+          download={`gennai-${slot.imageKey}`}
           className="absolute right-2 top-2 rounded-md bg-white/80 px-2 py-1 text-xs text-[var(--color-fg)] backdrop-blur hover:bg-white"
           title="다운로드"
         >

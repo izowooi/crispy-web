@@ -1,14 +1,20 @@
 # gen-nai 배포 가이드
 
-## 첫 배포 (2026-05-16 완료)
+## 운영 환경
 
 ```
 Frontend:        https://gennai.pages.dev
 Queue Worker:    https://gennai-queue.izowooi.workers.dev
+R2 Bucket:       gennai-images          (이미지 저장소)
 Service binding: gennai → gennai-queue (binding name: QUEUE)
 Model:           nai-diffusion-4-5-full
-큐 정책:          MIN_INTERVAL_MS=10000 (마지막 응답 + 10초 이후 다음)
+n_samples:       4 (한 NAI 호출이 4장 반환)
+큐 정책:          MIN_INTERVAL_MS=2000
 ```
+
+성능 (실측):
+- 1 사용자 4장: ~9초
+- 2 사용자 8장 직렬화: ~14초
 
 ## 아키텍처
 
@@ -87,20 +93,23 @@ npx wrangler pages deploy .vercel/output/static --project-name gennai
 # 1. Cloudflare 로그인
 npx wrangler login
 
-# 2. queue-worker 배포 (DO 네임스페이스 생성)
+# 2. R2 버킷 생성 (이미지 저장소)
 cd gen-nai/queue-worker
+npx wrangler r2 bucket create gennai-images
+
+# 3. queue-worker 배포 (DO 네임스페이스 + R2 바인딩)
 npx wrangler deploy
 
-# 3. queue-worker 시크릿 주입
+# 4. queue-worker 시크릿 주입
 echo "pst-..." | npx wrangler secret put NAI_TOKEN
 
-# 4. Pages 프로젝트 생성
+# 5. Pages 프로젝트 생성
 npx wrangler pages project create gennai --production-branch main
 
-# 5. Pages 첫 배포
+# 6. Pages 첫 배포
 cd ../web
 npm run pages:build
-npx wrangler pages deploy .vercel/output/static --project-name gennai
+npx wrangler pages deploy .vercel/output/static --project-name gennai --commit-message "init"
 ```
 
 ## 스모크 테스트
@@ -120,9 +129,22 @@ for i in {1..20}; do
 done
 ```
 
+## 데이터 흐름 (이미지)
+
+```
+NAI 응답 (ZIP, 4장)
+        ↓ queue-worker가 ZIP 풀어 PNG 4개 추출
+R2 (gennai-images) — key = <jobId>-<0..3>.png, contentType=image/png, immutable cache 1y
+        ↑ /img/<key> 로 stream serving
+브라우저 ← /api/img/<key> (Pages 측 service-binding 프록시)
+```
+
+DO storage에는 R2 key 배열만 저장 → SQLITE_TOOBIG 회피.
+
 ## 알려진 제약
 
-- **이미지 저장은 DO storage** — base64로 인라인 저장. 큰 이미지(>128KB)는 향후 R2로 이전 필요.
-- **무료 플랜의 DO 제약** — 무료 플랜에서도 DO는 사용 가능하지만 일부 한도 있음 (현재 무료로 운영 중).
-- **gennai.pages.dev 자동 매핑** — 첫 배포 후 즉시 활성. custom domain은 GUI에서 추가.
-- **position 필드 미세 race** — 동시 enqueue 시 position 값이 약간 어긋날 수 있음(실제 처리 순서는 정상). 사용자에게는 큰 영향 없음.
+- **무료 플랜의 DO 제약** — 무료 플랜에서도 DO는 사용 가능하지만 일부 한도 있음.
+- **R2 무료 한도** — 10GB 저장 + 월 1M 읽기 무료 (개인 사용 충분).
+- **gennai.pages.dev 자동 매핑** — 첫 배포 후 즉시 활성. custom domain은 GUI.
+- **이미지 영구 보관** — 현재 R2에서 자동 삭제 안 함. TTL/수동 청소는 향후 운영 항목.
+- **position 필드 미세 race** — 동시 enqueue 시 position 값이 약간 어긋날 수 있음(실제 처리 순서는 정상).

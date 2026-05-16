@@ -67,7 +67,7 @@ describe("buildNaiV45Payload", () => {
     expect(p.parameters.v4_prompt.caption.char_captions[0].centers).toEqual([{ x: 0.5, y: 0.5 }]);
   });
 
-  it("v4 전용 고정값들이 설정된다", () => {
+  it("v4 전용 고정값들이 설정된다 (n_samples=4 로 한 요청에 4장)", () => {
     const p = buildNaiV45Payload(base);
     expect(p.parameters.params_version).toBe(3);
     expect(p.parameters.legacy).toBe(false);
@@ -80,7 +80,7 @@ describe("buildNaiV45Payload", () => {
     expect(p.parameters.use_coords).toBe(false);
     expect(p.parameters.cfg_rescale).toBeCloseTo(0.4);
     expect(p.parameters.noise_schedule).toBe("native");
-    expect(p.parameters.n_samples).toBe(1);
+    expect(p.parameters.n_samples).toBe(4);
   });
 
   it("해상도/스텝/네거티브가 그대로 반영된다", () => {

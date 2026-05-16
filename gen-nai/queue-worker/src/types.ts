@@ -32,4 +32,5 @@ export interface Env {
   NAI_TOKEN: string;
   MIN_INTERVAL_MS?: string;
   NOVELAI_QUEUE: DurableObjectNamespace;
+  IMAGES: R2Bucket;
 }

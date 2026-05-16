@@ -19,5 +19,11 @@
       "tag": "v1",
       "new_sqlite_classes": ["NovelAiQueueDO"]
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "gennai-images"
+    }
   ]
 }

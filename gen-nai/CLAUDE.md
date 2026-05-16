@@ -35,3 +35,5 @@ Next.js + Cloudflare Pages + Durable Objects 글로벌 큐 + 2,300+ 캐릭터 �
 | 2026-05-15 | 초기 구성 | 전체 (.claude/agents 6, .claude/skills 5) | NovelAI 웹앱 신규 개발 |
 | 2026-05-15 | DO를 별도 Worker로 분리 | queue-worker/ 신규 | next-on-pages가 동일 번들에 DO 클래스를 export 못 함 — 서비스 바인딩 패턴으로 전환 |
 | 2026-05-16 | 첫 배포 + 스모크 통과 | gennai.pages.dev, gennai-queue | 24 테스트 GREEN, 실서비스 NAI 호출 성공 |
+| 2026-05-16 | 라이트 테마 + 3컬럼 UI | web/src/app, components | 사용자 피드백 (어두움, UX 복잡) 반영 |
+| 2026-05-16 | n_samples=4, R2 이미지 저장 | queue-worker, web/types | SQLITE_TOOBIG(>2MB) 회피 + 1요청 4장으로 단축 (9초) |

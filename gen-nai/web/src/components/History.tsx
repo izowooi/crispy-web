@@ -5,8 +5,10 @@ import type { BatchSlot } from "./BatchGrid";
 export type HistoryBatch = {
   id: string;
   createdAt: number;
+  /** 단일 jobId — 한 NAI 호출이 4장을 함께 반환 */
+  jobId: string;
   slots: BatchSlot[];
-  characters: string[]; // 한글 캐릭터 이름들
+  characters: string[];
 };
 
 type Props = {
@@ -40,7 +42,7 @@ export function History({ batches, selectedId, onSelect, onClear }: Props) {
         )}
         <ul className="space-y-2">
           {batches.map((b) => {
-            const first = b.slots.find((s) => s.status === "done" && s.imageB64);
+            const first = b.slots.find((s) => s.status === "done" && s.imageKey);
             const doneCount = b.slots.filter((s) => s.status === "done").length;
             const isSel = b.id === selectedId;
             return (
@@ -55,15 +57,15 @@ export function History({ batches, selectedId, onSelect, onClear }: Props) {
                   } bg-[var(--color-bg-elev)]`}
                 >
                   <div className="aspect-[832/1216] w-full bg-[var(--color-bg-elev-2)]">
-                    {first?.imageB64 ? (
+                    {first?.imageKey ? (
                       <img
-                        src={`data:image/png;base64,${first.imageB64}`}
+                        src={`/api/img/${encodeURIComponent(first.imageKey)}`}
                         alt=""
                         className="h-full w-full object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-[var(--color-fg-mute)]">
-                        {doneCount}/4 …
+                        {doneCount}/{b.slots.length} …
                       </div>
                     )}
                   </div>

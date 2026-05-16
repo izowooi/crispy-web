@@ -1,6 +1,9 @@
 /**
  * NovelAI 전역 큐 매니저 — Cloudflare Durable Object.
- * gen-nai/web/src/lib/queue/NovelAiQueueDO.ts 와 동일 로직.
+ *
+ * 이미지는 NAI v4.5의 n_samples=4 로 1요청에 4장을 한꺼번에 받고,
+ * R2 버킷(IMAGES)에 각각 저장한다. DO 행에는 R2 키 배열만 둔다.
+ * (DO SQLite 행 한도 ~2MB를 우회 — SQLITE_TOOBIG 방지)
  */
 import type { Env, GenerateInput } from "./types";
 import { callNai } from "./nai-payload";
@@ -8,14 +11,22 @@ import { callNai } from "./nai-payload";
 type StoredJob =
   | { id: string; status: "queued"; input: GenerateInput; createdAt: number }
   | { id: string; status: "processing"; input: GenerateInput; createdAt: number }
-  | { id: string; status: "done"; input: GenerateInput; createdAt: number; completedAt: number; imageB64: string }
-  | { id: string; status: "failed"; input: GenerateInput; createdAt: number; completedAt: number; error: string };
-
-function toBase64(bytes: Uint8Array): string {
-  let s = "";
-  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-  return btoa(s);
-}
+  | {
+      id: string;
+      status: "done";
+      input: GenerateInput;
+      createdAt: number;
+      completedAt: number;
+      imageKeys: string[];
+    }
+  | {
+      id: string;
+      status: "failed";
+      input: GenerateInput;
+      createdAt: number;
+      completedAt: number;
+      error: string;
+    };
 
 export class NovelAiQueueDO implements DurableObject {
   state: DurableObjectState;
@@ -71,7 +82,7 @@ export class NovelAiQueueDO implements DurableObject {
         status: "done",
         createdAt: job.createdAt,
         completedAt: job.completedAt,
-        imageB64: job.imageB64,
+        imageKeys: job.imageKeys,
       });
     }
     return Response.json({
@@ -112,12 +123,19 @@ export class NovelAiQueueDO implements DurableObject {
     try {
       await this.state.storage.put(`job:${jobId}`, { ...job, status: "processing" });
       const images = await callNai(job.input, this.env.NAI_TOKEN);
-      const imageB64 = toBase64(images[0]);
+      const imageKeys: string[] = [];
+      for (let i = 0; i < images.length; i++) {
+        const key = `${jobId}-${i}.png`;
+        await this.env.IMAGES.put(key, images[i], {
+          httpMetadata: { contentType: "image/png" },
+        });
+        imageKeys.push(key);
+      }
       await this.state.storage.put(`job:${jobId}`, {
         ...job,
         status: "done",
         completedAt: Date.now(),
-        imageB64,
+        imageKeys,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -137,7 +155,7 @@ export class NovelAiQueueDO implements DurableObject {
   private async scheduleNext(): Promise<void> {
     const queue = (await this.state.storage.get<string[]>("queue")) ?? [];
     if (queue.length > 0) {
-      const interval = Number(this.env.MIN_INTERVAL_MS ?? "10000");
+      const interval = Number(this.env.MIN_INTERVAL_MS ?? "2000");
       await this.state.storage.setAlarm(Date.now() + interval);
     } else {
       await this.state.storage.deleteAlarm();

@@ -15,15 +15,17 @@ const baseInput: GenerateInput = {
 };
 
 describe("callNai", () => {
-  it("정상 응답일 때 PNG 바이트 배열을 반환한다", async () => {
+  it("정상 응답일 때 PNG 바이트 배열을 4장 반환한다 (n_samples=4)", async () => {
     const images = await callNai(baseInput, "pst-test-token");
     expect(Array.isArray(images)).toBe(true);
-    expect(images.length).toBeGreaterThan(0);
-    // PNG magic: 89 50 4E 47
-    expect(images[0][0]).toBe(0x89);
-    expect(images[0][1]).toBe(0x50);
-    expect(images[0][2]).toBe(0x4e);
-    expect(images[0][3]).toBe(0x47);
+    expect(images.length).toBe(4);
+    // 모든 PNG가 매직 헤더로 시작
+    for (const img of images) {
+      expect(img[0]).toBe(0x89);
+      expect(img[1]).toBe(0x50);
+      expect(img[2]).toBe(0x4e);
+      expect(img[3]).toBe(0x47);
+    }
   });
 
   it("Authorization 헤더에 Bearer 토큰을 보낸다", async () => {

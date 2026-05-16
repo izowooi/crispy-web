@@ -26,7 +26,7 @@ export type NaiV45Payload = {
   parameters: {
     width: number;
     height: number;
-    n_samples: 1;
+    n_samples: 4;
     seed: number;
     extra_noise_seed: number;
     sampler: string;
@@ -80,7 +80,7 @@ export function buildNaiV45Payload(input: GenerateInput): NaiV45Payload {
     parameters: {
       width: input.width,
       height: input.height,
-      n_samples: 1,
+      n_samples: 4,
       seed,
       extra_noise_seed: seed,
       sampler,

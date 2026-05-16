@@ -12,7 +12,13 @@ const onePxPng = Uint8Array.from([
 ]);
 
 function buildFixtureZip() {
-  return zipSync({ "0.png": onePxPng });
+  // n_samples=4 → NAI는 4장을 한 ZIP 으로 반환
+  return zipSync({
+    "0.png": onePxPng,
+    "1.png": onePxPng,
+    "2.png": onePxPng,
+    "3.png": onePxPng,
+  });
 }
 
 export const server = setupServer(

@@ -41,7 +41,14 @@ export type EnqueueResponse = {
 export type JobStatus =
   | { id: string; status: "queued"; position: number; createdAt: number }
   | { id: string; status: "processing"; createdAt: number }
-  | { id: string; status: "done"; createdAt: number; completedAt: number; imageB64: string }
+  | {
+      id: string;
+      status: "done";
+      createdAt: number;
+      completedAt: number;
+      /** R2 키 배열. 이미지 URL은 `/api/img/${key}` 로 가져온다 */
+      imageKeys: string[];
+    }
   | { id: string; status: "failed"; createdAt: number; completedAt: number; error: string }
   | { id: string; status: "unknown" };
 
