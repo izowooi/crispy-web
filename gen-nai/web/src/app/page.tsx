@@ -5,7 +5,7 @@ import { CharacterSearch } from "@/components/CharacterSearch";
 import { BatchGrid, type BatchSlot } from "@/components/BatchGrid";
 import { History, type HistoryBatch } from "@/components/History";
 import { RESOLUTIONS, DEFAULT_RESOLUTION, SAMPLERS } from "@/lib/resolutions";
-import { randomScene, DEFAULT_NEGATIVE } from "@/lib/random-prompt";
+import { defaultPrompt, randomPrompt, DEFAULT_NEGATIVE } from "@/lib/random-prompt";
 import type { CharacterRow, GenerateInput, JobStatus, SamplerId } from "@/lib/types";
 
 type Subject = "1girl" | "1boy";
@@ -22,7 +22,7 @@ const DEFAULTS = {
 export default function Page() {
   const [characters, setCharacters] = useState<CharacterRow[]>([]);
   const [subject, setSubject] = useState<Subject>("1girl");
-  const [scene, setScene] = useState(() => randomScene());
+  const [prompt, setPrompt] = useState(() => defaultPrompt());
   const [negativePrompt, setNegativePrompt] = useState(DEFAULT_NEGATIVE);
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -46,9 +46,9 @@ export default function Page() {
     const parts: string[] = [];
     if (characters.length > 0) parts.push(characters.map((c) => c.eng).join(", "));
     parts.push(subject);
-    if (scene.trim()) parts.push(scene.trim());
+    if (prompt.trim()) parts.push(prompt.trim());
     return parts.filter(Boolean).join(", ");
-  }, [characters, subject, scene]);
+  }, [characters, subject, prompt]);
 
   // 폴링 — 각 배치의 단일 jobId 만 추적
   const pollingRefs = useRef<Map<string, boolean>>(new Map());
@@ -115,7 +115,7 @@ export default function Page() {
     }
   }, [batches]);
 
-  const rollScene = useCallback(() => setScene(randomScene()), []);
+  const rollPrompt = useCallback(() => setPrompt(randomPrompt()), []);
 
   async function generate() {
     if (submitting || finalPrompt.trim() === "") return;
@@ -209,30 +209,30 @@ export default function Page() {
           {/* Character */}
           <CharacterSearch selected={characters} onChange={setCharacters} />
 
-          {/* Scene */}
+          {/* Prompt — artist + quality 위주 */}
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label htmlFor="scene" className="text-xs font-semibold uppercase tracking-wide text-[var(--color-fg-dim)]">
-                Scene / Pose
+              <label htmlFor="prompt" className="text-xs font-semibold uppercase tracking-wide text-[var(--color-fg-dim)]">
+                Prompt
               </label>
               <button
                 type="button"
-                onClick={rollScene}
+                onClick={rollPrompt}
                 className="rounded-md bg-[var(--color-accent-soft)] px-2 py-0.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]"
               >
                 🎲 Random
               </button>
             </div>
             <textarea
-              id="scene"
-              value={scene}
-              onChange={(e) => setScene(e.target.value)}
-              rows={4}
-              placeholder="sitting by the window, soft afternoon light, ..."
+              id="prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              rows={5}
+              placeholder="{{artist:wlop}}, {{artist:as109}}, masterpiece, ..."
               className="w-full resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-fg-mute)] focus:border-[var(--color-accent)] focus:outline-none"
             />
             <p className="mt-1 text-[10px] text-[var(--color-fg-mute)]">
-              외모는 캐릭터 태그에 들어있으므로 여기서는 장소/포즈/분위기만 설명하세요. Random 버튼이 알아서 채워줍니다.
+              여기엔 작가 가중치와 퀄리티 태그를 주로 넣습니다. Random 버튼이 작가 조합을 셔플합니다.
             </p>
           </div>
 

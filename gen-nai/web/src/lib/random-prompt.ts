@@ -1,62 +1,75 @@
 /**
- * 랜덤 장면 프롬프트 — 캐릭터 외모는 캐릭터 태그가 책임지고,
- * 여기서는 "장소 + 포즈 + 조명/분위기 + 작가 가중치 + 품질" 만 생성한다.
- * 사용자가 1girl/1boy로 인원도 잠근다.
+ * Prompt 기본/랜덤 — 작가 + 퀄리티 + 초상화 컴포지션 중심.
+ *
+ * 캐릭터 태그는 page.tsx가 finalPrompt 조립 시 앞에 붙인다.
+ * 외모/체형/얼굴은 캐릭터 태그가 책임지므로 여기서 다루지 않는다.
  */
 
-const POSES = [
-  "looking at viewer, soft smile",
-  "from above, sitting on a chair",
-  "from below, standing, contrapposto",
-  "cowboy shot, three quarter view, gentle gaze",
-  "close-up portrait, looking aside",
-  "lying on grass, hand on cheek",
-  "leaning on a railing, wind in hair",
-  "holding a coffee cup, reading a book",
-  "stretching arms upward, eyes closed",
-  "looking back over shoulder",
-];
-
-const SCENES = [
-  "in a sunlit cafe, blooming flowers by the window",
-  "moody neon-lit cyberpunk alley, light rain",
-  "rooftop at sunset, gentle wind, lens flare",
-  "cozy library at night, golden lamp light",
-  "snowy mountain village, warm lanterns",
-  "underwater cathedral, god rays through stained glass",
-  "blooming cherry blossom street, soft petals in air",
-  "old bookstore, dust motes in afternoon sun",
-  "seaside cliff at dawn, mist over the water",
-  "forest clearing, fireflies, mossy rocks",
-  "bedroom with fairy lights, plush bed",
-  "rain-soaked tokyo crosswalk at dusk",
-  "autumn shrine path, red maple leaves",
-];
-
-const ARTISTS = [
-  "{{artist:wlop}}, {{artist:guweiz}}",
+/** 인기 Danbooru 작가 — 셔플해서 2~4명 조합으로 사용. NAI 4.5에서 검증된 페어들 중심 */
+const SEED_ARTISTS = [
+  "{{artist:wlop}}",
   "{{artist:as109}}",
-  "{{artist:ningen_mame}}",
   "{{artist:ciloranko}}",
-  "{{artist:as109}}, {{artist:wanke}}",
-  "{{artist:ask_(askzy)}}",
+  "{{artist:ningen_mame}}",
   "{{artist:rumoon}}",
+  "{{artist:torino_aqua}}",
+  "{{artist:wanke}}",
+  "{{artist:ask_(askzy)}}",
+  "{{artist:guweiz}}",
+  "{{artist:mika_pikazo}}",
+  "{{artist:kantoku}}",
+  "{{artist:rella}}",
+  "{{artist:ke-ta}}",
+  "{{artist:redjuice}}",
+  "{{artist:wanke}}",
+  "{{artist:taesi}}",
+  "{{artist:kidmo}}",
+  "{{artist:firolian}}",
 ];
 
-const QUALITY = [
-  "masterpiece, best quality, very aesthetic, absurdres",
-  "masterpiece, best quality, ultra detailed, atmospheric lighting",
-  "masterpiece, best quality, year 2024, newest, highres, detailed background",
+/** 초상화 컴포지션 — 캐릭터 중심이라 "1girl/1boy" 옆에 함께 들어감 */
+const PORTRAIT_COMPS = [
+  "upper body, looking at viewer",
+  "portrait, looking at viewer, soft smile",
+  "cowboy shot, three quarter view",
+  "close-up portrait, gentle gaze",
+  "upper body, head tilt",
 ];
+
+/** 시즌/스타일 가벼운 토큰 */
+const FLAVOR = [
+  "year 2024",
+  "year 2025",
+  "newest",
+  "detailed background",
+];
+
+const QUALITY = "masterpiece, best quality, very aesthetic, absurdres, highres";
 
 export const DEFAULT_NEGATIVE =
-  "lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, blurry, signature, watermark, jpeg artifacts, multiple views, multiple panels";
+  "worst quality, lowres, bad anatomy, bad hands, missing fingers, blurry, signature, watermark, jpeg artifacts, split screen, multiple views, monochrome, greyscale";
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/** 캐릭터/인원수와 무관한 "장면" 부분만 생성. 호출자가 캐릭터 태그 + 1girl/1boy를 앞에 붙인다. */
-export function randomScene(): string {
-  return [pick(POSES), pick(SCENES), pick(ARTISTS), pick(QUALITY)].join(", ");
+function pickN<T>(arr: T[], n: number): T[] {
+  const copy = [...arr];
+  const out: T[] = [];
+  for (let i = 0; i < n && copy.length > 0; i++) {
+    const idx = Math.floor(Math.random() * copy.length);
+    out.push(copy.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
+/** 기본 Prompt 박스 채움: 작가 3명 + 컴포지션 + 시즌 + 퀄리티 */
+export function defaultPrompt(): string {
+  const artists = pickN(SEED_ARTISTS, 3).join(", ");
+  return [artists, pick(PORTRAIT_COMPS), pick(FLAVOR), QUALITY].join(", ");
+}
+
+/** 🎲 Random — 새 작가 조합 + 컴포지션 셔플 */
+export function randomPrompt(): string {
+  return defaultPrompt();
 }
