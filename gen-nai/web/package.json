@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build": "npm run prebuild && npx @cloudflare/next-on-pages",
     "preview": "npm run pages:build && wrangler pages dev .vercel/output/static --compatibility-flags nodejs_compat",
     "deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static --project-name gennai"
   },
