@@ -172,9 +172,9 @@ export default function Page() {
   }
 
   return (
-    <main className="mx-auto grid h-[100dvh] max-w-[1800px] grid-cols-[380px_minmax(0,1fr)_240px] gap-4 px-4 py-4">
+    <main className="mx-auto grid min-h-[100dvh] max-w-[1800px] grid-cols-1 gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 lg:h-[100dvh] lg:grid-cols-[380px_minmax(0,1fr)_240px]">
       {/* ─── LEFT: 입력 ─── */}
-      <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)]">
+      <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] lg:h-full">
         <header className="border-b border-[var(--color-border)] px-4 py-3">
           <h1 className="text-lg font-bold tracking-tight">gen-nai</h1>
           <p className="text-xs text-[var(--color-fg-mute)]">
@@ -182,7 +182,7 @@ export default function Page() {
           </p>
         </header>
 
-        <div className="flex-1 space-y-5 overflow-auto px-4 py-4">
+        <div className="space-y-5 px-4 py-4 lg:flex-1 lg:overflow-auto">
           {/* Subject */}
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[var(--color-fg-dim)]">
@@ -323,7 +323,7 @@ export default function Page() {
           </details>
         </div>
 
-        <footer className="border-t border-[var(--color-border)] p-4">
+        <footer className="sticky bottom-0 border-t border-[var(--color-border)] bg-[var(--color-bg-elev)]/95 p-4 backdrop-blur lg:static lg:backdrop-blur-none">
           <button
             type="button"
             onClick={generate}
@@ -342,12 +342,12 @@ export default function Page() {
       </section>
 
       {/* ─── CENTER: 프리뷰 ─── */}
-      <section className="h-full overflow-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+      <section className="min-h-[55vh] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-3 sm:p-4 lg:h-full lg:min-h-0 lg:overflow-auto">
         <BatchGrid slots={selectedBatch?.slots ?? []} />
       </section>
 
       {/* ─── RIGHT: 히스토리 ─── */}
-      <section className="h-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)]">
+      <section className="min-h-[220px] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] lg:h-full">
         <History
           batches={batches}
           selectedId={selectedId}

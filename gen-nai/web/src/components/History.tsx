@@ -40,7 +40,7 @@ export function History({ batches, selectedId, onSelect, onClear }: Props) {
             <br />여기 쌓입니다
           </p>
         )}
-        <ul className="space-y-2">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:block lg:space-y-2">
           {batches.map((b) => {
             const first = b.slots.find((s) => s.status === "done" && s.imageKey);
             const doneCount = b.slots.filter((s) => s.status === "done").length;

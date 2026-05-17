@@ -19,14 +19,14 @@ type Props = {
 export function BatchGrid({ slots, emptyHint }: Props) {
   if (slots.length === 0) {
     return (
-      <div className="flex h-full min-h-[60vh] items-center justify-center rounded-2xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg-elev)] text-[var(--color-fg-mute)]">
+      <div className="flex min-h-[45vh] items-center justify-center rounded-2xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg-elev)] px-6 text-center text-sm text-[var(--color-fg-mute)] lg:h-full lg:min-h-[60vh]">
         {emptyHint ?? "캐릭터 고르고 Generate 를 누르면 이미지가 여기 나옵니다"}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {slots.map((slot) => (
         <SlotCard key={slot.slotIndex} slot={slot} />
       ))}
