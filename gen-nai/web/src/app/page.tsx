@@ -332,6 +332,9 @@ export default function Page() {
           >
             {submitting ? "요청 중…" : `Generate · 4장`}
           </button>
+          <p className="mt-3 text-center text-xs leading-relaxed text-[var(--color-fg-dim)]">
+            개인 이미지를 업로드받거나 저장하지 않으며, 개인 정보를 소중히 다룹니다.
+          </p>
           {error && (
             <p className="mt-2 text-xs text-[var(--color-danger)]">{error}</p>
           )}
