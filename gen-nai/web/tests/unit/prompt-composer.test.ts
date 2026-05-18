@@ -72,7 +72,28 @@ describe("buildArtistSegment", () => {
 describe("composeFinalPrompt", () => {
   const QUALITY = "masterpiece, best quality, very aesthetic, absurdres";
 
-  it("작가 0 + 캐릭터 1 + 퀄리티 = '캐릭터, 1girl, 퀄리티'", () => {
+  it("subject 가 맨 앞, solo 가 자동 부착됨", () => {
+    const out = composeFinalPrompt({
+      artists: [],
+      characters: [],
+      subject: "1girl",
+      qualityBody: QUALITY,
+    });
+    expect(out).toBe(`1girl, solo, ${QUALITY}`);
+  });
+
+  it("1boy 도 동일 — '1boy, solo' 형태", () => {
+    expect(
+      composeFinalPrompt({
+        artists: [],
+        characters: [],
+        subject: "1boy",
+        qualityBody: "masterpiece",
+      }),
+    ).toBe("1boy, solo, masterpiece");
+  });
+
+  it("작가 0 + 캐릭터 1 = 'subject, 캐릭터, 퀄리티' (subject 맨 앞)", () => {
     expect(
       composeFinalPrompt({
         artists: [],
@@ -80,10 +101,10 @@ describe("composeFinalPrompt", () => {
         subject: "1girl",
         qualityBody: QUALITY,
       }),
-    ).toBe(`hu_tao_(genshin_impact), 1girl, ${QUALITY}`);
+    ).toBe(`1girl, solo, hu_tao_(genshin_impact), ${QUALITY}`);
   });
 
-  it("작가 + 캐릭터 + 퀄리티 — 작가가 맨 앞", () => {
+  it("subject → 캐릭터 → 작가(가중치) → 퀄리티 순서", () => {
     const out = composeFinalPrompt({
       artists: [
         { name: "mx2j", weight: 1.5 },
@@ -93,40 +114,46 @@ describe("composeFinalPrompt", () => {
       subject: "1girl",
       qualityBody: QUALITY,
     });
-    expect(out.startsWith("1.5::artist:mx2j::, 1::artist:wlop::, frieren, 1girl,")).toBe(true);
-    expect(out).toContain(QUALITY);
+    expect(out).toBe(
+      `1girl, solo, frieren, 1.5::artist:mx2j::, 1::artist:wlop::, ${QUALITY}`,
+    );
   });
 
-  it("캐릭터 0 명 — 작가 + 1girl + 퀄리티", () => {
-    const out = composeFinalPrompt({
-      artists: [{ name: "wlop", weight: 1 }],
-      characters: [],
-      subject: "1girl",
-      qualityBody: QUALITY,
-    });
-    expect(out).toBe(`1::artist:wlop::, 1girl, ${QUALITY}`);
+  it("캐릭터 0 명 — subject + 작가 + 퀄리티", () => {
+    expect(
+      composeFinalPrompt({
+        artists: [{ name: "wlop", weight: 1 }],
+        characters: [],
+        subject: "1girl",
+        qualityBody: QUALITY,
+      }),
+    ).toBe(`1girl, solo, 1::artist:wlop::, ${QUALITY}`);
   });
 
-  it("퀄리티 본문이 비어있어도 깨지지 않음", () => {
-    const out = composeFinalPrompt({
-      artists: [],
-      characters: [],
-      subject: "1girl",
-      qualityBody: "",
-    });
-    expect(out).toBe("1girl");
+  it("퀄리티 본문이 비어있어도 깨지지 않음 (최소 'subject, solo')", () => {
+    expect(
+      composeFinalPrompt({
+        artists: [],
+        characters: [],
+        subject: "1girl",
+        qualityBody: "",
+      }),
+    ).toBe("1girl, solo");
   });
 
-  it("여러 캐릭터는 쉼표 연결", () => {
-    const out = composeFinalPrompt({
-      artists: [],
-      characters: [
-        { work: "원신", kor: "호두", eng: "hu_tao_(genshin_impact)" },
-        { work: "원신", kor: "감우", eng: "ganyu_(genshin_impact)" },
-      ],
-      subject: "1girl",
-      qualityBody: "masterpiece",
-    });
-    expect(out).toBe("hu_tao_(genshin_impact), ganyu_(genshin_impact), 1girl, masterpiece");
+  it("여러 캐릭터는 쉼표 연결, subject 다음", () => {
+    expect(
+      composeFinalPrompt({
+        artists: [],
+        characters: [
+          { work: "원신", kor: "호두", eng: "hu_tao_(genshin_impact)" },
+          { work: "원신", kor: "감우", eng: "ganyu_(genshin_impact)" },
+        ],
+        subject: "1girl",
+        qualityBody: "masterpiece",
+      }),
+    ).toBe(
+      "1girl, solo, hu_tao_(genshin_impact), ganyu_(genshin_impact), masterpiece",
+    );
   });
 });

@@ -68,12 +68,21 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  /**
+   * 최종 프롬프트 직접 편집 모드.
+   *  - null  → composeFinalPrompt 결과를 사용 (자동)
+   *  - string → 사용자가 직접 입력한 값을 그대로 사용
+   * 사용자가 caracter/artist/preset 을 변경하면서도 이 값은 그대로 유지된다.
+   * 'Auto 복귀' 버튼으로 null 로 리셋.
+   */
+  const [promptOverride, setPromptOverride] = useState<string | null>(null);
+
   const selectedBatch = useMemo(
     () => batches.find((b) => b.id === selectedId) ?? null,
     [batches, selectedId],
   );
 
-  const finalPrompt = useMemo(
+  const computedPrompt = useMemo(
     () =>
       composeFinalPrompt({
         artists,
@@ -83,6 +92,8 @@ export default function Page() {
       }),
     [artists, characters, subject, qualityBody],
   );
+  /** 실제로 전송되는 프롬프트 — override 있으면 그것을, 없으면 자동 조립값을 사용 */
+  const finalPrompt = promptOverride ?? computedPrompt;
 
   // 폴링
   const pollingRefs = useRef<Map<string, boolean>>(new Map());
@@ -366,13 +377,42 @@ export default function Page() {
             </div>
           </details>
 
-          <details className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]">
-            <summary className="cursor-pointer select-none px-3 py-2 text-xs font-semibold text-[var(--color-fg-dim)]">
-              실제로 보내는 프롬프트
+          <details className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]" open>
+            <summary className="flex cursor-pointer select-none items-center justify-between px-3 py-2">
+              <span className="text-xs font-semibold text-[var(--color-fg-dim)]">
+                실제로 보내는 프롬프트
+                {promptOverride !== null && (
+                  <span className="ml-1.5 rounded-sm bg-[var(--color-accent-soft)] px-1 py-0.5 text-[9px] font-normal text-[var(--color-accent)]">
+                    수동
+                  </span>
+                )}
+              </span>
+              {promptOverride !== null && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPromptOverride(null);
+                  }}
+                  className="rounded bg-[var(--color-bg-elev-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-fg)] hover:bg-[var(--color-border-strong)]"
+                  title="자동 조립값으로 되돌리기"
+                >
+                  ↺ Auto
+                </button>
+              )}
             </summary>
-            <pre className="overflow-auto border-t border-[var(--color-border)] px-3 py-2 font-mono text-[10px] leading-relaxed text-[var(--color-fg-dim)]">
-{finalPrompt || "(비어있음)"}
-            </pre>
+            <div className="border-t border-[var(--color-border)] px-3 py-2">
+              <textarea
+                value={finalPrompt}
+                onChange={(e) => setPromptOverride(e.target.value)}
+                rows={6}
+                placeholder="(비어있음 — 위에서 캐릭터/작가/Quality 를 채워주세요)"
+                className="w-full resize-none rounded border-0 bg-transparent p-0 font-mono text-[11px] leading-relaxed text-[var(--color-fg)] focus:outline-none"
+              />
+              <p className="mt-1 text-[10px] text-[var(--color-fg-mute)]">
+                여기서 직접 편집하면 위 컨트롤 변경과 독립적으로 그 내용이 그대로 전송됩니다. ↺ Auto 로 복귀.
+              </p>
+            </div>
           </details>
         </div>
 
