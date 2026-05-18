@@ -19,3 +19,4 @@
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
 | 2026-05-18 | 초기 구성 | 전체 (`.claude/agents/`, `.claude/skills/`, CLAUDE.md) | 게임 이식 + 자산 교체 워크플로우 자동화 |
+| 2026-05-18 | 방식 A 도구 추가 | `scripts/{extract,pack}-sprites.js`, `scripts/__tests__/`, `assets_src/` 77개, `ASSET_REPLACEMENT_SPEC.md §6` | 외부 TexturePacker 없이 고정 기능 분해/합성. TDD로 round-trip 픽셀 동일성 보장 (4 테스트 PASS). 사용자가 `assets_src/`의 PNG만 교체하고 `npm run pack:sprites`로 통합 가능 |

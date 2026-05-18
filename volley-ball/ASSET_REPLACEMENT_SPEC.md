@@ -262,33 +262,64 @@ assets_src/
     └── ko/               (7개)
 ```
 
-### 6.2 TexturePacker 명령 예시
+### 6.2 이 저장소에 포함된 도구 (권장)
+
+이 프로젝트는 외부 TexturePacker 없이도 방식 A를 수행할 수 있도록 **고정 기능** 합성기를 포함한다. 기존 `sprite_sheet.json`의 좌표를 그대로 사용하므로 좌표 재계산이 없어 view.js와 항상 호환된다.
 
 ```bash
-TexturePacker assets_src \
-  --data src/assets/images/sprite_sheet.json \
-  --sheet src/assets/images/sprite_sheet.png \
-  --format pixijs \
-  --algorithm Basic \
-  --trim-mode None \
-  --extrude 0 \
-  --max-size 476 \
-  --opt RGBA8888 \
-  --scale 1
+# 1) 현재 시트를 77개의 개별 PNG로 분해 (이미 실행되어 있다면 다시 실행 불필요)
+npm run extract:sprites
+# → assets_src/{pikachu, ball, number, objects, messages, sitting_pikachu.png}/...
+
+# 2) assets_src/에서 원하는 PNG를 동일 크기로 교체
+
+# 3) 변경된 assets_src/를 다시 시트로 합성
+npm run pack:sprites
+# → src/assets/images/sprite_sheet.png 갱신 (sprite_sheet.json은 건드리지 않음)
 ```
 
-> **중요:** `--trim-mode None`을 사용하라. 자동 트리밍을 켜면 좌표가 달라져 view.js에서 정렬 문제 발생.
+**합성기의 안전 가드:**
+- 입력 PNG의 크기가 layout과 다르면 즉시 에러를 던지며 어떤 파일이 문제인지 알려준다 (예: `pikachu_0_0.png: expected 64x64, got 32x32`)
+- 모든 77개 파일이 `assets_src/`에 존재해야 한다. 일부만 교체할 때도 다른 파일들은 그대로 두면 된다 (분해 시 모두 만들어졌으므로 자동으로 만족)
+- 좌표는 기존 `sprite_sheet.json`에서 읽으므로 사용자가 좌표를 신경 쓸 필요 없음
 
-### 6.3 검증
+**다른 도구로 만든 시트를 쓰고 싶다면 (선택)** — TexturePacker 등으로 자체 시트를 만들 때는 `--trim-mode None`을 사용하라. 자동 트리밍을 켜면 좌표가 달라져 view.js의 정렬이 어긋난다.
+
+### 6.3 검증 (사용자 셀프 점검)
 
 ```bash
-# 시트 크기 확인 (476×885여야 함)
-file src/assets/images/sprite_sheet.png
-# 프레임 수 확인 (77이어야 함)
-python3 -c "import json; print(len(json.load(open('src/assets/images/sprite_sheet.json'))['frames']))"
-# 게임 빌드 + dev 서버
-npm run build && npm start
+# 1. 시트 무결성 - 크기와 프레임 수가 그대로인가
+file src/assets/images/sprite_sheet.png        # 476 x 885
+node -e "console.log(Object.keys(require('./src/assets/images/sprite_sheet.json').frames).length)"   # 77
+
+# 2. 자동화된 픽셀 round-trip 테스트 (개발자/CI용)
+npm test
+# → 4개 테스트 모두 PASS여야 함:
+#   - extract produces all 77 sprites
+#   - all 28 pikachu frames exist
+#   - round-trip: extract -> pack reproduces frame pixels byte-perfect
+#   - pack rejects mismatched sprite dimensions
+
+# 3. 시각 검증 - dev 서버
+npm start
+# → http://localhost:8080/ 에서 인트로/메뉴/게임 정상 표시
+# → 콘솔 에러 0개 (favicon 404는 무시)
 ```
+
+### 6.4 시각 검증 가이드 (당신이 새 이미지를 만든 직후)
+
+이 4단계로 새 자산을 통합한다:
+
+1. **교체할 PNG를 `assets_src/` 안 동일 이름·동일 크기 파일로 저장.** 예: 새 피카츄를 `assets_src/pikachu/pikachu_0_0.png`에 덮어쓰기 (64×64 PNG-32).
+2. **`npm run pack:sprites` 실행.** 크기 검증 통과 시 `src/assets/images/sprite_sheet.png`가 갱신된다. 에러가 나오면 메시지의 파일명·기대 크기를 확인하고 1번부터 다시.
+3. **`npm start` 후 브라우저에서 확인.** 인트로 → Enter → 게임 화면에서 캐릭터가 자연스럽게 움직이는지, 알파 누락(흰 테두리)이 없는지 본다.
+4. **(선택) `npm test`로 round-trip 무결성 재확인.** 픽셀 단위로 mismatch가 없는지 자동 검증.
+
+### 6.5 분해/합성 도구의 동작 원리
+
+- `scripts/extract-sprites.js` — `sprite_sheet.json`의 각 프레임 (x, y, w, h)를 읽어, `sprite_sheet.png`의 해당 픽셀 사각형을 그대로 잘라 개별 PNG로 저장 (RGBA8888, 알파 보존)
+- `scripts/pack-sprites.js` — 476×885 투명 캔버스를 만든 뒤, `assets_src/`의 각 PNG를 layout의 (x, y) 좌표에 정확히 paste. **bin packing 알고리즘 없음 — 고정 좌표 사용**
+- 두 스크립트는 모두 `pngjs` 한 의존성만 사용하고 순수 Node.js로 동작 (네이티브 빌드 없음)
 
 ---
 

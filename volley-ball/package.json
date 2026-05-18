@@ -5,12 +5,16 @@
   "private": true,
   "scripts": {
     "start": "webpack serve --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "extract:sprites": "node scripts/extract-sprites.js",
+    "pack:sprites": "node scripts/pack-sprites.js",
+    "test": "node --test 'scripts/__tests__/*.test.js'"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
+    "pngjs": "^7.0.0",
     "webpack": "^5.76.0",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.9.1",
