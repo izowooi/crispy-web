@@ -1,4 +1,5 @@
 import { getRequestContext } from "@cloudflare/next-on-pages";
+import { requestHasAuth, unauthorizedResponse } from "@/lib/auth";
 
 export const runtime = "edge";
 
@@ -7,6 +8,8 @@ export const runtime = "edge";
  * 파일 확장자(.png)를 path에 두면 Next.js가 정적 자산으로 오인하므로 쿼리스트링 사용.
  */
 export async function GET(req: Request) {
+  if (!requestHasAuth(req)) return unauthorizedResponse();
+
   const url = new URL(req.url);
   const key = url.searchParams.get("key");
   if (!key) return new Response("missing key", { status: 400 });
