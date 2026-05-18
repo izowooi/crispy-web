@@ -1,0 +1,69 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #fff;
+}
+
+#game-canvas-container {
+  position: relative;
+  width: 96vmin;
+  height: calc(96vmin * 304 / 432);
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+#loading-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+#loading-box.hidden {
+  display: none;
+}
+
+.loading-inner {
+  text-align: center;
+}
+
+.loading-inner p {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+#progress-bar-border {
+  width: 240px;
+  height: 12px;
+  border: 1px solid #fff;
+  margin: 0 auto;
+  padding: 1px;
+}
+
+#progress-bar {
+  height: 100%;
+  background: #fff;
+  transition: width 0.1s ease;
+}
