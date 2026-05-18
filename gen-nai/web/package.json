@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "tsx scripts/build-character-index.ts",
+    "prebuild": "tsx scripts/build-character-index.ts && tsx scripts/build-artist-presets.ts",
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",

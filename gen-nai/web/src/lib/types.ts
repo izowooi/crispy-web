@@ -58,3 +58,20 @@ export type CharacterRow = {
   kor: string;
   eng: string;
 };
+
+/** 작가 프리셋 — 인기 스타일에서 추출된 사용 통계 포함 */
+export type ArtistPreset = {
+  name: string;
+  defaultWeight: number;
+  minWeight: number;
+  maxWeight: number;
+  usage: number;
+  otherNames?: string[];
+  danbooruId?: number;
+};
+
+/** 사용자가 선택한 작가 한 명 — 가중치 포함 */
+export type ArtistSelection = {
+  name: string;
+  weight: number;
+};

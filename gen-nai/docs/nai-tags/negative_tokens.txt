@@ -1,0 +1,200 @@
+114	jpeg artifacts
+87	chromatic aberration
+85	error
+84	bad quality
+82	worst quality
+81	bad hands
+79	blurry
+77	lowres
+77	very displeasing
+77	mutation
+76	disfigured
+75	deformed
+75	bad proportions
+70	film grain
+70	fewer digits
+69	bad face
+69	extra legs
+63	extra arms
+60	username
+58	too many watermarks
+58	missing finger
+58	bad feet
+55	long neck
+49	reference
+48	duplicate
+48	disorganized colors
+47	scan artifacts
+45	watermark
+44	flat color
+43	cheesy
+42	signature
+41	screentones
+40	{{{{{bad anatomy
+40	missing}}}}}
+40	bad anatomy
+40	extra digits
+39	unfinished
+39	artistic error
+38	displeasing
+34	{{{{{{worst quality
+34	bad quality}}}}}}
+34	{{{{bad hands}}}}
+34	{{{{artist:bkub}}}}
+34	{{{bad eyes}}}
+34	{{{{{displeasing
+34	very displeasing}}}}}
+34	{{{undetailed eyes}}}
+34	{{abdominal
+34	rib line
+34	muscle definition
+34	muscle separation
+34	sharp body line}}
+34	extra digit
+34	{{unfinished}}
+34	{{unclear fingertips}}
+34	{{twist}}
+34	{{squiggly}}
+34	{{grumpy}}
+34	{{incomplete}}
+34	{{imperfect fingers}}
+34	{{very displeasing}}
+34	{{mess}}
+34	{{approximate}}
+34	{{sloppiness}}
+34	{{{{{censored}}}}}
+34	{{{greyscale
+34	monochrome}}}
+34	tomboy's_mother_(kurono_mitsuki)
+34	tomboy_childhood_friend_(kurono_mitsuki)
+34	kusunoki_midori
+34	higanbana_no_saku_yoru_ni
+34	no eyes
+34	dark pussy
+34	urine
+34	semen
+34	freckles
+34	dark areolae
+34	dark labia
+34	:>=
+32	text
+29	dated
+28	missing ear
+27	logo
+27	bad perspective
+27	negative space
+26	chibi
+25	scan
+23	dithering
+23	artist collaboration
+22	blank page
+22	halftone
+21	artist name
+21	bad arm
+21	bad leg
+21	multiple views
+20	wrong hand
+20	missing limb
+20	extra eyes
+20	bad eyes
+18	monochrome
+16	4koma
+16	furry
+16	extra hands
+16	abstract
+16	incomplete
+15	mosaic censoring
+15	screentone
+15	normal quality
+15	greyscale
+15	bad illustration
+14	bad aspect ratio
+14	bad teeth
+14	bad ear
+14	bad neck
+14	bad ass
+14	bad reflection
+14	bad shadow
+14	bad link
+14	bad source
+14	wrong feet
+14	missing eye
+14	missing tooth
+14	extra faces
+14	extra eyebrows
+14	extra mouth
+14	extra tongue
+14	extra teeth
+14	extra ears
+14	extra breasts
+14	cropped head
+14	cropped torso
+14	cropped shoulders
+14	cropped arms
+14	cropped legs
+14	bar censor
+14	{{artist name}}
+14	{{artist logo}}
+14	abstract background
+14	stuffed toy
+14	2koma
+13	low quality
+13	variant set
+13	large variant set
+13	distorted
+13	unnatural hair
+13	amputee
+13	distorted composition
+13	unsatisfactory
+13	inadequate
+13	deficient
+13	subpar
+13	poor
+13	fewer details
+13	bad portrait
+10	1990s (style)
+9	fat
+9	aliasing
+9	toon (style)
+9	empty eyes
+9	upscaled
+9	bad hand structure
+8	bad limbs
+7	old man
+7	ugly
+7	old
+7	interlocked fingers
+7	bad legs
+7	missing fingers
+7	six fingers
+7	bad pupils
+7	armpit hair
+7	thick lips
+7	bkub
+7	milkpanda
+7	digital dissolve
+7	one-hour drawing challenge
+7	mob face
+7	asymmetrical eyes
+7	extra leg
+7	distorted anatomy
+6	missing
+6	censored
+6	meme
+6	graffiti
+6	rotated
+6	sweat
+6	food
+6	eating
+6	hatching (texture)
+6	jaggy lines
+6	what
+6	old woman
+6	{{{undetailed eyes}}}}
+6	{{{food
+6	dango
+6	candy}}}
+6	{{flat color}}
+6	bb (baalbuddy)
+6	gaoo (frpjx283)
+6	nameo (judgemasterkou)
