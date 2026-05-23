@@ -6,6 +6,7 @@
   "scripts": {
     "start": "webpack serve --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
+    "build:html": "npm run build && node scripts/build-html.js",
     "extract:sprites": "node scripts/extract-sprites.js",
     "pack:sprites": "node scripts/pack-sprites.js",
     "test": "node --test 'scripts/__tests__/*.test.js'"

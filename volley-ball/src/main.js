@@ -41,9 +41,19 @@ renderer.view.setAttribute('id', 'game-canvas');
 document.getElementById('game-canvas-container').appendChild(renderer.view);
 renderer.render(stage);
 
-loader.add(ASSETS_PATH.SPRITE_SHEET);
+const overrides =
+  (typeof window !== 'undefined' && window.__ASSETS_OVERRIDE) || {};
+const overrideSounds = overrides.SOUNDS || {};
+
+loader.add(
+  ASSETS_PATH.SPRITE_SHEET,
+  overrides.SPRITE_SHEET || ASSETS_PATH.SPRITE_SHEET
+);
 for (const prop in ASSETS_PATH.SOUNDS) {
-  loader.add(ASSETS_PATH.SOUNDS[prop]);
+  loader.add(
+    ASSETS_PATH.SOUNDS[prop],
+    overrideSounds[prop] || ASSETS_PATH.SOUNDS[prop]
+  );
 }
 
 const loadingBox = document.getElementById('loading-box');
