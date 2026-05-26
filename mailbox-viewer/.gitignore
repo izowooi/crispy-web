@@ -1,0 +1,31 @@
+# deps
+/node_modules
+
+# next
+/.next/
+/out/
+
+# cloudflare
+/.vercel/
+/.pages-out/
+/.wrangler/
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# misc
+npm-debug.log*
+firebase-debug.log
+.DS_Store
+*.pem
+
+# playwright
+.playwright-mcp/
+
+# scripts python cache
+scripts/__pycache__/
+*.pyc
