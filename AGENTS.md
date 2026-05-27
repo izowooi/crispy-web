@@ -64,6 +64,7 @@ export const runtime = "edge";
 - 비밀값은 절대 커밋하지 않습니다. `.env.local`, API token, service role key, OAuth secret, R2 secret, Replicate token, NovelAI token은 서버 전용이어야 합니다.
 - 클라이언트에 노출되는 값은 반드시 `NEXT_PUBLIC_*`가 필요한 값인지 확인합니다. `REPLICATE_API_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_CLIENT_SECRET`, `JWT_SECRET`, R2 secret은 `NEXT_PUBLIC_*`로 만들지 않습니다.
 - 예시 환경 파일은 `.env.example` 또는 `.env.local.example`로만 관리합니다. 실제 값이 들어간 파일을 만들거나 수정하지 않습니다.
+- 커밋되는 문서와 예제에는 개인 홈 절대경로, 사용자명, 실제 프로젝트 URL/ref, 실제 Supabase URL, 실제 DB URL을 넣지 않습니다. 로컬 경로는 `$HOME`, `~`, 저장소 상대 경로, `<PLACEHOLDER>`를 사용하고, 서비스 엔드포인트와 토큰은 `"..."` 또는 `<PROJECT_REF>`처럼 가립니다.
 - Supabase schema 변경은 코드만 바꾸면 끝나지 않습니다. 필요한 SQL을 명시하고, 배포 전 Supabase Dashboard SQL Editor에서 실행해야 함을 사용자에게 알립니다. 가능하면 migration 미적용 상태에서도 앱이 치명적으로 깨지지 않게 fallback을 둡니다.
 - R2 업로드/서빙은 presigned URL, CORS, public URL, metadata JSON 동기화가 자주 얽힙니다. 저장 경로와 metadata 업데이트를 함께 검증합니다.
 

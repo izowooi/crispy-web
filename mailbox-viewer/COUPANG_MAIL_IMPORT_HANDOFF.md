@@ -2,13 +2,13 @@
 
 ## 현재 상태
 
-- 기존 Codex 작업 폴더: `/Users/izowooi/Documents/쿠팡 메일함 정리`
-- 원하는 작업 폴더: `/Users/izowooi/git/crispy-web/mailbox-viewer`
+- 기존 Codex 작업 폴더: `<previous-local-workspace>`
+- 원하는 작업 폴더: `mailbox-viewer`
 - Supabase 프로젝트: `clever-lemon`
-- Supabase 프로젝트 ID/ref: `tnihnfuwhhtvbkmhwiut`
-- Supabase URL: `https://tnihnfuwhhtvbkmhwiut.supabase.co`
+- Supabase 프로젝트 ID/ref: `<PROJECT_REF>`
+- Supabase URL: `...`
 - 원본 메일함 경로:
-  `/Users/izowooi/Library/Mail/V10/A0424D4C-DEAA-4781-AC58-578402A69AB6/coupang-payment.mbox`
+  `~/Library/Mail/V10/<MAIL_ACCOUNT_UUID>/coupang-payment.mbox`
 
 현재 Codex 스레드 안에서는 작업 폴더 루트를 변경할 수 없어서, 재사용 가능한 스크립트와 이 인수인계 문서를 새 대상 폴더로 복사했습니다.
 
@@ -142,7 +142,7 @@ select
 
 다음 경로에서 새 Codex 작업 폴더를 엽니다.
 
-`/Users/izowooi/git/crispy-web/mailbox-viewer`
+`mailbox-viewer`
 
 그다음 기존 Supabase 테이블/뷰를 기반으로 웹앱을 만듭니다. 조회용 앱에서는 다음 항목을 읽는 것을 우선합니다.
 
