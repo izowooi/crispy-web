@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Upload parsed Coupang payload batches to Supabase via a temporary RPC."""
+"""Upload parsed Coupang payload batches to Supabase.
+
+Default mode calls public.cp_import_payload(jsonb) directly with a Supabase
+secret/service-role key. If CP_INGEST_TOKEN is provided, the script instead
+uses the older temporary-token RPC path, which is useful for one-off imports.
+"""
 
 from __future__ import annotations
 
@@ -23,20 +28,22 @@ def chunked(values: list[dict[str, Any]], size: int) -> Iterable[list[dict[str, 
 
 def post_rpc(
     supabase_url: str,
-    publishable_key: str,
-    ingest_token: str,
+    supabase_key: str,
     payload: dict[str, Any],
     timeout: int,
+    ingest_token: str | None = None,
 ) -> dict[str, Any]:
-    url = supabase_url.rstrip("/") + "/rest/v1/rpc/cp_import_payload_with_token"
-    body = json.dumps({"ingest_token": ingest_token, "payload": payload}, ensure_ascii=False).encode("utf-8")
+    rpc_name = "cp_import_payload_with_token" if ingest_token else "cp_import_payload"
+    url = supabase_url.rstrip("/") + f"/rest/v1/rpc/{rpc_name}"
+    body_payload = {"ingest_token": ingest_token, "payload": payload} if ingest_token else {"payload": payload}
+    body = json.dumps(body_payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=body,
         method="POST",
         headers={
-            "apikey": publishable_key,
-            "Authorization": f"Bearer {publishable_key}",
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
         },
@@ -65,12 +72,30 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=100)
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--supabase-url", default=os.environ.get("SUPABASE_URL"))
-    parser.add_argument("--publishable-key", default=os.environ.get("SUPABASE_PUBLISHABLE_KEY"))
+    parser.add_argument(
+        "--supabase-key",
+        default=(
+            os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+            or os.environ.get("SUPABASE_SECRET_KEY")
+            or os.environ.get("SUPABASE_KEY")
+        ),
+        help="Prefer SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY for direct cp_import_payload uploads.",
+    )
+    parser.add_argument(
+        "--publishable-key",
+        default=os.environ.get("SUPABASE_PUBLISHABLE_KEY"),
+        help="Only used with --ingest-token and the temporary-token RPC path.",
+    )
     parser.add_argument("--ingest-token", default=os.environ.get("CP_INGEST_TOKEN"))
     args = parser.parse_args()
 
-    if not args.supabase_url or not args.publishable_key or not args.ingest_token:
-        print("SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, and CP_INGEST_TOKEN are required.", file=sys.stderr)
+    supabase_key = args.supabase_key or (args.publishable_key if args.ingest_token else None)
+    if not args.supabase_url or not supabase_key:
+        print(
+            "SUPABASE_URL and a Supabase secret/service key are required. "
+            "SUPABASE_PUBLISHABLE_KEY is only valid with CP_INGEST_TOKEN.",
+            file=sys.stderr,
+        )
         return 2
 
     messages = json.loads(args.payload_json.read_text(encoding="utf-8"))
@@ -95,7 +120,7 @@ def main() -> int:
         if import_run_id is not None:
             payload["import_run_id"] = import_run_id
 
-        result = post_rpc(args.supabase_url, args.publishable_key, args.ingest_token, payload, args.timeout)
+        result = post_rpc(args.supabase_url, supabase_key, payload, args.timeout, args.ingest_token)
         if import_run_id is None and result.get("import_run_id") is not None:
             import_run_id = int(result["import_run_id"])
 
