@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+.vercel/
+.pages-out/
+.wrangler/
+.env*.local
+*.tsbuildinfo
+docs/qa/*.png

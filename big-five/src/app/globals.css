@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #172033;
+  --muted: #64748b;
+  --panel: #ffffff;
+  --line: #d8dee8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(120deg, rgba(15, 118, 110, 0.08), transparent 32%),
+    linear-gradient(240deg, rgba(194, 65, 12, 0.08), transparent 28%),
+    var(--background);
+  color: var(--foreground);
+  font-family:
+    Arial,
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.32);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(15, 118, 110, 0.18);
+}
