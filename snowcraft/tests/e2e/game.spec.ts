@@ -22,6 +22,12 @@ declare global {
         label: string;
         button: { x: number; y: number; w: number; h: number };
       };
+      titleCard: () => {
+        visible: boolean;
+        label: string;
+        text: string;
+        lev: number;
+      };
       start: () => void;
       counts: () => {
         greens: number;
@@ -59,10 +65,17 @@ declare global {
         scoreDelta: number;
         dead: boolean;
       };
+      spawnAndHitRed: (i: number) => null | {
+        beforeHp: number;
+        afterHp: number;
+        dead: boolean;
+        dazed: number;
+      };
       frameInfo: () => Array<{
         team: "red" | "green";
         dead: boolean;
         down: boolean;
+        dazed: number;
         pose: string;
         tick: number;
         frame: number;
@@ -391,6 +404,11 @@ test("scenario 6: clearing level 1 advances to level 2 with 5 greens (spec/level
   expect(postCounts.greens).toBe(5);
   expect(postCounts.reds).toBe(3);
   expect(postCounts.gameover).toBe(false);
+
+  const card = await page.evaluate(() => window.__snowcraft.titleCard());
+  expect(card.visible).toBe(true);
+  expect(card.label).toBe("levelx");
+  expect(card.text).toBe("Level 2");
 });
 
 test("scenario 6b: defeating every green through collisions advances to level 2", async ({
@@ -434,6 +452,38 @@ test("scenario 6b: defeating every green through collisions advances to level 2"
   expect(result.counts.level).toBe(2);
   expect(result.counts.greens).toBe(5);
   expect(result.counts.gameover).toBe(false);
+});
+
+test("scenario 6c: red hit shows hitdazed, then loops dazed while stunned", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await waitForReady(page);
+  await page.evaluate(() => window.__snowcraft.start());
+  await page.waitForFunction(() => window.__snowcraft.counts().level === 1);
+  await page.evaluate(() => {
+    for (let i = 0; i < 70; i++) window.__snowcraft.tick();
+  });
+
+  const hit = await page.evaluate(() => window.__snowcraft.spawnAndHitRed(0));
+  expect(hit).not.toBeNull();
+  expect(hit!.beforeHp).toBe(2);
+  expect(hit!.afterHp).toBe(1);
+  expect(hit!.dead).toBe(false);
+  expect(hit!.dazed).toBeGreaterThan(0);
+
+  const firstPose = await page.evaluate(() =>
+    window.__snowcraft.frameInfo().find((x) => x.team === "red" && x.dazed > 0)
+  );
+  expect(firstPose?.pose).toBe("hitdazed");
+
+  await page.evaluate(() => {
+    for (let i = 0; i < 4; i++) window.__snowcraft.tick();
+  });
+  const loopPose = await page.evaluate(() =>
+    window.__snowcraft.frameInfo().find((x) => x.team === "red" && x.dazed > 0)
+  );
+  expect(loopPose?.pose).toBe("dazed");
 });
 
 // ---------------------------------------------------------------------------

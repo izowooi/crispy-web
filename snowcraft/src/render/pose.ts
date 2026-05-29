@@ -13,7 +13,8 @@
 //
 //   RED  — RedSnowDudie.as
 //     dead          → "dead"      (RedSnowDudie.as:81-89)
-//     dudiemcDazed  → "hitdazed"  (RedSnowDudie.as:75 toggles dudiemc.dazed)
+//     dudiemcDazed  → "hitdazed" then "dazed"
+//                       (RedSnowDudie.as:75-76; DefineSprite_32 frame_15)
 //     walking       → "walk"      (gotoAndPlay("walk") at end of walk-start)
 //     dragdudie     → "cock"      (RedSnowDudie.as:64 — drag holds cock pose)
 //     justReleased  → "toss"      (RedSnowDudie.as:128 — short-lived after release)
@@ -34,6 +35,8 @@ export interface RedPoseState {
   dead: boolean;
   /** Player.dudiemcDazed — RedSnowDudie.as:75 / :170. */
   dudiemcDazed: boolean;
+  /** Player.dazed countdown — starts at 40 and clears the stun at 0. */
+  dazedFrames?: number;
   /** Player.walking — ASnowDudie.as:9. */
   walking: boolean;
   /** Charge meter frame; >0 while user is dragging the dudie
@@ -84,7 +87,10 @@ export type PoseLabel =
  */
 export function redPose(s: RedPoseState): PoseLabel {
   if (s.dead) return "dead";
-  if (s.dudiemcDazed) return "hitdazed";
+  if (s.dudiemcDazed) {
+    const remaining = s.dazedFrames ?? 40;
+    return remaining >= 38 ? "hitdazed" : "dazed";
+  }
   if (s.walking) return "walk";
   if (s.meterFrame > 0) return "cock";
   if (s.justReleased) return "toss";

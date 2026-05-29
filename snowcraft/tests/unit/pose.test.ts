@@ -26,11 +26,38 @@ describe("redPose — priority cascade", () => {
       redPose({
         dead: false,
         dudiemcDazed: true,
+        dazedFrames: 40,
         walking: true, // dazed beats walking
         meterFrame: 5,
         justReleased: true,
       })
     ).toBe("hitdazed");
+  });
+
+  it("transitions from 'hitdazed' intro into the looping 'dazed' pose", () => {
+    // RedSnowDudie.as:76 gotoAndPlay("hitdazed"); DefineSprite_32 frame_15
+    // then redirects to the "dazed" loop while the 40-frame stun continues.
+    expect(
+      redPose({
+        dead: false,
+        dudiemcDazed: true,
+        dazedFrames: 39,
+        walking: false,
+        meterFrame: 0,
+        justReleased: false,
+      })
+    ).toBe("hitdazed");
+
+    expect(
+      redPose({
+        dead: false,
+        dudiemcDazed: true,
+        dazedFrames: 37,
+        walking: false,
+        meterFrame: 0,
+        justReleased: false,
+      })
+    ).toBe("dazed");
   });
 
   it("returns 'walk' when walking (and not dead/dazed)", () => {

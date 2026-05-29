@@ -169,7 +169,7 @@ describe("frameForState — one-shot (hold-last) poses", () => {
     expect(frameForState(HOLD_INDEX, "walk", 5)).toBe(2);
   });
 
-  it("treats green 'down' and red 'hitdazed' as hold-last too", () => {
+  it("treats green 'down' as hold-last, but red 'hitdazed' remains an intro clip", () => {
     const idx: SpriteIndex = {
       frames: Array.from({ length: 6 }, (_, i) => ({
         frame: i + 1,
@@ -185,7 +185,9 @@ describe("frameForState — one-shot (hold-last) poses", () => {
       },
     };
     expect(frameForState(idx, "down", 99)).toBe(3);
-    expect(frameForState(idx, "hitdazed", 99)).toBe(6);
+    // The red sprite's frame_15 action jumps into the "dazed" loop; if the
+    // port ever leaves pose as hitdazed too long, it should not freeze there.
+    expect(frameForState(idx, "hitdazed", 3)).toBe(4);
   });
 });
 

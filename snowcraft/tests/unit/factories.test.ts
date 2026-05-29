@@ -18,14 +18,28 @@ import {
   snowballFactory,
 } from "../../src/core/factories.ts";
 
-function makeGameWithRealFactories() {
+function makeSounds() {
+  const calls: string[] = [];
+  return {
+    _currentframe: 1,
+    calls,
+    gotoAndPlay(label: string) {
+      calls.push(label);
+    },
+  };
+}
+
+function makeGameWithRealFactories(
+  sounds = makeSounds(),
+  rand: () => number = () => 0.5,
+) {
   return new Game({
     stage: { _xmouse: 0, _ymouse: 0 },
     titles: { _visible: false, gotoAndPlay() {} },
-    sounds: { gotoAndPlay() {} },
+    sounds,
     factories: {
-      red: makeRedFactory(),
-      green: makeGreenFactory({ titlesVisible: () => false, rand: () => 0.5 }),
+      red: makeRedFactory({ rand }),
+      green: makeGreenFactory({ titlesVisible: () => false, rand }),
       snowball: snowballFactory,
     },
   });
@@ -126,6 +140,19 @@ describe("real factories wire Player/AI/Snowball into Game", () => {
     red.yougothit();
     expect(red.hitpoints).toBe(0);
     expect(red.dead).toBe(true);
+  });
+
+  it("red hit and KO trigger the original hit/birds/kids sound cues", () => {
+    const sounds = makeSounds();
+    const game = makeGameWithRealFactories(sounds, () => 0.5);
+    game.dolevel(1);
+    const red = game.adudies.find((d) => d.team === "red")!;
+
+    red.yougothit();
+    expect(sounds.calls).toEqual(["hit1", "birds"]);
+
+    red.yougothit();
+    expect(sounds.calls).toEqual(["hit1", "birds", "kids2"]);
   });
 
   it("yougothit on the green wrapper drives AI HP transitions (GreenSnowDudie.as:43-66)", () => {

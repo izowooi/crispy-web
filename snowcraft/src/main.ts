@@ -49,6 +49,12 @@ interface DudieView {
   balling?: number;
 }
 
+function titleCardText(label: string, lev: number): string {
+  if (label === "levelx") return lev === 9 ? "Bonus Round" : `Level ${lev}`;
+  if (label === "seasonsgreetings") return "Seasons Greetings";
+  return "";
+}
+
 /** Number of game-frameloop ticks during which a freshly-released red dudie
  *  shows the "toss" pose before reverting to "ready". Mirrors the AS source
  *  where gotoAndStop("toss") plays the toss animation, which in the SWF index
@@ -124,6 +130,7 @@ async function boot(): Promise<void> {
       } else if (label === "levelx") {
         this._visible = true;
         this.framesRemaining = TITLE_FRAMES_LEVELX;
+        sfx.gotoAndPlay("goodbadugly");
       } else if (
         label === "gameoverwin" ||
         label === "gameoverlose" ||
@@ -321,6 +328,7 @@ async function boot(): Promise<void> {
       return redPose({
         dead: !!d.dead,
         dudiemcDazed: (d.dazed ?? 0) > 0,
+        dazedFrames: d.dazed ?? 0,
         walking: !!d.walking,
         meterFrame,
         justReleased,
@@ -339,6 +347,27 @@ async function boot(): Promise<void> {
   let lastTime = performance.now();
   let acc = 0;
 
+  function advanceGameTick(): void {
+    game.frameloop();
+    // Drive the title-overlay countdown in lockstep with the game tick so
+    // that branch (G) of GreenSnowDudie.frameloop (titles._visible gate at
+    // line 144) eventually releases and greens start throwing.
+    titles.tick();
+    globalAnimTick += 1;
+    // Resolve each live dudie's pose and advance its PoseClock once per game
+    // tick. The clock resets when the pose changes, so one-shot clips
+    // (death/fall) restart and then hold their last frame instead of
+    // flickering. WeakMap entries for destroyed dudies are GC'd.
+    for (const d of game.adudies as unknown as DudieView[]) {
+      const pose = poseForDudie(d);
+      const tickInPose = poseClock.advance(d as unknown as object, pose);
+      renderStateByDudie.set(d as unknown as object, {
+        pose,
+        tick: tickInPose,
+      });
+    }
+  }
+
   function tick(now: number): void {
     const dt = now - lastTime;
     lastTime = now;
@@ -348,24 +377,7 @@ async function boot(): Promise<void> {
       // backgrounded). One full second of catch-up is plenty.
       if (acc > 1000) acc = FRAME_INTERVAL_MS;
       while (acc >= FRAME_INTERVAL_MS) {
-        game.frameloop();
-        // Drive the title-overlay countdown in lockstep with the game tick so
-        // that branch (G) of GreenSnowDudie.frameloop (titles._visible gate at
-        // line 144) eventually releases and greens start throwing.
-        titles.tick();
-        globalAnimTick += 1;
-        // Resolve each live dudie's pose and advance its PoseClock once per
-        // game tick. The clock resets when the pose changes, so one-shot clips
-        // (death/fall) restart and then hold their last frame instead of
-        // flickering. WeakMap entries for destroyed dudies are GC'd.
-        for (const d of game.adudies as unknown as DudieView[]) {
-          const pose = poseForDudie(d);
-          const tickInPose = poseClock.advance(d as unknown as object, pose);
-          renderStateByDudie.set(d as unknown as object, {
-            pose,
-            tick: tickInPose,
-          });
-        }
+        advanceGameTick();
         acc -= FRAME_INTERVAL_MS;
       }
     }
@@ -462,6 +474,29 @@ async function boot(): Promise<void> {
     }
   }
 
+  function drawTitleCard(): void {
+    if (!titles._visible) return;
+    const text = titleCardText(titles.label, titles.lev);
+    if (!text) return;
+    const ctx = renderer.ctx;
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.82)";
+    ctx.fillRect(0, 104, STAGE_WIDTH, 82);
+    ctx.strokeStyle = "rgba(55,80,105,0.55)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 104);
+    ctx.lineTo(STAGE_WIDTH, 104);
+    ctx.moveTo(0, 186);
+    ctx.lineTo(STAGE_WIDTH, 186);
+    ctx.stroke();
+    ctx.fillStyle = "#24384a";
+    ctx.textAlign = "center";
+    ctx.font = "bold 34px sans-serif";
+    ctx.fillText(text, STAGE_WIDTH / 2, 154);
+    ctx.restore();
+  }
+
   /**
    * Draw the vertical green-tick charge meter beside the held red dudie's head.
    * The fill height tracks the SAME frame value used for the throw force
@@ -505,6 +540,7 @@ async function boot(): Promise<void> {
       return;
     }
     drawWorld();
+    drawTitleCard();
   }
 
   void input; // input is alive for the page lifetime; suppress unused warning.
@@ -525,6 +561,12 @@ async function boot(): Promise<void> {
       visible: !started,
       label: titles.label,
       button: { ...START_BTN },
+    }),
+    titleCard: () => ({
+      visible: started && titles._visible,
+      label: titles.label,
+      text: titleCardText(titles.label, titles.lev),
+      lev: titles.lev,
     }),
     /** Programmatic Start button click for deterministic E2E flow. */
     start: () => {
@@ -553,7 +595,15 @@ async function boot(): Promise<void> {
         const tick = rs?.tick ?? 0;
         const index = d.team === "red" ? renderer.redIndex : renderer.greenIndex;
         const frame = index ? frameForState(index, pose, tick) : -1;
-        return { team: d.team, dead: !!d.dead, down: !!d.down, pose, tick, frame };
+        return {
+          team: d.team,
+          dead: !!d.dead,
+          down: !!d.down,
+          dazed: d.dazed ?? 0,
+          pose,
+          tick,
+          frame,
+        };
       }),
     /** Charge-meter frame (1..15) for the currently-dragged red, or 0 if none.
      *  Lets E2E verify the gauge actually charges over a hold. */
@@ -616,7 +666,7 @@ async function boot(): Promise<void> {
     /** Run a single frameloop tick — used by E2E to deterministically
      *  advance the game state machine without waiting on rAF cadence. */
     tick: () => {
-      game.frameloop();
+      advanceGameTick();
     },
     /** Throw a snowball directly — used by E2E to verify snowball spawn
      *  + Sfx label without simulating mouse press/release timing. */
@@ -653,12 +703,35 @@ async function boot(): Promise<void> {
         ineffective: false,
       });
       // Trigger collision via Game.frameloop (Snowcraft1Rewrite.as:354-393).
-      game.frameloop();
+      advanceGameTick();
       return {
         beforeHp,
         afterHp: target.hitpoints,
         scoreDelta: game.score - beforeScore,
         dead: !!target.dead,
+      };
+    },
+    /** Collide-and-hit: spawn a green snowball directly on top of the i-th
+     *  live red and run one frameloop tick. Mirrors the red-hit predicate in
+     *  Snowcraft1Rewrite.as:376. */
+    spawnAndHitRed: (i: number) => {
+      const reds = game.adudies.filter((d) => d.team === "red" && !d.dead);
+      const target = reds[i];
+      if (!target) return null;
+      const beforeHp = target.hitpoints;
+      game.throwball({
+        team: "green",
+        force: 0.5,
+        x: target.dudiemc._x,
+        y: target.dudiemc._y - 20,
+        ineffective: false,
+      });
+      advanceGameTick();
+      return {
+        beforeHp,
+        afterHp: target.hitpoints,
+        dead: !!target.dead,
+        dazed: (target as DudieView).dazed ?? 0,
       };
     },
   };

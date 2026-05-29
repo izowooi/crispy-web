@@ -59,9 +59,9 @@ export interface SpriteIndex {
  * Faithful mapping (frame ranges per public/assets/sprites/<team>/index.json):
  *   GREEN — hit(11-16), midrecover(17-32), down(33-57), dead(58-64), yea(65-73)
  *           GreenSnowDudie.as:44-66 / :70-71
- *   RED   — hitdazed(5-6), dead(16-23)
- *           RedSnowDudie.as:72-89
- * Looping poses (walk, dazed, balling, ready, cock, toss, yealoop) keep
+ *   RED   — dead(16-23)
+ *           RedSnowDudie.as:81-89
+ * Looping/redirected poses (walk, dazed, hitdazed, balling, ready, cock, toss, yealoop) keep
  * wrapping — `gotoAndPlay("walk")` etc. loop in the SWF.
  */
 export const HOLD_LAST_POSES: ReadonlySet<string> = new Set([
@@ -70,7 +70,6 @@ export const HOLD_LAST_POSES: ReadonlySet<string> = new Set([
   "hit",
   "midrecover",
   "yea",
-  "hitdazed",
 ]);
 
 /**

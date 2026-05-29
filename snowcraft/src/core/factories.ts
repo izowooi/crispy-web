@@ -52,10 +52,19 @@ interface StageLike {
 // Red dudie wrapper
 // ---------------------------------------------------------------------------
 
-export function makeRedFactory(): (stage: any, sounds: any) => RedDudie {
-  return function redFactory(stage: any, _sounds: any): RedDudie {
+export interface RedFactoryDeps {
+  /** Random source for the kids1..3 KO cue. Defaults to `Math.random`. */
+  rand?: () => number;
+}
+
+export function makeRedFactory(
+  deps: RedFactoryDeps = {},
+): (stage: any, sounds: any) => RedDudie {
+  const rand = deps.rand ?? Math.random;
+  return function redFactory(stage: any, sounds: any): RedDudie {
     const player = new Player();
     const stageRef = stage as StageLike | null | undefined;
+    const soundsRef = sounds as SoundsLike | null | undefined;
 
     // dudiemc proxy — Game.frameloop hit-detection reads dudiemc._x/_y, and
     // main.ts mirrors x/y onto it during drag. We back the proxy onto the
@@ -147,7 +156,14 @@ export function makeRedFactory(): (stage: any, sounds: any) => RedDudie {
         player.setwalkspeed(s);
       },
       yougothit() {
+        const before = player.hitpoints;
         player.yougothit();
+        if (before > 1 && player.hitpoints === 1) {
+          soundsRef?.gotoAndPlay?.("hit1");
+          soundsRef?.gotoAndPlay?.("birds");
+        } else if (before > 0 && player.hitpoints === 0) {
+          soundsRef?.gotoAndPlay?.("kids" + Math.ceil(rand() * 3));
+        }
       },
       frameloop() {
         // Pass live mouse coords for drag teleport. When the player is not
