@@ -335,6 +335,12 @@ export function makeGreenFactory(
       set down(v: boolean) {
         ai.down = v;
       },
+      get downRecoveryFrames() {
+        return ai.downRecoveryFrames;
+      },
+      set downRecoveryFrames(v: number) {
+        ai.downRecoveryFrames = v;
+      },
       get dead() {
         return ai.dead;
       },

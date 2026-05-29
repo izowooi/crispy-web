@@ -12,9 +12,8 @@
 // `titles._visible`) and dispatches events. Web port keeps that contract by:
 //
 //  * inlining x/y onto the GreenAI struct (mirrors `dudiemc._x/_y`),
-//  * exposing `justhit`/`down` as plain booleans (the timeline-clears that
-//    the spec calls out as "unknown" in §10 are the caller's responsibility —
-//    here we still implement the AS-side fallback `adobefrozenframebugfix`),
+//  * exposing `justhit`/`down` as plain booleans while modelling the sprite
+//    timeline clears that release each flag back into gameplay,
 //  * passing a per-tick `TickContext` carrying transient inputs
 //    (`titlesVisible`, `soundsCurrentFrame`) and the side-effect callbacks
 //    (`onPose`, `onPlaySound`, `onThrow`),
@@ -43,6 +42,14 @@ export const GREEN_HP = 3;
 
 /** Stagger frames after first hit (`GreenSnowDudie.as:47`). */
 export const ADOBE_FROZEN_FRAME_BUGFIX_FRAMES = 50;
+
+/** Down + recovery span after the second hit.
+ *
+ *  AS sets `dudiemc.down = true` and immediately returns while that movieclip
+ *  flag is true (`GreenSnowDudie.as:51-56,79-83`). The green sprite then plays
+ *  the "down" label (DefineSprite_69 frames 33..57) and the "midrecover"
+ *  label (frames 17..31), whose frame actions clear the movieclip flag. */
+export const GREEN_DOWN_RECOVERY_FRAMES = 40;
 
 /** Y origin offset for green throws (`GreenSnowDudie.as:163`: `y - 15`). */
 export const GREEN_THROW_OFFSET_Y = -15;
@@ -86,6 +93,7 @@ export interface GreenAI {
   hitpoints: number;
   dead: boolean;
   down: boolean;
+  downRecoveryFrames: number;
   justhit: boolean;
   adobefrozenframebugfix: number;
 
@@ -144,6 +152,7 @@ export function createGreenAI(pos: { x: number; y: number }): GreenAI {
     hitpoints: GREEN_HP,
     dead: false,
     down: false,
+    downRecoveryFrames: 0,
     justhit: false,
     adobefrozenframebugfix: 0,
     team: "green",
@@ -233,6 +242,7 @@ export function greenYouGotHit(ai: GreenAI, ctxIn: YouGotHitContext): void {
   ai.balling = 0;
   ai.justhit = false;
   ai.down = false;
+  ai.downRecoveryFrames = 0;
 
   ai.hitpoints = ai.hitpoints - 1; // AS:43
 
@@ -246,6 +256,7 @@ export function greenYouGotHit(ai: GreenAI, ctxIn: YouGotHitContext): void {
   if (ai.hitpoints === 1) {
     // AS:51-56
     ai.down = true;
+    ai.downRecoveryFrames = GREEN_DOWN_RECOVERY_FRAMES;
     ctxIn.onPose("down");
     ctxIn.onPlaySound("hit1");
   }
@@ -286,9 +297,18 @@ export function tickGreen(ai: GreenAI, ctxIn: TickContext): void {
 
   // (B) Down — AS:79-82  (dudiemc.down is the authoritative flag in AS;
   //     the local `down` is a mirror set in branch (B)/yougothit. See spec §10.)
-  if (ai.down) return;
-  // AS:83 clears `this.down = false;` after the down check returns.
-  // In our model `ai.down` is itself the flag, so the AS line is a no-op here.
+  if (ai.down) {
+    if (ai.downRecoveryFrames > 0) {
+      ai.downRecoveryFrames -= 1;
+    }
+    if (ai.downRecoveryFrames <= 0) {
+      ai.down = false;
+      ai.downRecoveryFrames = 0;
+    }
+    return;
+  }
+  // AS:83 mirrors the movieclip flag back onto `this.down` once the timeline
+  // has released branch (B).
   ai.down = false;
 
   // (C) Just-hit recovery — AS:84-92

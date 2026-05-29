@@ -88,6 +88,8 @@ async function waitForReady(page: import("@playwright/test").Page) {
   );
 }
 
+const GREEN_DOWN_RECOVERY_FRAMES = 40;
+
 // ---------------------------------------------------------------------------
 // Scenario 1 — Page loads. Canvas is non-blank within 3 s of asset preload.
 // Verifies via canvas pixel-diff against the pre-paint "Loading…" splash.
@@ -329,9 +331,9 @@ test("scenario 5: hitting a green decrements hp by 1; KO at hp=0", async ({
   await page.evaluate(() => window.__snowcraft.start());
   await page.waitForFunction(() => window.__snowcraft.counts().level === 1);
 
-  // Spawn-and-hit twice: first hit 3→2, second 2→1 (transitions to "down"
-  // state — note Snowcraft1Rewrite.as:366 also guards on `!down`, so the
-  // 3rd direct hit via spawnAndHit is gated by that flag).
+  // Spawn-and-hit twice: first hit 3→2, second 2→1 (transitions to "down").
+  // After the original down/midrecover timeline clears the flag, the final
+  // collision should be allowed and KO the enemy.
   const r1 = await page.evaluate(() => window.__snowcraft.spawnAndHit(0));
   expect(r1).not.toBeNull();
   // spec/snowball.md §6.4: Green HP 3 → 2 on first hit.
@@ -346,13 +348,15 @@ test("scenario 5: hitting a green decrements hp by 1; KO at hp=0", async ({
   expect(r2!.beforeHp).toBe(2);
   expect(r2!.afterHp).toBe(1);
   expect(r2!.scoreDelta).toBe(10);
-  // After this hit, the green sets down=true (GreenSnowDudie.as:51-56), so
-  // collision is gated. To verify the KO path, drive yougothit() directly
-  // (mirrors a final lethal hit from any source per spec §6.4 hp==0 branch).
-  const r3 = await page.evaluate(() => window.__snowcraft.hitGreen(0));
+  await page.evaluate((frames) => {
+    for (let i = 0; i < frames; i++) window.__snowcraft.tick();
+  }, GREEN_DOWN_RECOVERY_FRAMES);
+
+  const r3 = await page.evaluate(() => window.__snowcraft.spawnAndHit(0));
   expect(r3).not.toBeNull();
-  expect(r3!.before).toBe(1);
-  expect(r3!.after).toBe(0);
+  expect(r3!.beforeHp).toBe(1);
+  expect(r3!.afterHp).toBe(0);
+  expect(r3!.scoreDelta).toBe(10);
   expect(r3!.dead).toBe(true);
 });
 
@@ -387,6 +391,49 @@ test("scenario 6: clearing level 1 advances to level 2 with 5 greens (spec/level
   expect(postCounts.greens).toBe(5);
   expect(postCounts.reds).toBe(3);
   expect(postCounts.gameover).toBe(false);
+});
+
+test("scenario 6b: defeating every green through collisions advances to level 2", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await waitForReady(page);
+  await page.evaluate(() => window.__snowcraft.start());
+  await page.waitForFunction(() => window.__snowcraft.counts().level === 1);
+
+  const result = await page.evaluate((frames) => {
+    const sc = window.__snowcraft;
+    const defeatAliveGreen = () => {
+      const first = sc.spawnAndHit(0);
+      const second = sc.spawnAndHit(0);
+      for (let i = 0; i < frames; i++) sc.tick();
+      const third = sc.spawnAndHit(0);
+      return { first, second, third };
+    };
+
+    const defeated = [];
+    while (sc.counts().greens > 0 && defeated.length < 3) {
+      defeated.push(defeatAliveGreen());
+    }
+    sc.tick();
+
+    return {
+      defeated,
+      counts: sc.counts(),
+    };
+  }, GREEN_DOWN_RECOVERY_FRAMES);
+
+  expect(result.defeated).toHaveLength(3);
+  for (const hitSet of result.defeated) {
+    expect(hitSet.first?.beforeHp).toBe(3);
+    expect(hitSet.second?.beforeHp).toBe(2);
+    expect(hitSet.third?.beforeHp).toBe(1);
+    expect(hitSet.third?.afterHp).toBe(0);
+    expect(hitSet.third?.dead).toBe(true);
+  }
+  expect(result.counts.level).toBe(2);
+  expect(result.counts.greens).toBe(5);
+  expect(result.counts.gameover).toBe(false);
 });
 
 // ---------------------------------------------------------------------------

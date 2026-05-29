@@ -21,6 +21,7 @@ import {
   ARRIVAL_THRESHOLD,
   GREEN_HP,
   ADOBE_FROZEN_FRAME_BUGFIX_FRAMES,
+  GREEN_DOWN_RECOVERY_FRAMES,
   TITLE_MARCH_WALKSPEED,
   DEFAULT_WALKSPEED,
   GREEN_BOUNDARY_LINE,
@@ -64,6 +65,11 @@ describe("AI constants", () => {
   it("just-hit freeze is 50 frames (adobefrozenframebugfix)", () => {
     // from scripts/__Packages/com/iconnicholson/onehammer/GreenSnowDudie.as:47
     expect(ADOBE_FROZEN_FRAME_BUGFIX_FRAMES).toBe(50);
+  });
+
+  it("down recovery lasts through the down + midrecover sprite span", () => {
+    // DefineSprite_69: down frames 33..57, then midrecover frames 17..31.
+    expect(GREEN_DOWN_RECOVERY_FRAMES).toBe(40);
   });
 
   it("default walkspeed inherited from ASnowDudie is 5", () => {
@@ -120,6 +126,7 @@ describe("createGreenAI initial state", () => {
     expect(ai.walking).toBe(false);
     expect(ai.dead).toBe(false);
     expect(ai.down).toBe(false);
+    expect(ai.downRecoveryFrames).toBe(0);
     expect(ai.justhit).toBe(false);
     expect(ai.adobefrozenframebugfix).toBe(0);
     expect(ai.walkspeed).toBe(5);
@@ -157,10 +164,11 @@ describe("frameloop branch (A) — dead", () => {
 // ---------- decision cascade (B) down ----------
 
 describe("frameloop branch (B) — dudiemc.down", () => {
-  it("returns immediately if down (HP==1 anim still playing)", () => {
-    // from GreenSnowDudie.as:79-82
+  it("returns immediately while down recovery is still playing", () => {
+    // from GreenSnowDudie.as:79-83 + DefineSprite_69 down/midrecover actions.
     const ai = createGreenAI({ x: 100, y: 100 });
     ai.down = true;
+    ai.downRecoveryFrames = GREEN_DOWN_RECOVERY_FRAMES;
     ai.balling = 7;
     let throws = 0;
     tickGreen(
@@ -172,7 +180,20 @@ describe("frameloop branch (B) — dudiemc.down", () => {
     );
     expect(ai.balling).toBe(7);
     expect(throws).toBe(0);
-    expect(ai.down).toBe(true); // still down; not cleared by branch (B)
+    expect(ai.down).toBe(true);
+    expect(ai.downRecoveryFrames).toBe(GREEN_DOWN_RECOVERY_FRAMES - 1);
+  });
+
+  it("clears down after the recovery timeline completes", () => {
+    // In AS, dudiemc.down owns the timeline gate; frame actions clear it after recovery.
+    const ai = createGreenAI({ x: 100, y: 100 });
+    ai.down = true;
+    ai.downRecoveryFrames = 1;
+
+    tickGreen(ai, ctx({ rand: seqRandom([]) }));
+
+    expect(ai.down).toBe(false);
+    expect(ai.downRecoveryFrames).toBe(0);
   });
 });
 
@@ -657,9 +678,44 @@ describe("greenYouGotHit — HP transitions", () => {
     });
     expect(ai.hitpoints).toBe(1);
     expect(ai.down).toBe(true);
+    expect(ai.downRecoveryFrames).toBe(GREEN_DOWN_RECOVERY_FRAMES);
     expect(pose).toBe("down");
     expect(sound).toBe("hit1");
     expect(ai.dead).toBe(false);
+  });
+
+  it("2 -> 1 recovers from down so a final collision can KO the green", () => {
+    // Regression: collision code gates on !down, so a permanent down state
+    // makes level clear impossible through normal play.
+    const ai = createGreenAI({ x: 100, y: 100 });
+    ai.hitpoints = 2;
+
+    greenYouGotHit(ai, {
+      onPose: () => {},
+      onPlaySound: () => {},
+      rand: seqRandom([]),
+    });
+
+    for (let i = 0; i < GREEN_DOWN_RECOVERY_FRAMES - 1; i++) {
+      tickGreen(ai, ctx({ rand: seqRandom([]) }));
+    }
+    expect(ai.down).toBe(true);
+    expect(ai.hitpoints).toBe(1);
+
+    tickGreen(ai, ctx({ rand: seqRandom([]) }));
+    expect(ai.down).toBe(false);
+
+    let pose = "";
+    greenYouGotHit(ai, {
+      onPose: (p) => {
+        pose = p;
+      },
+      onPlaySound: () => {},
+      rand: seqRandom([0.5]),
+    });
+    expect(ai.hitpoints).toBe(0);
+    expect(ai.dead).toBe(true);
+    expect(pose).toBe("dead");
   });
 
   it("1 -> 0 sets dead=true, plays 'dead' anim and a kids[1..3] sound", () => {

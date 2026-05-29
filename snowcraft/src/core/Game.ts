@@ -13,6 +13,7 @@
 export type Team = "red" | "green";
 
 // Extended (non-original) campaign levels 10..14 — see levelConfig.ts.
+import { GREEN_DOWN_RECOVERY_FRAMES } from "./AI.ts";
 import { EXTRA_LEVELS } from "./levelConfig.ts";
 
 // ---------------------------------------------------------------------------
@@ -254,6 +255,7 @@ export interface GreenDudie {
   balling: number;
   cocking: number;
   down: boolean;
+  downRecoveryFrames: number;
   dead: boolean;
   walking: boolean;
   dudiemc: { _x: number; _y: number };
@@ -348,6 +350,7 @@ function defaultGreenFactory(stage: any, sounds: any, titles: any): GreenDudie {
     balling: 0,
     cocking: 0,
     down: false,
+    downRecoveryFrames: 0,
     dead: false,
     walking: false,
     dudiemc: { _x: 0, _y: 0 },
@@ -368,9 +371,12 @@ function defaultGreenFactory(stage: any, sounds: any, titles: any): GreenDudie {
     },
     yougothit() {
       // GreenSnowDudie.as:43-66 — three-stage hp.
+      this.down = false;
+      this.downRecoveryFrames = 0;
       this.hitpoints -= 1;
       if (this.hitpoints === 1) {
         this.down = true;
+        this.downRecoveryFrames = GREEN_DOWN_RECOVERY_FRAMES;
       } else if (this.hitpoints <= 0) {
         this.dead = true;
       }
@@ -378,7 +384,15 @@ function defaultGreenFactory(stage: any, sounds: any, titles: any): GreenDudie {
     gameover() {
       // GreenSnowDudie.as:71 — taunt on game-over-lose.
     },
-    frameloop() {},
+    frameloop() {
+      if (this.down) {
+        if (this.downRecoveryFrames > 0) this.downRecoveryFrames -= 1;
+        if (this.downRecoveryFrames <= 0) {
+          this.down = false;
+          this.downRecoveryFrames = 0;
+        }
+      }
+    },
     destroy() {},
     addEventListener() {},
   };

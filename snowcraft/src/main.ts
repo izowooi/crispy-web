@@ -634,11 +634,11 @@ async function boot(): Promise<void> {
         ineffective: force < 0.1,
       });
     },
-    /** Collide-and-hit: spawn a red snowball directly on top of the i-th
+    /** Collide-and-hit: spawn a red snowball directly on top of the i-th live
      *  green and run one frameloop tick. Mirrors Snowcraft1Rewrite.as:366
      *  hit predicate. Used by E2E for the "hit enemy" scenario. */
     spawnAndHit: (i: number) => {
-      const greens = game.adudies.filter((d) => d.team === "green");
+      const greens = game.adudies.filter((d) => d.team === "green" && !d.dead);
       const target = greens[i];
       if (!target) return null;
       const beforeHp = target.hitpoints;
