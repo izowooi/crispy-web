@@ -1,2 +1,0 @@
-justhit = true;
-play();

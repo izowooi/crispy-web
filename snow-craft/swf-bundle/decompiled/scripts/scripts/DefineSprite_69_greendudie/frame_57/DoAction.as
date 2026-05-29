@@ -1,2 +1,0 @@
-gotoAndStop("midrecover");
-play();
