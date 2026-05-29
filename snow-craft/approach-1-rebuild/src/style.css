@@ -1,0 +1,83 @@
+:root {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #1a3a6c;
+  background: #eaf2fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 32px;
+  letter-spacing: 1px;
+  color: #1f4d8e;
+}
+
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+canvas#game {
+  background: #ffffff;
+  border: 2px solid #1f4d8e;
+  box-shadow: 0 4px 12px rgba(31, 77, 142, 0.2);
+  image-rendering: pixelated;
+  cursor: crosshair;
+}
+
+.hud {
+  width: 800px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 14px;
+  background: #ffffff;
+  padding: 6px 12px;
+  border: 1px solid #c5d3e6;
+  border-radius: 4px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 800px;
+}
+
+.controls button {
+  padding: 6px 16px;
+  font-weight: bold;
+  background: #1f4d8e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background: #2a64b3;
+}
+
+.hint {
+  font-size: 12px;
+  color: #5e7494;
+}

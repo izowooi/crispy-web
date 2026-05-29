@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build / dev outputs
+dist/
+dist-ssr/
+.vite/
+.wrangler/
+.vercel/
+out/
+.pages-out/
+
+# Test / tooling outputs
+test-results/
+playwright-report/
+.playwright-mcp/
+
+# FFDec decompiler binary (43 MB — re-downloadable, not source).
+# Bare names (no leading path) so they match at any directory depth.
+ffdec/
+FFDec.app/
+ffdec_macosx.zip
+*.jar
+
+# Logs & OS cruft
+*.log
+.DS_Store
+
+# Secrets (never commit)
+.env
+.env.*
+!.env.example
+!.env.local.example
+*.key
+*.pem

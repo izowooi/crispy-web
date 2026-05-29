@@ -1,0 +1,12 @@
+{
+  "before": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_before.png",
+  "onGreen1": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_red_on_green_pre_hit1.png",
+  "afterHit1_immediate": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit1_immediate.png",
+  "afterHit1": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit1.png",
+  "afterHit1_late": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit1_late.png",
+  "afterHit2_immediate": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit2_immediate.png",
+  "afterHit2": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit2.png",
+  "afterHit2_late": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit2_late.png",
+  "afterHit3": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit3.png",
+  "afterHit3_late": "/Users/jongwoopark/Downloads/temp/porting-web/snow-craft/approach-4-faithful-port/observations/v3_05_after_hit3_late.png"
+}

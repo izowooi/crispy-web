@@ -1,0 +1,2 @@
+gotoAndStop("dazed");
+play();

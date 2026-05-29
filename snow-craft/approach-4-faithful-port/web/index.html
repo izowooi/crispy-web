@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snowcraft (Faithful Port)</title>
+    <style>
+      /* Stage size locked to the original SWF FrameSize: 592 x 320
+         (spec/main.md §2 — "11840/20 x 6400/20 twips"). Background colour
+         #CCCCCC matches `SetBackgroundColor` from dump.txt. */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #cccccc;
+        font-family: sans-serif;
+      }
+      #stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      #game {
+        display: block;
+        width: 592px;
+        height: 320px;
+        image-rendering: pixelated;
+        background: #cccccc;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="game" width="592" height="320"></canvas>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

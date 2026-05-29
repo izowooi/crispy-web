@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snowcraft Web</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <h1 class="title">SnowCraft</h1>
+      <div class="game-shell">
+        <canvas id="game" width="800" height="500"></canvas>
+        <div class="hud">
+          <div id="hud-level" data-testid="hud-level">Level: 1</div>
+          <div id="hud-score" data-testid="hud-score">Score: 0</div>
+          <div id="hud-team" data-testid="hud-team">Team: 3 / 3</div>
+          <div id="hud-enemy" data-testid="hud-enemy">Enemies: 3</div>
+        </div>
+        <div class="controls">
+          <button id="start-btn" data-testid="start-btn">Start Game</button>
+          <button id="reset-btn" data-testid="reset-btn">Reset</button>
+          <span class="hint">WASD to move active player, click and hold to charge, release to throw. Tab switches active player.</span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

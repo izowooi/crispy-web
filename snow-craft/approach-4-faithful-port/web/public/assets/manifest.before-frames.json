@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Snowcraft (faithful port) asset manifest. Every entry corresponds to an asset exported from the original SWF via JPEXS Free Flash Decompiler (FFDec). No synthesized audio; no redrawn images. See spec/assets.md for full citations.",
+  "images": {
+    "reddudie_body": {
+      "path": "images/reddudie_body.png",
+      "swfChid": 3,
+      "definingTag": "DefineBitsJPEG3",
+      "source": "decompiled/images/3.png",
+      "trigger": "Wrapped by Shape 4 → reddudie sprite (chid 32)",
+      "use": "Red character body sprite (RedSnowDudie)"
+    },
+    "selectioncircle": {
+      "path": "images/selectioncircle.png",
+      "swfChid": 6,
+      "definingTag": "DefineBitsLossless2",
+      "source": "decompiled/images/6.png",
+      "trigger": "Wrapped by Shape 7 → DefineSprite 8 = selectioncircle export",
+      "use": "Yellow ring shown when hovering a red dudie (RedSnowDudie.as:97)"
+    },
+    "reddudie_part_11": {
+      "path": "images/reddudie_part_11.png",
+      "swfChid": 11,
+      "definingTag": "DefineBitsLossless2",
+      "source": "decompiled/images/11.png",
+      "trigger": "Used inside Shape 12 inside reddudie animation states",
+      "use": "Red-team body part / face piece"
+    },
+    "snowball": {
+      "path": "images/snowball.png",
+      "swfChid": 33,
+      "definingTag": "DefineBits",
+      "source": "decompiled/images/33.jpg",
+      "trigger": "Wrapped by Shape 34 → DefineSprite 35 = snowball export (SnowBall.as:37)",
+      "use": "Flying snowball graphic"
+    },
+    "snowball_impact": {
+      "path": "images/snowball_impact.png",
+      "swfChid": 36,
+      "definingTag": "DefineBits",
+      "source": "decompiled/images/36.jpg",
+      "trigger": "Wrapped by Shape 37 → snowballshadow (chid 48) at land label",
+      "use": "Snowball impact frame"
+    },
+    "snowballshadow_ground": {
+      "path": "images/snowballshadow_ground.png",
+      "swfChid": 38,
+      "definingTag": "DefineBitsLossless",
+      "source": "decompiled/images/38.png",
+      "trigger": "Wrapped by Shape 39 → snowball shadow ground sprite (chid 40 → 48)",
+      "use": "Shadow under flying snowball"
+    },
+    "snowball_shadow_41": {
+      "path": "images/snowball_shadow_41.png",
+      "swfChid": 41,
+      "definingTag": "DefineBits",
+      "source": "decompiled/images/41.jpg",
+      "trigger": "Wrapped by Shape 42 — shadow / impact animation",
+      "use": "Additional shadow / impact frame"
+    },
+    "snowball_shadow_44": {
+      "path": "images/snowball_shadow_44.png",
+      "swfChid": 44,
+      "definingTag": "DefineBits",
+      "source": "decompiled/images/44.jpg",
+      "trigger": "Wrapped by Shape 45 — shadow / impact animation",
+      "use": "Additional shadow / impact frame"
+    },
+    "greendudie_body": {
+      "path": "images/greendudie_body.png",
+      "swfChid": 49,
+      "definingTag": "DefineBitsLossless2",
+      "source": "decompiled/images/49.png",
+      "trigger": "Wrapped by Shape 50 → greendudie sprite (chid 69)",
+      "use": "Green character body sprite (GreenSnowDudie)"
+    },
+    "gamemc_background": {
+      "path": "images/gamemc_background.png",
+      "swfChid": 111,
+      "definingTag": "DefineBits",
+      "source": "decompiled/images/111.jpg",
+      "trigger": "Wrapped by Shape 112 → DefineSprite 113 → gamemc (chid 114)",
+      "use": "Play-field background image"
+    }
+  },
+  "sounds": {
+    "step": {
+      "mp3": "sounds/step.mp3",
+      "ogg": "sounds/step.ogg",
+      "swfCid": 72,
+      "frameLabel": "step",
+      "source": "decompiled/sounds/72.mp3",
+      "trigger": "RedSnowDudie.as:150 & GreenSnowDudie.as:112 (during walk)",
+      "use": "Footstep loop while a dudie is moving"
+    },
+    "goodbadugly": {
+      "mp3": "sounds/goodbadugly.mp3",
+      "ogg": "sounds/goodbadugly.ogg",
+      "swfCid": 73,
+      "frameLabel": "goodbadugly",
+      "source": "decompiled/sounds/73.mp3",
+      "trigger": "DefineSprite_110/frame_74/DoAction.as:10 (titles 'levelx' frame)",
+      "use": "Level-start sting"
+    },
+    "throw": {
+      "mp3": "sounds/throw.mp3",
+      "ogg": "sounds/throw.ogg",
+      "swfCid": 74,
+      "frameLabel": "throw",
+      "source": "decompiled/sounds/74.mp3",
+      "trigger": "SnowBall.as:59 (force < 1)",
+      "use": "Short-throw whoosh"
+    },
+    "longthrow": {
+      "mp3": "sounds/longthrow.mp3",
+      "ogg": "sounds/longthrow.ogg",
+      "swfCid": 75,
+      "frameLabel": "longthrow",
+      "source": "decompiled/sounds/75.mp3",
+      "trigger": "SnowBall.as:55 (force >= 1)",
+      "use": "Long/charged throw whoosh"
+    },
+    "hit1": {
+      "mp3": "sounds/hit1.mp3",
+      "ogg": "sounds/hit1.ogg",
+      "swfCid": 76,
+      "frameLabel": "hit1",
+      "source": "decompiled/sounds/76.mp3",
+      "trigger": "RedSnowDudie.as:77 (hp==1) and GreenSnowDudie.as:49,55 (hit/down)",
+      "use": "Hit impact"
+    },
+    "kids1": {
+      "mp3": "sounds/kids1.mp3",
+      "ogg": "sounds/kids1.ogg",
+      "swfCid": 77,
+      "frameLabel": "kids1",
+      "source": "decompiled/sounds/77.mp3",
+      "trigger": "Random pick on death (RedSnowDudie.as:88, GreenSnowDudie.as:65)",
+      "use": "Kid voice variant 1 on knockout"
+    },
+    "kids2": {
+      "mp3": "sounds/kids2.mp3",
+      "ogg": "sounds/kids2.ogg",
+      "swfCid": 78,
+      "frameLabel": "kids2",
+      "source": "decompiled/sounds/78.mp3",
+      "trigger": "Random pick on death",
+      "use": "Kid voice variant 2 on knockout"
+    },
+    "kids3": {
+      "mp3": "sounds/kids3.mp3",
+      "ogg": "sounds/kids3.ogg",
+      "swfCid": 79,
+      "frameLabel": "kids3",
+      "source": "decompiled/sounds/79.mp3",
+      "trigger": "Random pick on death",
+      "use": "Kid voice variant 3 on knockout"
+    },
+    "laugh": {
+      "mp3": "sounds/laugh.mp3",
+      "ogg": "sounds/laugh.ogg",
+      "swfCid": 80,
+      "frameLabel": "laugh",
+      "source": "decompiled/sounds/80.mp3",
+      "trigger": "DefineSprite_69_greendudie/frame_98/DoAction.as:5 (50% branch in 'yea')",
+      "use": "Green-team taunt laugh A"
+    },
+    "splat": {
+      "mp3": "sounds/splat.mp3",
+      "ogg": "sounds/splat.ogg",
+      "swfCid": 81,
+      "frameLabel": "splat",
+      "source": "decompiled/sounds/81.mp3",
+      "trigger": "SnowBall.as:84 (red-team ball impact on ground)",
+      "use": "Snowball splat on ground"
+    },
+    "birds": {
+      "mp3": "sounds/birds.mp3",
+      "ogg": "sounds/birds.ogg",
+      "swfCid": 82,
+      "frameLabel": "birds",
+      "source": "decompiled/sounds/82.mp3",
+      "trigger": "RedSnowDudie.as:78 (after hit1 when red is dazed)",
+      "use": "Tweety birds dazed cue"
+    },
+    "halaluja": {
+      "mp3": "sounds/halaluja.mp3",
+      "ogg": "sounds/halaluja.ogg",
+      "swfCid": 83,
+      "frameLabel": "halaluja",
+      "source": "decompiled/sounds/83.mp3",
+      "trigger": "DefineSprite_110/frame_375/DoAction.as:1 (titles gameoverwin/halaluja)",
+      "use": "Win celebration"
+    },
+    "laugh2": {
+      "mp3": "sounds/laugh2.mp3",
+      "ogg": "sounds/laugh2.ogg",
+      "swfCid": 84,
+      "frameLabel": "laugh2",
+      "source": "decompiled/sounds/84.mp3",
+      "trigger": "DefineSprite_69_greendudie/frame_98/DoAction.as:9 (other 50% branch)",
+      "use": "Green-team taunt laugh B"
+    }
+  }
+}

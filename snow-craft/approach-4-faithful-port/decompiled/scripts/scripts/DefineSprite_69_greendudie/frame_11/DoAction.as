@@ -1,0 +1,2 @@
+justhit = true;
+play();
