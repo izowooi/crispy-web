@@ -84,7 +84,17 @@ declare global {
       canvas: HTMLCanvasElement;
       titles: { label: string };
       game: {
-        adudies: Array<{ team: string; dead: boolean; x: number; y: number }>;
+        adudies: Array<{
+          team: string;
+          dead: boolean;
+          x: number;
+          y: number;
+          walking?: boolean;
+          walkendx?: number;
+          walkendy?: number;
+          dazed?: number;
+          dudiemc?: { _x: number; _y: number };
+        }>;
       };
     };
   }
@@ -303,6 +313,9 @@ test("scenario 4: mouse press+hold+release on red spawns snowball with spec velo
     r.y = 200;
     r.dudiemc._x = 200;
     r.dudiemc._y = 200;
+    r.walking = false;
+    r.walkendx = 0;
+    r.walkendy = 0;
     return {
       cx: rect.left + 200 * sx,
       cy: rect.top + (200 - 10) * sy, // click slightly above the foot
@@ -486,6 +499,73 @@ test("scenario 6c: red hit shows hitdazed, then loops dazed while stunned", asyn
   expect(loopPose?.pose).toBe("dazed");
 });
 
+test("scenario 6d: a red stunned while dragging drops the meter and cannot throw on release", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await waitForReady(page);
+  await page.evaluate(() => window.__snowcraft.start());
+  await page.waitForFunction(() => window.__snowcraft.counts().level === 1);
+
+  const target = await page.evaluate(() => {
+    const sc = window.__snowcraft;
+    const red = sc.game.adudies.find((d) => d.team === "red" && !d.dead)!;
+    red.x = 220;
+    red.y = 220;
+    red.walking = false;
+    red.walkendx = 0;
+    red.walkendy = 0;
+    red.dudiemc!._x = 220;
+    red.dudiemc!._y = 220;
+    const rect = sc.canvas.getBoundingClientRect();
+    const sx = rect.width / sc.canvas.width;
+    const sy = rect.height / sc.canvas.height;
+    return {
+      downX: rect.left + 220 * sx,
+      downY: rect.top + (220 - 20) * sy,
+      moveX: rect.left + 330 * sx,
+      moveY: rect.top + (260 - 20) * sy,
+    };
+  });
+
+  await page.mouse.move(target.downX, target.downY);
+  await page.mouse.down();
+  await page.waitForTimeout(160);
+  expect(await page.evaluate(() => window.__snowcraft.meterNow())).toBeGreaterThan(0);
+
+  const hit = await page.evaluate(() => window.__snowcraft.spawnAndHitRed(0));
+  expect(hit).not.toBeNull();
+  expect(hit!.afterHp).toBe(1);
+  expect(hit!.dazed).toBeGreaterThan(0);
+
+  const stunned = await page.evaluate(() => {
+    const sc = window.__snowcraft;
+    const red = sc.game.adudies.find((d) => d.team === "red" && !d.dead)!;
+    return { x: red.x, y: red.y, meter: sc.meterNow(), dazed: red.dazed ?? 0 };
+  });
+  expect(stunned.meter).toBe(0);
+  expect(stunned.dazed).toBeGreaterThan(0);
+
+  await page.mouse.move(target.moveX, target.moveY);
+  await page.mouse.up();
+
+  const after = await page.evaluate(() => {
+    const sc = window.__snowcraft;
+    const red = sc.game.adudies.find((d) => d.team === "red" && !d.dead)!;
+    const ball = sc.lastSnowball();
+    return {
+      x: red.x,
+      y: red.y,
+      meter: sc.meterNow(),
+      lastBallTeam: ball?.team ?? null,
+    };
+  });
+  expect(after.x).toBe(stunned.x);
+  expect(after.y).toBe(stunned.y);
+  expect(after.meter).toBe(0);
+  expect(after.lastBallTeam).not.toBe("red");
+});
+
 // ---------------------------------------------------------------------------
 // Scenario 7 — Player hp depleted → game-over screen.
 // spec/levels.md §5 lose path: every red dead → ongameover() (no win arg).
@@ -654,6 +734,11 @@ test("scenario 9: holding a red charges the meter from 1 up to 15", async ({
     const r = reds[0];
     r.x = 200;
     r.y = 200;
+    r.walking = false;
+    r.walkendx = 0;
+    r.walkendy = 0;
+    r.dudiemc!._x = 200;
+    r.dudiemc!._y = 200;
     const rect = sc.canvas.getBoundingClientRect();
     const c = sc.canvas;
     const sx = rect.width / c.width;

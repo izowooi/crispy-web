@@ -203,12 +203,33 @@ async function boot(): Promise<void> {
   let dragging: DudieView | null = null;
   let pressStart: number = 0;
 
+  function redCanBeControlled(d: DudieView): boolean {
+    return d.team === "red" && !d.dead && (d.dazed ?? 0) <= 0 && !d.walking;
+  }
+
+  function cancelDrag(): void {
+    if (dragging) {
+      dragging.selected = false;
+    }
+    dragging = null;
+  }
+
+  function clearInvalidPointerTargets(): void {
+    if (dragging && !redCanBeControlled(dragging)) {
+      cancelDrag();
+    }
+    if (hovered && !redCanBeControlled(hovered)) {
+      hovered = null;
+    }
+  }
+
   function pickRedAt(x: number, y: number): DudieView | null {
     // Topmost red dudie under the cursor; iterate from end to honour AS
     // depth-swap convention (last-clicked = highest, drawn last).
     for (let i = game.adudies.length - 1; i >= 0; i--) {
       const d = game.adudies[i] as DudieView;
-      if (d.team !== "red" || d.dead) continue;
+      // RedSnowDudie.as:51-54 blocks press/hover while dazed, dead, or walking.
+      if (!redCanBeControlled(d)) continue;
       if (
         x >= d.x - HIT_HALF_W &&
         x <= d.x + HIT_HALF_W &&
@@ -244,6 +265,7 @@ async function boot(): Promise<void> {
       stage._xmouse = x;
       stage._ymouse = y;
       if (!started) return;
+      clearInvalidPointerTargets();
       hovered = pickRedAt(x, y);
       if (dragging) {
         // Drag teleport — RedSnowDudie.as:175-182. Clip to checkline
@@ -278,6 +300,10 @@ async function boot(): Promise<void> {
     },
     onRelease() {
       if (!dragging) return;
+      if (!redCanBeControlled(dragging)) {
+        cancelDrag();
+        return;
+      }
       // Throw — spawn a snowball with a small constant force as a stand-in
       // for the meter-frame sample (RedSnowDudie.as:110-114). Without the
       // full Player port wired through `factories`, this gives the player a
@@ -298,8 +324,7 @@ async function boot(): Promise<void> {
       // Stamp the release tick for this dudie so the renderer shows "toss"
       // for the next few frames before reverting to "ready".
       releaseTickByDudie.set(dragging as unknown as object, globalAnimTick);
-      (dragging as DudieView).selected = false;
-      dragging = null;
+      cancelDrag();
     },
     onKeyDown(code: number) {
       game.keydown(code);
@@ -349,6 +374,7 @@ async function boot(): Promise<void> {
 
   function advanceGameTick(): void {
     game.frameloop();
+    clearInvalidPointerTargets();
     // Drive the title-overlay countdown in lockstep with the game tick so
     // that branch (G) of GreenSnowDudie.frameloop (titles._visible gate at
     // line 144) eventually releases and greens start throwing.
@@ -469,7 +495,7 @@ async function boot(): Promise<void> {
     // Charge meter gauge — drawn over the held red dudie's head while dragging
     // (RedSnowDudie.as:108-117 / PROGRESS_BEHAVIOR.md §4). Procedural HUD, not
     // game art: the SWF meter clip is a vector overlay with no extracted PNG.
-    if (dragging) {
+    if (dragging && redCanBeControlled(dragging)) {
       drawChargeMeter(dragging);
     }
   }
