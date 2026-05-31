@@ -5,7 +5,7 @@
 
 이 저장소는 여러 개의 독립 웹앱을 한 곳에서 관리하는 모노레포입니다. 대부분의 앱은 Next.js App Router, TypeScript, Tailwind CSS를 기반으로 하고, Cloudflare Pages/Workers, R2, Supabase, Replicate, Firebase Remote Config, Google OAuth 같은 외부 서비스를 앱별로 조합합니다.
 
-이 문서는 저장소 루트의 공통 작업 지침입니다. 하위 폴더에 별도의 `AGENTS.md`, README, docs, `.codex/skills`가 있으면 해당 앱에서는 더 구체적인 하위 지침을 우선합니다.
+이 문서는 저장소 루트의 공통 작업 지침입니다. 하위 폴더에 별도의 `AGENTS.md`, README, docs, `.claude/skills`, `.codex/`가 있으면 해당 앱에서는 더 구체적인 하위 지침을 우선합니다.
 
 ## 저장소 구조
 
@@ -13,7 +13,7 @@
 - 루트에 공통 `package.json`이나 통합 workspace 스크립트가 없습니다. 작업 전 반드시 대상 앱 디렉터리로 이동해서 그 앱의 `package.json` 스크립트를 사용합니다.
 - 각 앱은 자체 `package-lock.json`을 가지고 있으므로 기본 패키지 매니저는 `npm`입니다. 다른 lockfile이 있는 앱이 아니라면 `npm install`, `npm run ...`을 사용합니다.
 - `.next`, `out`, `.vercel`, `.wrangler`, `.pages-out`, 로그, 로컬 worktree, `.playwright-mcp` 등 생성물은 작업 맥락 확인 외에는 수정 대상으로 보지 않습니다.
-- 숨김 폴더의 `.Codex/`, `docs/`, `_workspace/`에는 기획, 테스트 기록, 하네스, 운영 결정사항이 들어있는 경우가 많습니다. 구현 전 관련 문서를 먼저 읽습니다.
+- 숨김 폴더의 `.claude/`, `.codex/`, `docs/`, `_workspace/`에는 기획, 테스트 기록, 하네스, 운영 결정사항이 들어있는 경우가 많습니다. 구현 전 관련 문서를 먼저 읽습니다.
 
 ## 주요 앱 성격
 
