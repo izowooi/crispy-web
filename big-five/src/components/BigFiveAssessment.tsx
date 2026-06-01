@@ -21,9 +21,17 @@ import {
 } from "@/data/questionnaire";
 import { scoreAssessment, type AnswerMap, type DomainScore } from "@/lib/scoring";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 const STORAGE_KEY = "big-five-answers-v1";
 const PAGE_KEY = "big-five-page-v1";
+
+const SCALE_SHORT: Record<ResponseValue, string> = {
+  1: "전혀",
+  2: "아니다",
+  3: "보통",
+  4: "그렇다",
+  5: "매우",
+};
 
 type ViewMode = "intro" | "test" | "results";
 
@@ -181,7 +189,7 @@ export function BigFiveAssessment() {
             나와 얼마나 가까운지 답하고, 완료 후 5대 요인과 30개 세부척도를 시각적으로 확인합니다.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        <div className="grid grid-cols-3 gap-2 lg:grid-cols-1 lg:gap-3">
           <Metric label="진행률" value={`${progress}%`} />
           <Metric label="응답" value={`${result.completedItems}/${result.totalItems}`} />
           <Metric label="예상 시간" value={`${questionnaireStats.estimatedMinutes}분`} />
@@ -225,8 +233,11 @@ export function BigFiveAssessment() {
             ))}
           </div>
 
-          <div className="sticky bottom-0 -mx-4 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:rounded-[8px] sm:border sm:bg-white">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="sticky bottom-0 -mx-4 border-t border-slate-200 bg-slate-50/95 px-4 py-2 backdrop-blur sm:static sm:mx-0 sm:rounded-[8px] sm:border sm:bg-white sm:py-3">
+            <p className="mb-2 text-center text-xs text-slate-500 sm:hidden">
+              {pageComplete ? "좋아요. 다음으로 이동할 수 있습니다." : "이 페이지 문항을 모두 응답해 주세요."}
+            </p>
+            <div className="flex items-center justify-between gap-3">
               <button
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-45"
                 disabled={pageIndex === 0}
@@ -237,7 +248,7 @@ export function BigFiveAssessment() {
                 이전
               </button>
 
-              <p className="text-center text-sm text-slate-600">
+              <p className="hidden text-center text-sm text-slate-600 sm:block">
                 {pageComplete ? "좋아요. 다음 페이지로 이동할 수 있습니다." : "현재 페이지 문항을 모두 응답하면 이동할 수 있습니다."}
               </p>
 
@@ -285,9 +296,9 @@ export function BigFiveAssessment() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[8px] border border-slate-200 bg-slate-50 p-3">
-      <p className="text-xs font-semibold uppercase text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-950">{value}</p>
+    <div className="rounded-[8px] border border-slate-200 bg-slate-50 p-2 sm:p-3">
+      <p className="text-[10px] font-semibold uppercase text-slate-500 sm:text-xs">{label}</p>
+      <p className="mt-0.5 text-lg font-bold text-slate-950 sm:mt-1 sm:text-2xl">{value}</p>
     </div>
   );
 }
@@ -386,27 +397,28 @@ function QuestionItem({
   onAnswer: (itemId: string, value: ResponseValue) => void;
 }) {
   return (
-    <article className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <article className="rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-500">
+          <p className="text-xs font-semibold text-slate-500 sm:text-sm">
             {index}. {item.domainName} · {item.facetName}
           </p>
-          <h3 className="mt-2 text-lg font-bold leading-7 text-slate-950">{item.text}</h3>
+          <h3 className="mt-1.5 text-base font-bold leading-6 text-slate-950 sm:mt-2 sm:text-lg sm:leading-7">{item.text}</h3>
         </div>
-        <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+        <span className="hidden shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 sm:inline-block">
           {item.id}
         </span>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-5">
+      <div className="mt-3 grid grid-cols-5 gap-1.5 sm:mt-4 sm:gap-2">
         {responseScale.map((option) => {
           const selected = answer === option.value;
 
           return (
             <button
               key={option.value}
+              aria-label={option.label}
               aria-pressed={selected}
-              className={`min-h-16 rounded-[8px] border px-3 py-2 text-center transition ${
+              className={`min-h-11 rounded-lg border px-1 py-2 text-center transition sm:min-h-16 sm:rounded-[8px] sm:px-3 ${
                 selected
                   ? "border-teal-700 bg-teal-700 text-white"
                   : "border-slate-200 bg-slate-50 text-slate-700 hover:border-teal-300 hover:bg-teal-50"
@@ -414,8 +426,9 @@ function QuestionItem({
               type="button"
               onClick={() => onAnswer(item.id, option.value)}
             >
-              <span className="block text-lg font-bold">{option.value}</span>
-              <span className="block text-xs font-semibold leading-5">{option.label}</span>
+              <span className="block text-base font-bold sm:text-lg">{option.value}</span>
+              <span className="block text-[10px] font-semibold leading-4 sm:hidden">{SCALE_SHORT[option.value]}</span>
+              <span className="hidden text-xs font-semibold leading-5 sm:block">{option.label}</span>
             </button>
           );
         })}
