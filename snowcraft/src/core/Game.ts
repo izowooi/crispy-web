@@ -258,6 +258,7 @@ export interface GreenDudie {
   downRecoveryFrames: number;
   dead: boolean;
   walking: boolean;
+  justhit: boolean;
   dudiemc: { _x: number; _y: number };
   setposition(x: number, y: number): void;
   setwalkendx(x: number): void;
@@ -353,6 +354,7 @@ function defaultGreenFactory(stage: any, sounds: any, titles: any): GreenDudie {
     downRecoveryFrames: 0,
     dead: false,
     walking: false,
+    justhit: false,
     dudiemc: { _x: 0, _y: 0 },
     setposition(x, y) {
       this.x = x;

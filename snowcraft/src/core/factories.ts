@@ -369,6 +369,12 @@ export function makeGreenFactory(
       set walking(v: boolean) {
         ai.walking = v;
       },
+      get justhit() {
+        return ai.justhit;
+      },
+      set justhit(v: boolean) {
+        ai.justhit = v;
+      },
       dudiemc: dudiemc as unknown as { _x: number; _y: number },
 
       setposition(x: number, y: number) {
