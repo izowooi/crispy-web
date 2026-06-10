@@ -88,7 +88,7 @@ RLS 활성화. anon은 SELECT만 허용. INSERT/UPDATE/DELETE는 서비스 롤 �
 NEXT_PUBLIC_SUPABASE_URL=       # Supabase 프로젝트 URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=  # anon key (클라이언트 목록 조회)
 SUPABASE_SERVICE_ROLE_KEY=      # service role key (서버 전용 write)
-NEXT_PUBLIC_BASE_URL=           # 공유 URL 생성 기준 (default: http://localhost:3000)
+NEXT_PUBLIC_BASE_URL=           # 공유 URL 생성 기준 (default: http://localhost:52741)
 PS_ARCHIVES_DIR=                # HTML 저장 경로 (default: ./ps_archives)
 ADMIN_PASSWORD=                 # 관리자 비밀번호 (서버 전용, NEXT_PUBLIC_ 절대 금지)
 API_KEY=                        # 업로드 API 키 (서버 전용). 미설정 시 로컬 dev 모드
@@ -102,7 +102,7 @@ API_KEY=                        # 업로드 API 키 (서버 전용). 미설정 �
 cd page-share
 npm install
 # .env.local 설정 필요 (.env.example 참조)
-npm run dev       # http://localhost:3000
+npm run dev       # http://localhost:52741
 npm run test      # vitest 테스트
 npm run build     # 프로덕션 빌드 확인
 ```

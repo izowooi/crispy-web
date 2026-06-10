@@ -40,7 +40,7 @@ popup.ts  ◀──[UPLOAD_DONE share_url]────────
 
 ## API 연동
 
-- 기본 API URL: `http://localhost:3000` (팝업 하단에서 변경 가능)
+- 기본 API URL: `http://localhost:52741` (팝업 하단에서 변경 가능)
 - `chrome.storage.sync`에 `apiBase` 키로 저장
 - API Key: `chrome.storage.sync`에 `apiKey` 키로 저장. 팝업 "API Key" 필드에서 설정.
 - POST 시 `X-Api-Key: <apiKey>` 헤더 포함. 빈 값이면 헤더 미포함(dev 환경용).

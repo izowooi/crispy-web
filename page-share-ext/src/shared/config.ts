@@ -1,4 +1,4 @@
-export const DEFAULT_API_BASE = "http://localhost:3000";
+export const DEFAULT_API_BASE = "http://localhost:52741";
 
 export async function getApiBase(): Promise<string> {
   return new Promise((resolve) => {

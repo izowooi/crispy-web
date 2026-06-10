@@ -3,7 +3,7 @@ import { isAdminSession } from "@/lib/admin";
 import ArchiveRowActions from "@/components/archive-row-actions";
 
 async function getArchives(admin: boolean): Promise<Archive[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:52741";
   const res = await fetch(`${baseUrl}/api/archives`, { cache: "no-store" });
   if (!res.ok) return [];
   const json = await res.json();
