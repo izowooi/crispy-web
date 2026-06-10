@@ -71,11 +71,19 @@ content script 로직 (`capturePage`)은 실제 Chrome API(`chrome.runtime.sendM
 단위 테스트하기 어려우므로, 핵심 변환 함수(`removeScripts`, `inlineImages` 등)를
 별도 모듈로 분리해 테스트할 것을 권장합니다.
 
+## 캡처 동작 (content/index.ts)
+
+- `document.documentElement.cloneNode(true)` 후 `clone.outerHTML` 사용 → `<html lang="">`, `class="dark"` 등 속성 보존
+- `<base href="[originalUrl]">` 를 `<head>` 맨 앞에 삽입해 인라인화 실패한 상대 URL의 fallback 처리
+- CSS `<link>` 태그: 절대 URL로 변환 후 fetch → 인라인 `<style>`로 교체. 실패 시 href를 절대 URL로 업데이트 후 태그 유지
+- fetch 성공한 CSS 내부의 상대 `url()` 경로도 절대 URL로 변환 (`fixCssUrls` 함수)
+- 이미지: base64 데이터 URL로 인라인. CORS 실패 시 원본 src 유지
+
 ## 주의 사항
 
 - **content script**는 페이지 컨텍스트에서 실행되므로 `console.log`가 해당 페이지의 DevTools에 출력됩니다.
 - **service worker** (`background/index.ts`)는 비활성 시 종료됩니다. 긴 업로드는 `chrome.tabs.onUpdated` 등으로 유지 필요.
-- 이미지 inline 중 외부 이미지 CORS 오류는 조용히 무시하고 원본 src를 유지합니다.
+- 외부 CSS가 CORS를 거부하면 fetch는 실패하지만 `<link href="절대URL">` 태그로 변환되어 보관됩니다. 오프라인 아카이브 목적이라면 MV3 background에서 fetch하는 구조로 개선 가능.
 - 팝업에서 API URL을 `page-share` 웹 앱 주소로 변경해야 합니다.
 
 ## 아이콘 준비

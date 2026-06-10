@@ -33,11 +33,10 @@ export async function GET(
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      // Prevent the served HTML from running scripts when loaded directly
+      // Block scripts/plugins; allow everything else (CSS, fonts, images) to load
       "Content-Security-Policy":
-        "default-src 'none'; img-src * data:; style-src 'unsafe-inline'; font-src *;",
+        "script-src 'none'; object-src 'none';",
       "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "SAMEORIGIN",
     },
   });
 }

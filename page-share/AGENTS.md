@@ -22,7 +22,9 @@
 | `GET /api/archives` | `nodejs` | Supabase client (서비스 롤) |
 | `POST /api/archives` | `nodejs` | LocalAdapter 파일 쓰기 필요 |
 | `GET /api/archives/[id]` | `edge` | DB 읽기만 수행 |
-| `GET /api/archives/[id]/raw` | `nodejs` | 파일 읽기 필요 |
+| `GET /api/archives/[id]/raw` | `nodejs` | 파일 읽기 필요. **이것이 실제 아카이브 뷰 URL.** |
+
+`/archive/[id]` 페이지는 `/api/archives/[id]/raw`로 302 리다이렉트한다. 목록에서 제목 클릭 시 원본 HTML이 바로 표시된다.
 
 **Cloudflare Pages 배포 시:** LocalAdapter를 R2Adapter로 교체하고 모든 라우트를 `edge`로 변경.
 `src/lib/storage/types.ts`의 `StorageAdapter` 인터페이스를 준수해 구현하면 된다.
@@ -45,8 +47,7 @@ RLS 활성화. anon은 SELECT만 허용. INSERT/UPDATE/DELETE는 서비스 롤 �
 ## 보안
 
 - **인제스트 시 sanitize**: `src/lib/sanitize.ts`에서 `<script>`, `on*` 핸들러, `javascript:` URI 제거
-- **렌더링**: `/archive/[id]` 페이지에서 iframe `sandbox="allow-same-origin allow-forms"` 적용
-- **CSP 헤더**: `/api/archives/[id]/raw` 라우트에서 `default-src 'none'` 설정
+- **렌더링**: `/api/archives/[id]/raw`에서 CSP `script-src 'none'; object-src 'none'` 적용 (스크립트 실행 차단, 외부 CSS·폰트·이미지 로딩은 허용)
 - **익스텐션 CORS**: `POST /api/archives`에서 `chrome-extension://` origin 허용
 
 ## 환경 변수
@@ -84,7 +85,7 @@ npm run build     # 프로덕션 빌드 확인
 src/
 ├── app/
 │   ├── page.tsx                    # 아카이브 목록
-│   ├── archive/[id]/page.tsx       # 아카이브 뷰어 (sandboxed iframe)
+│   ├── archive/[id]/page.tsx       # /api/archives/[id]/raw 로 302 리다이렉트
 │   └── api/archives/               # REST API
 ├── lib/
 │   ├── supabase.ts                 # DB 클라이언트

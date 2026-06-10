@@ -9,6 +9,20 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
+// Resolve relative url() references inside CSS text to absolute, relative to cssBaseUrl
+function fixCssUrls(css: string, cssBaseUrl: string): string {
+  return css.replace(
+    /url\(\s*(['"]?)(?!data:|https?:|\/\/)([^'"\s)]+)\1\s*\)/gi,
+    (match, q, relativePath) => {
+      try {
+        return `url(${q}${new URL(relativePath, cssBaseUrl).href}${q})`;
+      } catch {
+        return match;
+      }
+    },
+  );
+}
+
 async function inlineImages(root: HTMLElement): Promise<void> {
   const images = Array.from(root.querySelectorAll<HTMLImageElement>("img[src]"));
   await Promise.allSettled(
@@ -27,6 +41,7 @@ async function inlineImages(root: HTMLElement): Promise<void> {
 }
 
 async function inlineCss(root: HTMLElement): Promise<void> {
+  const pageBaseUrl = location.href;
   const links = Array.from(
     root.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]'),
   );
@@ -34,14 +49,19 @@ async function inlineCss(root: HTMLElement): Promise<void> {
     links.map(async (link) => {
       const href = link.getAttribute("href") ?? "";
       if (!href) return;
+      // Resolve relative href to absolute before fetching
+      const absoluteHref = new URL(href, pageBaseUrl).href;
       try {
-        const resp = await fetch(href);
-        const css = await resp.text();
+        const resp = await fetch(absoluteHref);
+        let css = await resp.text();
+        // Fix relative url() paths inside fetched CSS
+        css = fixCssUrls(css, absoluteHref);
         const style = document.createElement("style");
         style.textContent = css;
         link.replaceWith(style);
       } catch {
-        // Leave link tag intact on fetch failure
+        // Update href to absolute so it can still load from the archived page
+        link.href = absoluteHref;
       }
     }),
   );
@@ -58,10 +78,21 @@ function removeScripts(root: HTMLElement): void {
 
 async function capturePage(): Promise<CaptureResult> {
   const clone = document.documentElement.cloneNode(true) as HTMLElement;
+
+  // Inject <base href> so relative resources (link, img, etc.) resolve correctly
+  const head = clone.querySelector("head");
+  if (head && !head.querySelector("base")) {
+    const base = document.createElement("base");
+    base.href = location.href;
+    head.prepend(base);
+  }
+
   removeScripts(clone);
   await inlineCss(clone);
   await inlineImages(clone);
-  const html = `<!DOCTYPE html>\n<html>${clone.innerHTML}</html>`;
+
+  // Use outerHTML to preserve <html> element attributes (lang, class for dark mode, etc.)
+  const html = `<!DOCTYPE html>\n${clone.outerHTML}`;
   return {
     title: document.title,
     url: location.href,
