@@ -8,16 +8,18 @@ const resultEl = document.getElementById("result") as HTMLDivElement;
 const shareUrlInput = document.getElementById("share-url") as HTMLInputElement;
 const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement;
 const apiBaseInput = document.getElementById("api-base") as HTMLInputElement;
+const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
 const saveSettingsBtn = document.getElementById("save-settings-btn") as HTMLButtonElement;
 
-// Load saved API base
-chrome.storage.sync.get({ apiBase: DEFAULT_API_BASE }, (items) => {
+// Load saved settings
+chrome.storage.sync.get({ apiBase: DEFAULT_API_BASE, apiKey: "" }, (items) => {
   apiBaseInput.value = items.apiBase as string;
+  apiKeyInput.value = items.apiKey as string;
 });
 
 saveSettingsBtn.addEventListener("click", () => {
-  chrome.storage.sync.set({ apiBase: apiBaseInput.value });
-  setStatus("API URL 저장됨", "success");
+  chrome.storage.sync.set({ apiBase: apiBaseInput.value, apiKey: apiKeyInput.value });
+  setStatus("설정 저장됨", "success");
   setTimeout(() => setStatus("현재 페이지를 저장합니다", "idle"), 1500);
 });
 

@@ -7,3 +7,11 @@ export async function getApiBase(): Promise<string> {
     });
   });
 }
+
+export async function getApiKey(): Promise<string> {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get({ apiKey: "" }, (items) => {
+      resolve(items.apiKey as string);
+    });
+  });
+}

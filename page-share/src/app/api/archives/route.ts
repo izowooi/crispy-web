@@ -3,6 +3,7 @@ import { createServerClient } from "@/lib/supabase";
 import { LocalAdapter } from "@/lib/storage/local-adapter";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { isAdminRequest } from "@/lib/admin";
+import { isValidApiKey, extractApiKey } from "@/lib/apikey";
 
 // Node.js runtime: LocalAdapter needs filesystem access.
 // Switch to edge + R2Adapter for Cloudflare Pages deployment.
@@ -31,6 +32,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  // API key guard: reject if API_KEY is configured and key is missing/wrong
+  if (!isValidApiKey(extractApiKey(request))) {
+    return NextResponse.json({ error: "Unauthorized: invalid or missing API key" }, { status: 401 });
+  }
+
   // Allow Chrome extension origins
   const origin = request.headers.get("origin") ?? "";
   const isChromeExt = origin.startsWith("chrome-extension://");
@@ -75,7 +81,7 @@ export async function POST(request: Request) {
   if (isChromeExt) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Access-Control-Allow-Methods"] = "POST, OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type";
+    headers["Access-Control-Allow-Headers"] = "Content-Type, X-Api-Key";
   }
 
   return new NextResponse(JSON.stringify({ archive: data, share_url: shareUrl }), {
@@ -91,7 +97,7 @@ export async function OPTIONS(request: Request) {
     headers: {
       "Access-Control-Allow-Origin": origin,
       "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, X-Api-Key",
     },
   });
 }

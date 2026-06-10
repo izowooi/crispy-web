@@ -30,6 +30,23 @@
 
 `/archive/[id]` 페이지는 `/api/archives/[id]/raw`로 302 리다이렉트한다. 목록에서 제목 클릭 시 원본 HTML이 바로 표시된다.
 
+## API 키 인증 (업로드 보호)
+
+- `API_KEY` 환경변수(서버 전용)로 업로드 엔드포인트를 보호한다.
+- **미설정 시(로컬 dev)**: 키 없이 업로드 가능
+- **설정 시(운영)**: 요청에 `X-Api-Key: <값>` 헤더가 있어야 함. 불일치 → 401
+- 적용 범위: `POST /api/archives`만. `GET /api/archives`(목록 조회)는 인증 없이 허용.
+- 익스텐션에서 API Key 설정: 팝업 하단 "API Key" 필드에 입력 후 "설정 저장"
+- `src/lib/apikey.ts`: `isValidApiKey(key)`, `extractApiKey(request)`
+- 테스트: `src/__tests__/apikey.test.ts` (6개)
+
+## 운영 환경 (Cloudflare Tunnel)
+
+- Mac mini에서 `npm run dev` → Cloudflare Tunnel → `https://pageshare.zowoo.uk`
+- `.env.local`에서 `NEXT_PUBLIC_BASE_URL=https://pageshare.zowoo.uk` 설정
+- 익스텐션 팝업에서 API URL을 `https://pageshare.zowoo.uk`로 변경
+- Cloudflare Tunnel 설정: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+
 ## 관리자(Admin) 인증
 
 - `ADMIN_PASSWORD` 환경변수(서버 전용)로 관리. 미설정 시 관리자 기능 비활성화.
@@ -74,6 +91,7 @@ SUPABASE_SERVICE_ROLE_KEY=      # service role key (서버 전용 write)
 NEXT_PUBLIC_BASE_URL=           # 공유 URL 생성 기준 (default: http://localhost:3000)
 PS_ARCHIVES_DIR=                # HTML 저장 경로 (default: ./ps_archives)
 ADMIN_PASSWORD=                 # 관리자 비밀번호 (서버 전용, NEXT_PUBLIC_ 절대 금지)
+API_KEY=                        # 업로드 API 키 (서버 전용). 미설정 시 로컬 dev 모드
 ```
 
 `.env.local`에만 관리. 커밋 금지.

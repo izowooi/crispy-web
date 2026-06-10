@@ -42,8 +42,16 @@ popup.ts  ◀──[UPLOAD_DONE share_url]────────
 
 - 기본 API URL: `http://localhost:3000` (팝업 하단에서 변경 가능)
 - `chrome.storage.sync`에 `apiBase` 키로 저장
+- API Key: `chrome.storage.sync`에 `apiKey` 키로 저장. 팝업 "API Key" 필드에서 설정.
+- POST 시 `X-Api-Key: <apiKey>` 헤더 포함. 빈 값이면 헤더 미포함(dev 환경용).
 - POST body: `{ title, original_url, html }`
 - 응답: `{ archive: {...}, share_url: "..." }`
+
+## 운영 환경 연결
+
+팝업에서 아래 두 값을 설정 후 "설정 저장":
+- **API URL**: `https://pageshare.zowoo.uk`
+- **API Key**: 서버의 `API_KEY` 환경변수 값과 동일하게 입력
 
 ## 빌드 및 설치
 

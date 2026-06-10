@@ -1,13 +1,15 @@
-import { getApiBase } from "../shared/config";
+import { getApiBase, getApiKey } from "../shared/config";
 import type { Message, CaptureResult, UploadResponse } from "../shared/types";
 
-async function uploadPage(
-  capture: CaptureResult,
-): Promise<UploadResponse> {
-  const apiBase = await getApiBase();
+async function uploadPage(capture: CaptureResult): Promise<UploadResponse> {
+  const [apiBase, apiKey] = await Promise.all([getApiBase(), getApiKey()]);
+
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (apiKey) headers["X-Api-Key"] = apiKey;
+
   const res = await fetch(`${apiBase}/api/archives`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({
       title: capture.title,
       original_url: capture.url,
