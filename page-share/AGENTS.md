@@ -21,26 +21,41 @@
 |--------|---------|------|
 | `GET /api/archives` | `nodejs` | Supabase client (서비스 롤) |
 | `POST /api/archives` | `nodejs` | LocalAdapter 파일 쓰기 필요 |
-| `GET /api/archives/[id]` | `edge` | DB 읽기만 수행 |
+| `GET /api/archives/[id]` | `edge` | DB 읽기 + admin 체크 |
+| `DELETE /api/archives/[id]` | `edge` | soft delete (deleted_at). admin 필수 |
+| `PATCH /api/archives/[id]` | `edge` | is_private 토글. admin 필수 |
 | `GET /api/archives/[id]/raw` | `nodejs` | 파일 읽기 필요. **이것이 실제 아카이브 뷰 URL.** |
+| `POST /api/admin/login` | `nodejs` | 비밀번호 검증, `ps_admin` 쿠키 설정 |
+| `POST /api/admin/logout` | `nodejs` | `ps_admin` 쿠키 삭제 |
 
 `/archive/[id]` 페이지는 `/api/archives/[id]/raw`로 302 리다이렉트한다. 목록에서 제목 클릭 시 원본 HTML이 바로 표시된다.
 
-**Cloudflare Pages 배포 시:** LocalAdapter를 R2Adapter로 교체하고 모든 라우트를 `edge`로 변경.
-`src/lib/storage/types.ts`의 `StorageAdapter` 인터페이스를 준수해 구현하면 된다.
+## 관리자(Admin) 인증
 
-## DB 스키마
+- `ADMIN_PASSWORD` 환경변수(서버 전용)로 관리. 미설정 시 관리자 기능 비활성화.
+- `POST /api/admin/login` → 비밀번호 일치 시 `httpOnly` 쿠키 `ps_admin` 설정 (7일)
+- `src/lib/admin.ts`: `isAdminSession()` (Server Component/Action용), `isAdminRequest()` (Route Handler용)
+- 관리자 미인증 상태: 비공개 아카이브 목록에서 숨김, 삭제/비공개 버튼 미노출
+- 관리자 인증 상태: 전체 목록(공개+비공개) 표시, 삭제·비공개 토글 버튼 노출
 
-테이블: `ps_archives` (Supabase, `fresh-mint` 프로젝트)
+## DB 스키마 (updated)
+
+테이블: `ps_archives`
 
 ```sql
 id           UUID  PK default gen_random_uuid()
 title        TEXT  NOT NULL
 original_url TEXT  NOT NULL
-storage_path TEXT  NOT NULL   -- /api/archives/{id}/raw
+storage_path TEXT  NOT NULL
 file_size    INT   default 0
 created_at   TIMESTAMPTZ default now()
+deleted_at   TIMESTAMPTZ default NULL   -- soft delete
+is_private   BOOLEAN NOT NULL default FALSE
 ```
+
+**Cloudflare Pages 배포 시:** LocalAdapter를 R2Adapter로 교체하고 모든 라우트를 `edge`로 변경.
+`src/lib/storage/types.ts`의 `StorageAdapter` 인터페이스를 준수해 구현하면 된다.
+
 
 RLS 활성화. anon은 SELECT만 허용. INSERT/UPDATE/DELETE는 서비스 롤 키 전용.
 
@@ -58,6 +73,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=  # anon key (클라이언트 목록 조회)
 SUPABASE_SERVICE_ROLE_KEY=      # service role key (서버 전용 write)
 NEXT_PUBLIC_BASE_URL=           # 공유 URL 생성 기준 (default: http://localhost:3000)
 PS_ARCHIVES_DIR=                # HTML 저장 경로 (default: ./ps_archives)
+ADMIN_PASSWORD=                 # 관리자 비밀번호 (서버 전용, NEXT_PUBLIC_ 절대 금지)
 ```
 
 `.env.local`에만 관리. 커밋 금지.
@@ -84,10 +100,19 @@ npm run build     # 프로덕션 빌드 확인
 ```
 src/
 ├── app/
-│   ├── page.tsx                    # 아카이브 목록
+│   ├── layout.tsx                  # 헤더 + AdminBar 클라이언트 컴포넌트
+│   ├── page.tsx                    # 아카이브 목록 (admin 여부에 따라 관리 열 노출)
+│   ├── actions.ts                  # Server Actions: deleteArchive, setPrivate
 │   ├── archive/[id]/page.tsx       # /api/archives/[id]/raw 로 302 리다이렉트
-│   └── api/archives/               # REST API
+│   └── api/
+│       ├── admin/login/route.ts    # POST: 비밀번호 검증 + 쿠키 설정
+│       ├── admin/logout/route.ts   # POST: 쿠키 삭제
+│       └── archives/               # REST API
+├── components/
+│   ├── admin-bar.tsx               # 관리자 로그인/로그아웃 UI
+│   └── archive-row-actions.tsx     # 삭제·비공개 토글 버튼
 ├── lib/
+│   ├── admin.ts                    # isAdminSession / isAdminRequest / isAdminToken
 │   ├── supabase.ts                 # DB 클라이언트
 │   ├── sanitize.ts                 # HTML 정제
 │   └── storage/

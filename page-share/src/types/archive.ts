@@ -5,6 +5,8 @@ export interface Archive {
   storage_path: string;
   file_size: number;
   created_at: string;
+  is_private: boolean;
+  deleted_at: string | null;
 }
 
 export interface CreateArchivePayload {

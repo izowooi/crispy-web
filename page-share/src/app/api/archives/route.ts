@@ -2,23 +2,32 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 import { LocalAdapter } from "@/lib/storage/local-adapter";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { isAdminRequest } from "@/lib/admin";
 
 // Node.js runtime: LocalAdapter needs filesystem access.
 // Switch to edge + R2Adapter for Cloudflare Pages deployment.
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const admin = isAdminRequest(request);
   const supabase = createServerClient();
-  const { data, error } = await supabase
+
+  let query = supabase
     .from("ps_archives")
-    .select("id, title, original_url, file_size, created_at")
+    .select("id, title, original_url, file_size, created_at, is_private, deleted_at")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
+  if (!admin) {
+    query = query.eq("is_private", false);
+  }
+
+  const { data, error } = await query;
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ archives: data ?? [] });
+  return NextResponse.json({ archives: data ?? [], isAdmin: admin });
 }
 
 export async function POST(request: Request) {

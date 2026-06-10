@@ -1,6 +1,8 @@
 import type { Archive } from "@/types/archive";
+import { isAdminSession } from "@/lib/admin";
+import ArchiveRowActions from "@/components/archive-row-actions";
 
-async function getArchives(): Promise<Archive[]> {
+async function getArchives(admin: boolean): Promise<Archive[]> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const res = await fetch(`${baseUrl}/api/archives`, { cache: "no-store" });
   if (!res.ok) return [];
@@ -23,7 +25,8 @@ function formatSize(bytes: number) {
 }
 
 export default async function HomePage() {
-  const archives = await getArchives();
+  const admin = await isAdminSession();
+  const archives = await getArchives(admin);
 
   return (
     <div>
@@ -49,18 +52,29 @@ export default async function HomePage() {
                 <th className="px-4 py-3 text-left font-medium text-gray-400 hidden md:table-cell">원본 URL</th>
                 <th className="px-4 py-3 text-right font-medium text-gray-400 hidden sm:table-cell">크기</th>
                 <th className="px-4 py-3 text-right font-medium text-gray-400">저장일</th>
+                {admin && (
+                  <th className="px-4 py-3 text-right font-medium text-gray-400">관리</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
               {archives.map((archive) => (
-                <tr key={archive.id} className="hover:bg-gray-900/60 transition-colors">
+                <tr
+                  key={archive.id}
+                  className={`hover:bg-gray-900/60 transition-colors ${archive.is_private ? "opacity-60" : ""}`}
+                >
                   <td className="px-4 py-3">
-                    <a
-                      href={`/archive/${archive.id}`}
-                      className="font-medium text-blue-400 hover:text-blue-300 line-clamp-1"
-                    >
-                      {archive.title}
-                    </a>
+                    <div className="flex items-center gap-1.5">
+                      {archive.is_private && (
+                        <span title="비공개" className="shrink-0 text-xs">🔒</span>
+                      )}
+                      <a
+                        href={`/archive/${archive.id}`}
+                        className="font-medium text-blue-400 hover:text-blue-300 line-clamp-1"
+                      >
+                        {archive.title}
+                      </a>
+                    </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <a
@@ -78,6 +92,11 @@ export default async function HomePage() {
                   <td className="px-4 py-3 text-right text-gray-500 whitespace-nowrap">
                     {formatDate(archive.created_at)}
                   </td>
+                  {admin && (
+                    <td className="px-4 py-3 text-right">
+                      <ArchiveRowActions id={archive.id} isPrivate={archive.is_private} />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
