@@ -1,0 +1,98 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.container { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+header { display: flex; align-items: center; gap: 8px; }
+header h1 { font-size: 15px; font-weight: 600; }
+.logo { font-size: 18px; }
+
+.status {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+.status.saving { border-color: #3b82f6; color: #93c5fd; }
+.status.success { border-color: #22c55e; color: #86efac; }
+.status.error { border-color: #ef4444; color: #fca5a5; }
+
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #2563eb; }
+.btn-primary:disabled { background: #475569; cursor: default; }
+
+.result { display: flex; flex-direction: column; gap: 6px; }
+.result.hidden { display: none; }
+.result-label { font-size: 11px; color: #94a3b8; font-weight: 500; }
+.url-row { display: flex; gap: 6px; }
+.url-row input {
+  flex: 1;
+  padding: 6px 8px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.btn-copy {
+  padding: 6px 10px;
+  background: #334155;
+  color: #e2e8f0;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-copy:hover { background: #475569; }
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #1e293b;
+  padding-top: 10px;
+}
+.settings-row label { font-size: 11px; color: #64748b; white-space: nowrap; }
+.settings-row input {
+  flex: 1;
+  padding: 4px 6px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 11px;
+  min-width: 0;
+}
+.btn-small {
+  padding: 4px 8px;
+  background: #334155;
+  color: #e2e8f0;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-small:hover { background: #475569; }

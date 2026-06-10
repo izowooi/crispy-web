@@ -1,0 +1,23 @@
+{
+  "name": "page-share-ext",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "watch": "webpack --config webpack.config.js --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.320",
+    "@vitejs/plugin-react": "^4",
+    "copy-webpack-plugin": "^12",
+    "jsdom": "^26",
+    "ts-loader": "^9",
+    "typescript": "^5",
+    "vitest": "^3",
+    "webpack": "^5",
+    "webpack-cli": "^5"
+  }
+}

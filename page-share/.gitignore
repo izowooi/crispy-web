@@ -1,0 +1,26 @@
+# deps
+node_modules/
+.pnp
+.pnp.js
+
+# next
+.next/
+out/
+.vercel/
+.pages-out/
+
+# cloudflare
+.wrangler/
+
+# env
+.env
+.env.local
+.env.production
+.env*.local
+
+# archives (local HTML storage — swap to R2 in production)
+ps_archives/
+
+# misc
+*.tsbuildinfo
+next-env.d.ts
