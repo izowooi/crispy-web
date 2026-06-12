@@ -41,27 +41,49 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin") ?? "";
   const isChromeExt = origin.startsWith("chrome-extension://");
 
-  let body: { title?: string; original_url?: string; html?: string };
+  let body: {
+    title?: string;
+    original_url?: string;
+    html?: string;
+    storage_path?: string;
+    file_size?: number;
+  };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { title, original_url, html } = body;
-  if (!title || !original_url || !html) {
-    return NextResponse.json(
-      { error: "title, original_url, html are required" },
-      { status: 400 },
-    );
+  const { title, original_url, html, storage_path, file_size } = body;
+
+  if (!title || !original_url) {
+    return NextResponse.json({ error: "title and original_url are required" }, { status: 400 });
+  }
+  if (!html && !storage_path) {
+    return NextResponse.json({ error: "either html or storage_path is required" }, { status: 400 });
   }
 
-  const sanitized = sanitizeHtml(html);
   const id = crypto.randomUUID();
-  const storage = new LocalAdapter();
-  const { storagePath, fileSize } = await storage.upload(id, sanitized);
-
   const supabase = createServerClient();
+  let storagePath: string;
+  let fileSize: number;
+
+  if (storage_path) {
+    // R2 direct upload mode: HTML is already in R2; just record the public URL
+    if (!storage_path.startsWith("https://")) {
+      return NextResponse.json({ error: "storage_path must be an absolute https URL" }, { status: 400 });
+    }
+    storagePath = storage_path;
+    fileSize = file_size ?? 0;
+  } else {
+    // Legacy mode: sanitize HTML and store locally
+    const sanitized = sanitizeHtml(html!);
+    const adapter = new LocalAdapter();
+    const uploaded = await adapter.upload(id, sanitized);
+    storagePath = uploaded.storagePath;
+    fileSize = uploaded.fileSize;
+  }
+
   const { data, error } = await supabase
     .from("ps_archives")
     .insert({ id, title, original_url, storage_path: storagePath, file_size: fileSize })

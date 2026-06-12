@@ -7,12 +7,13 @@
 
 Manifest V3 Chrome/Opera 익스텐션.
 사용자가 팝업에서 "Save Page"를 클릭하면 현재 페이지를 SingleFile 스타일로 캡처해
-`page-share` 웹 앱 API에 업로드하고 공유 URL을 돌려받습니다.
+Cloudflare R2에 직접 업로드하거나(R2 설정 시), `page-share` 웹 앱 API에 전달합니다.
 
 ## 기술 스택
 
 - Chrome Extension Manifest V3
 - TypeScript + Webpack 5 (`ts-loader`)
+- `aws4fetch` — SigV4 서명 (R2 업로드용, ~15KB 번들 추가)
 - Vitest + jsdom (테스트)
 - 빌드 출력: `dist/` (gitignored)
 
@@ -24,7 +25,13 @@ popup.ts  ──[sendMessage CAPTURE_PAGE]──▶  content/index.ts
 popup.ts  ◀──[CAPTURE_DONE payload]──────────────
     │
     └──[sendMessage CAPTURE_DONE]──▶  background/index.ts
-                                            │ (POST /api/archives)
+                                            │
+                                    R2 설정 있음? ─YES─▶  uploadHtmlToR2() → PUT /bucket/{uuid}.html
+                                            │                   │
+                                            │              POST /api/archives  { storage_path, file_size }
+                                            │
+                                    R2 설정 없음? ─YES─▶  POST /api/archives  { html }
+                                            │
 popup.ts  ◀──[UPLOAD_DONE share_url]────────
 ```
 
@@ -34,24 +41,60 @@ popup.ts  ◀──[UPLOAD_DONE share_url]────────
 |------|------|
 | `src/popup/popup.ts` | UI 제어, 메시지 오케스트레이션 |
 | `src/content/index.ts` | DOM cloneNode → 이미지 inline → CSS inline → script 제거 |
-| `src/background/index.ts` | `POST /api/archives` fetch |
-| `src/shared/config.ts` | API base URL (`chrome.storage.sync` 저장/로드) |
+| `src/background/index.ts` | R2 업로드 시도 후 fallback → 서버 HTML 업로드 |
+| `src/lib/r2-upload.ts` | `aws4fetch` 기반 SigV4 서명 + R2 PUT |
+| `src/shared/config.ts` | `chrome.storage.sync`에서 API/R2 설정 로드 |
 | `src/shared/types.ts` | Message 유니언 타입 |
+
+## 업로드 모드
+
+### R2 직접 업로드 (권장 — 서버 불필요)
+
+팝업의 "R2 직접 업로드 설정" 섹션에서 5개 값 입력 후 "설정 저장":
+
+| 필드 | 설명 | 예시 |
+|------|------|------|
+| Endpoint | R2 API 엔드포인트 | `https://ACCOUNT.r2.cloudflarestorage.com` |
+| Bucket | 버킷 이름 | `page-share` |
+| Key ID | R2 액세스 키 ID | Cloudflare Dashboard에서 발급 |
+| Secret | R2 액세스 키 시크릿 | Cloudflare Dashboard에서 발급 |
+| Public URL | 버킷 공개 URL 베이스 | `https://pub-xxx.r2.dev` |
+
+5개 값이 모두 있으면 R2 모드로 동작. 하나라도 비어있으면 서버 HTML 업로드 fallback.
+
+**보안 주의:**
+- R2 Key ID / Secret은 `chrome.storage.sync`에 저장됩니다. 본인 계정에서 발급한 값만 사용하세요.
+- R2에 업로드된 HTML은 Public URL로 누구나 접근 가능합니다(UUID로만 보호). 비공개 플래그는 목록 표시만 제어합니다.
+
+### 서버 업로드 (R2 미설정 시 fallback)
+
+팝업 상단 API URL + API Key 입력 후 저장. HTML 전체를 웹 앱 서버로 전송합니다.
+서버에서 `sanitizeHtml()`로 XSS 정제 후 로컬 파일 저장.
 
 ## API 연동
 
 - 기본 API URL: `http://localhost:52741` (팝업 하단에서 변경 가능)
-- `chrome.storage.sync`에 `apiBase` 키로 저장
-- API Key: `chrome.storage.sync`에 `apiKey` 키로 저장. 팝업 "API Key" 필드에서 설정.
-- POST 시 `X-Api-Key: <apiKey>` 헤더 포함. 빈 값이면 헤더 미포함(dev 환경용).
-- POST body: `{ title, original_url, html }`
-- 응답: `{ archive: {...}, share_url: "..." }`
+- `chrome.storage.sync` 키: `apiBase`, `apiKey`, `r2Endpoint`, `r2Bucket`, `r2KeyId`, `r2Secret`, `r2PublicUrl`
+
+**R2 모드 POST body** (`storage_path` 있음, `html` 없음):
+```json
+{ "title": "...", "original_url": "...", "storage_path": "https://pub-xxx.r2.dev/uuid.html", "file_size": 12345 }
+```
+
+**Legacy 모드 POST body** (`html` 있음, `storage_path` 없음):
+```json
+{ "title": "...", "original_url": "...", "html": "<!DOCTYPE html>..." }
+```
+
+응답 (공통): `{ "archive": {...}, "share_url": "https://pageshare.zowoo.uk/archive/uuid" }`
 
 ## 운영 환경 연결
 
-팝업에서 아래 두 값을 설정 후 "설정 저장":
+팝업에서 아래 값을 설정 후 "설정 저장":
 - **API URL**: `https://pageshare.zowoo.uk`
 - **API Key**: 서버의 `API_KEY` 환경변수 값과 동일하게 입력
+
+R2 직접 업로드를 사용하면 서버가 다운돼도 R2 PUT 자체는 성공하지만, DB 기록(POST /api/archives)은 실패합니다. 이 경우 공유 URL을 얻을 수 없습니다.
 
 ## 빌드 및 설치
 
@@ -74,10 +117,8 @@ npm run test    # vitest run (jsdom 환경)
 ```
 
 - `src/__tests__/sanitize.test.ts`: DOM 기반 script/이벤트핸들러 제거 검증
-
-content script 로직 (`capturePage`)은 실제 Chrome API(`chrome.runtime.sendMessage`) 없이
-단위 테스트하기 어려우므로, 핵심 변환 함수(`removeScripts`, `inlineImages` 등)를
-별도 모듈로 분리해 테스트할 것을 권장합니다.
+- `src/__tests__/r2-upload.test.ts`: `isR2Configured`, `uploadHtmlToR2` 단위 테스트 (9개)
+  - `uploadHtmlToR2` 테스트는 `customFetch` 파라미터로 mock fetch를 주입해 실제 네트워크 요청 없이 검증
 
 ## 캡처 동작 (content/index.ts)
 
@@ -87,12 +128,22 @@ content script 로직 (`capturePage`)은 실제 Chrome API(`chrome.runtime.sendM
 - fetch 성공한 CSS 내부의 상대 `url()` 경로도 절대 URL로 변환 (`fixCssUrls` 함수)
 - 이미지: base64 데이터 URL로 인라인. CORS 실패 시 원본 src 유지
 
+**R2 업로드 시 sanitize 없음**: HTML은 콘텐츠 스크립트의 `removeScripts()`로만 처리됩니다.
+서버 업로드(legacy) 시에는 서버 `sanitizeHtml()`이 추가로 적용됩니다.
+
 ## 주의 사항
 
 - **content script**는 페이지 컨텍스트에서 실행되므로 `console.log`가 해당 페이지의 DevTools에 출력됩니다.
 - **service worker** (`background/index.ts`)는 비활성 시 종료됩니다. 긴 업로드는 `chrome.tabs.onUpdated` 등으로 유지 필요.
 - 외부 CSS가 CORS를 거부하면 fetch는 실패하지만 `<link href="절대URL">` 태그로 변환되어 보관됩니다. 오프라인 아카이브 목적이라면 MV3 background에서 fetch하는 구조로 개선 가능.
 - 팝업에서 API URL을 `page-share` 웹 앱 주소로 변경해야 합니다.
+
+## R2 액세스 키 발급 방법
+
+1. Cloudflare Dashboard → R2 → "Manage R2 API Tokens"
+2. "Create API Token" → 버킷에 Object Read & Write 권한 부여
+3. Account ID, Access Key ID, Secret Access Key 복사 → 팝업 R2 설정에 입력
+4. R2 버킷 → Settings → "Public access" → Custom domain 또는 R2.dev subdomain 활성화 → Public URL Base 입력
 
 ## 아이콘 준비
 

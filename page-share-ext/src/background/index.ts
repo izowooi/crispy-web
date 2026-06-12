@@ -1,12 +1,41 @@
-import { getApiBase, getApiKey } from "../shared/config";
+import { getApiBase, getApiKey, getR2Config } from "../shared/config";
+import { uploadHtmlToR2, isR2Configured } from "../lib/r2-upload";
 import type { Message, CaptureResult, UploadResponse } from "../shared/types";
 
 async function uploadPage(capture: CaptureResult): Promise<UploadResponse> {
-  const [apiBase, apiKey] = await Promise.all([getApiBase(), getApiKey()]);
+  const [apiBase, apiKey, r2Config] = await Promise.all([
+    getApiBase(),
+    getApiKey(),
+    getR2Config(),
+  ]);
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (apiKey) headers["X-Api-Key"] = apiKey;
 
+  if (isR2Configured(r2Config)) {
+    // R2 direct upload: HTML → R2, then record the public URL in the web app DB
+    const r2Result = await uploadHtmlToR2(r2Config, capture.html);
+
+    const res = await fetch(`${apiBase}/api/archives`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        title: capture.title,
+        original_url: capture.url,
+        storage_path: r2Result.publicUrl,
+        file_size: r2Result.fileSize,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`DB record failed (${res.status}): ${text}`);
+    }
+
+    return res.json();
+  }
+
+  // Fallback: send HTML to web server (legacy mode)
   const res = await fetch(`${apiBase}/api/archives`, {
     method: "POST",
     headers,
