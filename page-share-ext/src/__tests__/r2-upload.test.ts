@@ -48,8 +48,8 @@ describe("uploadHtmlToR2", () => {
 
   it("returns publicUrl and fileSize on success", async () => {
     const result = await uploadHtmlToR2(TEST_CONFIG, "<html>hello</html>", makeMockFetch());
-    expect(result.publicUrl).toBe(`https://pub-test.r2.dev/${FIXED_UUID}.html`);
-    expect(result.fileKey).toBe(`${FIXED_UUID}.html`);
+    expect(result.publicUrl).toBe(`https://pub-test.r2.dev/archive/${FIXED_UUID}.html`);
+    expect(result.fileKey).toBe(`archive/${FIXED_UUID}.html`);
     expect(result.fileSize).toBeGreaterThan(0);
   });
 
@@ -61,7 +61,7 @@ describe("uploadHtmlToR2", () => {
     const [signedReq] = (mockFetch as ReturnType<typeof vi.fn>).mock.calls[0] as [Request];
     expect(signedReq.url).toContain("account123.r2.cloudflarestorage.com");
     expect(signedReq.url).toContain("/test-bucket/");
-    expect(signedReq.url).toContain(`${FIXED_UUID}.html`);
+    expect(signedReq.url).toContain(`archive/${FIXED_UUID}.html`);
     expect(signedReq.method).toBe("PUT");
   });
 
@@ -87,6 +87,6 @@ describe("uploadHtmlToR2", () => {
       publicUrlBase: "https://pub-test.r2.dev/",
     };
     const result = await uploadHtmlToR2(config, "<html>x</html>", makeMockFetch());
-    expect(result.publicUrl).toBe(`https://pub-test.r2.dev/${FIXED_UUID}.html`);
+    expect(result.publicUrl).toBe(`https://pub-test.r2.dev/archive/${FIXED_UUID}.html`);
   });
 });

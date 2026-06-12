@@ -37,7 +37,7 @@ export async function uploadHtmlToR2(
     ...(customFetch && { fetch: customFetch }),
   });
 
-  const fileKey = `${crypto.randomUUID()}.html`;
+  const fileKey = `archive/${crypto.randomUUID()}.html`;
   const putUrl = `${config.endpoint.replace(/\/$/, "")}/${config.bucket}/${fileKey}`;
 
   // Use sign() so tests can inject a custom fetch without hitting the network.
