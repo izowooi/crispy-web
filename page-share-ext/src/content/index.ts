@@ -100,16 +100,21 @@ async function capturePage(): Promise<CaptureResult> {
   };
 }
 
-chrome.runtime.onMessage.addListener(
-  (msg: Message, _sender, sendResponse) => {
-    if (msg.type !== "CAPTURE_PAGE") return false;
+// Guard against double-injection (tabs open before extension load, or programmatic re-inject)
+const w = window as Window & { __pageShareInjected?: boolean };
+if (!w.__pageShareInjected) {
+  w.__pageShareInjected = true;
+  chrome.runtime.onMessage.addListener(
+    (msg: Message, _sender, sendResponse) => {
+      if (msg.type !== "CAPTURE_PAGE") return false;
 
-    capturePage()
-      .then((payload) => sendResponse({ type: "CAPTURE_DONE", payload }))
-      .catch((err: Error) =>
-        sendResponse({ type: "CAPTURE_ERROR", message: err.message }),
-      );
+      capturePage()
+        .then((payload) => sendResponse({ type: "CAPTURE_DONE", payload }))
+        .catch((err: Error) =>
+          sendResponse({ type: "CAPTURE_ERROR", message: err.message }),
+        );
 
-    return true; // keep message channel open for async response
-  },
-);
+      return true; // keep message channel open for async response
+    },
+  );
+}

@@ -35,7 +35,17 @@ saveBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Step 1: capture via content script
+  // Step 1: ensure content script is running (handles tabs open before extension load)
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["content/index.js"],
+    });
+  } catch {
+    // Tab may not support scripting (chrome://, PDF, etc.) — let sendMessage surface the real error
+  }
+
+  // Step 2: capture via content script
   chrome.tabs.sendMessage(tab.id, { type: "CAPTURE_PAGE" } satisfies Message, (captureMsg: Message) => {
     if (chrome.runtime.lastError || captureMsg.type === "CAPTURE_ERROR") {
       const msg = chrome.runtime.lastError?.message ?? (captureMsg as { type: "CAPTURE_ERROR"; message: string }).message;
@@ -48,7 +58,7 @@ saveBtn.addEventListener("click", async () => {
 
     setStatus("R2 업로드 중...", "saving");
 
-    // Step 2: upload via background service worker
+    // Step 3: upload via background service worker
     chrome.runtime.sendMessage(captureMsg, (uploadMsg: Message) => {
       setLoading(false);
       if (chrome.runtime.lastError || uploadMsg.type === "UPLOAD_ERROR") {
