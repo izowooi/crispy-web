@@ -1,4 +1,3 @@
-import { DEFAULT_API_BASE } from "../shared/config";
 import type { Message } from "../shared/types";
 
 const saveBtn = document.getElementById("save-btn") as HTMLButtonElement;
@@ -7,21 +6,6 @@ const statusText = document.getElementById("status-text") as HTMLParagraphElemen
 const resultEl = document.getElementById("result") as HTMLDivElement;
 const shareUrlInput = document.getElementById("share-url") as HTMLInputElement;
 const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement;
-const apiBaseInput = document.getElementById("api-base") as HTMLInputElement;
-const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
-const saveSettingsBtn = document.getElementById("save-settings-btn") as HTMLButtonElement;
-
-// Load saved settings
-chrome.storage.sync.get({ apiBase: DEFAULT_API_BASE, apiKey: "" }, (items) => {
-  apiBaseInput.value = items.apiBase as string;
-  apiKeyInput.value = items.apiKey as string;
-});
-
-saveSettingsBtn.addEventListener("click", () => {
-  chrome.storage.sync.set({ apiBase: apiBaseInput.value, apiKey: apiKeyInput.value });
-  setStatus("설정 저장됨", "success");
-  setTimeout(() => setStatus("현재 페이지를 저장합니다", "idle"), 1500);
-});
 
 function setStatus(msg: string, state: "idle" | "saving" | "success" | "error") {
   statusText.textContent = msg;
@@ -62,9 +46,9 @@ saveBtn.addEventListener("click", async () => {
 
     if (captureMsg.type !== "CAPTURE_DONE") return;
 
-    setStatus("업로드 중...", "saving");
+    setStatus("R2 업로드 중...", "saving");
 
-    // Step 2: upload via background service worker (R2 if baked config, else web server)
+    // Step 2: upload via background service worker
     chrome.runtime.sendMessage(captureMsg, (uploadMsg: Message) => {
       setLoading(false);
       if (chrome.runtime.lastError || uploadMsg.type === "UPLOAD_ERROR") {

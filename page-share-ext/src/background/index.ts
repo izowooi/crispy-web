@@ -3,7 +3,8 @@ import { uploadHtmlToR2, isR2Configured } from "../lib/r2-upload";
 import type { Message, CaptureResult, UploadResponse } from "../shared/types";
 
 async function uploadPage(capture: CaptureResult): Promise<UploadResponse> {
-  const [apiBase, apiKey] = await Promise.all([getApiBase(), getApiKey()]);
+  const apiBase = getApiBase();
+  const apiKey = getApiKey();
   const r2Config = getR2Config();
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };

@@ -2,13 +2,13 @@ const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const { DefinePlugin } = require("webpack");
 
-// config.local.json (gitignored) provides R2 credentials baked into the bundle.
+// config.local.json (gitignored) is baked into the bundle at build time.
 // Copy config.local.example.json → config.local.json and fill in the values.
 let localConfig = {};
 try {
   localConfig = require("./config.local.json");
 } catch {
-  // No config.local.json — R2 direct upload will be disabled.
+  // No config.local.json — R2 direct upload disabled, uses web server fallback.
 }
 
 module.exports = {
@@ -46,6 +46,8 @@ module.exports = {
       ],
     }),
     new DefinePlugin({
+      __API_BASE__: JSON.stringify(localConfig.apiBase || "http://localhost:52741"),
+      __API_KEY__: JSON.stringify(localConfig.apiKey || ""),
       __R2_ENDPOINT__: JSON.stringify(localConfig.r2Endpoint || ""),
       __R2_BUCKET__: JSON.stringify(localConfig.r2Bucket || ""),
       __R2_KEY_ID__: JSON.stringify(localConfig.r2KeyId || ""),
