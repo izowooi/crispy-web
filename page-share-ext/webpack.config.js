@@ -1,5 +1,15 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
+const { DefinePlugin } = require("webpack");
+
+// config.local.json (gitignored) provides R2 credentials baked into the bundle.
+// Copy config.local.example.json → config.local.json and fill in the values.
+let localConfig = {};
+try {
+  localConfig = require("./config.local.json");
+} catch {
+  // No config.local.json — R2 direct upload will be disabled.
+}
 
 module.exports = {
   mode: "production",
@@ -34,6 +44,13 @@ module.exports = {
         { from: "src/popup/popup.css", to: "popup/popup.css" },
         { from: "icons", to: "icons", noErrorOnMissing: true },
       ],
+    }),
+    new DefinePlugin({
+      __R2_ENDPOINT__: JSON.stringify(localConfig.r2Endpoint || ""),
+      __R2_BUCKET__: JSON.stringify(localConfig.r2Bucket || ""),
+      __R2_KEY_ID__: JSON.stringify(localConfig.r2KeyId || ""),
+      __R2_SECRET__: JSON.stringify(localConfig.r2Secret || ""),
+      __R2_PUBLIC_URL__: JSON.stringify(localConfig.r2PublicUrl || ""),
     }),
   ],
   // Inline config so the extension JS is self-contained

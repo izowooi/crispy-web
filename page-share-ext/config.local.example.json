@@ -1,0 +1,7 @@
+{
+  "r2Endpoint": "https://<ACCOUNT_ID>.r2.cloudflarestorage.com",
+  "r2Bucket": "<버킷 이름 예: page-share>",
+  "r2KeyId": "<R2 Access Key ID>",
+  "r2Secret": "<R2 Secret Access Key>",
+  "r2PublicUrl": "https://pub-<xxx>.r2.dev"
+}

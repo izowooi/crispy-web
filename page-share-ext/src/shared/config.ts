@@ -1,5 +1,13 @@
 import type { R2Config } from "../lib/r2-upload";
 
+// R2 credentials are baked in at build time by webpack DefinePlugin.
+// Set them in config.local.json (gitignored) before running `npm run build`.
+declare const __R2_ENDPOINT__: string;
+declare const __R2_BUCKET__: string;
+declare const __R2_KEY_ID__: string;
+declare const __R2_SECRET__: string;
+declare const __R2_PUBLIC_URL__: string;
+
 export const DEFAULT_API_BASE = "http://localhost:52741";
 
 export async function getApiBase(): Promise<string> {
@@ -18,25 +26,12 @@ export async function getApiKey(): Promise<string> {
   });
 }
 
-export async function getR2Config(): Promise<Partial<R2Config>> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(
-      {
-        r2Endpoint: "",
-        r2Bucket: "",
-        r2KeyId: "",
-        r2Secret: "",
-        r2PublicUrl: "",
-      },
-      (items) => {
-        resolve({
-          endpoint: items.r2Endpoint as string,
-          bucket: items.r2Bucket as string,
-          keyId: items.r2KeyId as string,
-          secret: items.r2Secret as string,
-          publicUrlBase: items.r2PublicUrl as string,
-        });
-      },
-    );
-  });
+export function getR2Config(): Partial<R2Config> {
+  return {
+    endpoint: __R2_ENDPOINT__,
+    bucket: __R2_BUCKET__,
+    keyId: __R2_KEY_ID__,
+    secret: __R2_SECRET__,
+    publicUrlBase: __R2_PUBLIC_URL__,
+  };
 }

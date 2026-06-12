@@ -9,45 +9,16 @@ const shareUrlInput = document.getElementById("share-url") as HTMLInputElement;
 const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement;
 const apiBaseInput = document.getElementById("api-base") as HTMLInputElement;
 const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
-const r2EndpointInput = document.getElementById("r2-endpoint") as HTMLInputElement;
-const r2BucketInput = document.getElementById("r2-bucket") as HTMLInputElement;
-const r2KeyIdInput = document.getElementById("r2-key-id") as HTMLInputElement;
-const r2SecretInput = document.getElementById("r2-secret") as HTMLInputElement;
-const r2PublicUrlInput = document.getElementById("r2-public-url") as HTMLInputElement;
 const saveSettingsBtn = document.getElementById("save-settings-btn") as HTMLButtonElement;
 
 // Load saved settings
-chrome.storage.sync.get(
-  {
-    apiBase: DEFAULT_API_BASE,
-    apiKey: "",
-    r2Endpoint: "",
-    r2Bucket: "",
-    r2KeyId: "",
-    r2Secret: "",
-    r2PublicUrl: "",
-  },
-  (items) => {
-    apiBaseInput.value = items.apiBase as string;
-    apiKeyInput.value = items.apiKey as string;
-    r2EndpointInput.value = items.r2Endpoint as string;
-    r2BucketInput.value = items.r2Bucket as string;
-    r2KeyIdInput.value = items.r2KeyId as string;
-    r2SecretInput.value = items.r2Secret as string;
-    r2PublicUrlInput.value = items.r2PublicUrl as string;
-  },
-);
+chrome.storage.sync.get({ apiBase: DEFAULT_API_BASE, apiKey: "" }, (items) => {
+  apiBaseInput.value = items.apiBase as string;
+  apiKeyInput.value = items.apiKey as string;
+});
 
 saveSettingsBtn.addEventListener("click", () => {
-  chrome.storage.sync.set({
-    apiBase: apiBaseInput.value,
-    apiKey: apiKeyInput.value,
-    r2Endpoint: r2EndpointInput.value,
-    r2Bucket: r2BucketInput.value,
-    r2KeyId: r2KeyIdInput.value,
-    r2Secret: r2SecretInput.value,
-    r2PublicUrl: r2PublicUrlInput.value,
-  });
+  chrome.storage.sync.set({ apiBase: apiBaseInput.value, apiKey: apiKeyInput.value });
   setStatus("설정 저장됨", "success");
   setTimeout(() => setStatus("현재 페이지를 저장합니다", "idle"), 1500);
 });
@@ -93,7 +64,7 @@ saveBtn.addEventListener("click", async () => {
 
     setStatus("업로드 중...", "saving");
 
-    // Step 2: upload via background service worker (R2 if configured, else web server)
+    // Step 2: upload via background service worker (R2 if baked config, else web server)
     chrome.runtime.sendMessage(captureMsg, (uploadMsg: Message) => {
       setLoading(false);
       if (chrome.runtime.lastError || uploadMsg.type === "UPLOAD_ERROR") {

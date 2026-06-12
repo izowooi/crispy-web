@@ -53,7 +53,12 @@ hero-showcase/firebase-debug.log
 /.playwright-mcp
 /.plans
 
+# page-share-ext build-time secrets
+/page-share-ext/config.local.json
+
 # place-keep/my-places
 /place-keep/my-places/node_modules
 /place-keep/my-places/.next
 /place-keep/my-places/.claude
+/mojipop/.next
+/mojipop/node_modules

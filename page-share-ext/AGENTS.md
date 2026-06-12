@@ -50,17 +50,38 @@ popup.ts  ◀──[UPLOAD_DONE share_url]────────
 
 ### R2 직접 업로드 (권장 — 서버 불필요)
 
-팝업의 "R2 직접 업로드 설정" 섹션에서 5개 값 입력 후 "설정 저장":
+R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없이 동작합니다.
 
-| 필드 | 설명 | 예시 |
-|------|------|------|
-| Endpoint | R2 API 엔드포인트 | `https://ACCOUNT.r2.cloudflarestorage.com` |
-| Bucket | 버킷 이름 | `page-share` |
-| Key ID | R2 액세스 키 ID | Cloudflare Dashboard에서 발급 |
-| Secret | R2 액세스 키 시크릿 | Cloudflare Dashboard에서 발급 |
-| Public URL | 버킷 공개 URL 베이스 | `https://pub-xxx.r2.dev` |
+**설정 방법:**
 
-5개 값이 모두 있으면 R2 모드로 동작. 하나라도 비어있으면 서버 HTML 업로드 fallback.
+1. `config.local.example.json`을 복사해 `config.local.json` 생성 (gitignored):
+   ```bash
+   cp config.local.example.json config.local.json
+   ```
+
+2. `config.local.json`에 실제 값 입력:
+   ```json
+   {
+     "r2Endpoint": "https://<ACCOUNT_ID>.r2.cloudflarestorage.com",
+     "r2Bucket": "page-share",
+     "r2KeyId": "<R2 Access Key ID>",
+     "r2Secret": "<R2 Secret Access Key>",
+     "r2PublicUrl": "https://pub-<xxx>.r2.dev"
+   }
+   ```
+
+3. 빌드 후 Chrome에 로드:
+   ```bash
+   npm run build
+   ```
+
+5개 값이 모두 있으면 R2 모드로 동작. `config.local.json`이 없거나 빈 값이 있으면 서버 HTML 업로드 fallback.
+
+**Cloudflare Dashboard에서 값 찾는 곳:**
+- ACCOUNT_ID: 우측 사이드바 "Account ID" 또는 R2 Overview URL
+- Bucket 이름: R2 버킷 목록
+- Key ID / Secret: R2 → "Manage R2 API Tokens" → "Create API Token"
+- Public URL: R2 Bucket → Settings → Public Access → R2.dev subdomain URL
 
 **보안 주의:**
 - R2 Key ID / Secret은 `chrome.storage.sync`에 저장됩니다. 본인 계정에서 발급한 값만 사용하세요.
