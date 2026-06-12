@@ -152,12 +152,36 @@ npm run test    # vitest run (jsdom 환경)
 **R2 업로드 시 sanitize 없음**: HTML은 콘텐츠 스크립트의 `removeScripts()`로만 처리됩니다.
 서버 업로드(legacy) 시에는 서버 `sanitizeHtml()`이 추가로 적용됩니다.
 
+## Content Script 주입 방식
+
+익스텐션 로드 전에 이미 열려있던 탭에는 `content_scripts` 선언으로는 content script가 자동 주입되지 않는다.
+`popup.ts`에서 `chrome.scripting.executeScript`로 캡처 직전 명시적으로 주입한다.
+
+```typescript
+// popup.ts — sendMessage 직전에 실행
+await chrome.scripting.executeScript({
+  target: { tabId: tab.id },
+  files: ["content/index.js"],
+});
+```
+
+`content/index.ts` 최하단에서 `window.__pageShareInjected` 플래그로 이중 주입 시 리스너 중복 등록을 방지한다.
+
+## 에러 로그 확인 위치
+
+| 컴포넌트 | 방법 |
+|---|---|
+| content script | 저장할 페이지에서 F12 → Console |
+| background service worker | `chrome://extensions/` → 익스텐션의 **"service worker"** 링크 클릭 |
+| popup | 팝업 위에서 우클릭 → 검사(Inspect) |
+
 ## 주의 사항
 
 - **content script**는 페이지 컨텍스트에서 실행되므로 `console.log`가 해당 페이지의 DevTools에 출력됩니다.
 - **service worker** (`background/index.ts`)는 비활성 시 종료됩니다. 긴 업로드는 `chrome.tabs.onUpdated` 등으로 유지 필요.
 - 외부 CSS가 CORS를 거부하면 fetch는 실패하지만 `<link href="절대URL">` 태그로 변환되어 보관됩니다. 오프라인 아카이브 목적이라면 MV3 background에서 fetch하는 구조로 개선 가능.
-- 팝업에서 API URL을 `page-share` 웹 앱 주소로 변경해야 합니다.
+- R2 모드에서 반환하는 공유 URL은 `https://pub-xxx.r2.dev/archive/{uuid}.html` 형식의 R2 public URL입니다. 웹앱 서버가 없어도 접근 가능합니다.
+- R2 object key는 `archive/{uuid}.html` 형식입니다 (`archive/` 접두어 포함).
 
 ## R2 액세스 키 발급 방법
 
