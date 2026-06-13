@@ -26,7 +26,7 @@ export default function ArchiveRowActions({ id, isPrivate }: Props) {
         onClick={handleTogglePrivate}
         disabled={pending}
         title={isPrivate ? "공개로 변경" : "비공개로 변경"}
-        className="rounded px-2 py-1 text-xs transition-colors hover:bg-gray-800 disabled:opacity-40"
+        className="rounded px-2 py-1 text-xs transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
       >
         {isPrivate ? "🔒" : "🌐"}
       </button>
@@ -34,7 +34,7 @@ export default function ArchiveRowActions({ id, isPrivate }: Props) {
         onClick={handleDelete}
         disabled={pending}
         title="삭제"
-        className="rounded px-2 py-1 text-xs text-red-500 transition-colors hover:bg-gray-800 hover:text-red-400 disabled:opacity-40"
+        className="rounded px-2 py-1 text-xs text-red-600 transition-colors hover:bg-gray-100 hover:text-red-700 dark:text-red-500 dark:hover:bg-gray-800 dark:hover:text-red-400 disabled:opacity-40"
       >
         삭제
       </button>
