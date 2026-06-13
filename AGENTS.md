@@ -49,6 +49,35 @@
 - UI는 Tailwind utility와 기존 컴포넌트 스타일을 우선합니다. 새 디자인 시스템을 만들기보다 앱 안의 버튼, 카드, 탭, 폼, 토큰을 재사용합니다.
 - 모바일 화면을 중요하게 봅니다. sticky action, 큰 터치 영역, 텍스트 줄바꿈, 이미지/비디오 비율, loading/error/empty 상태를 확인합니다.
 
+## UI 표준
+
+### 라이트/다크 모드 (필수)
+
+새 웹앱을 만들거나 기존 앱에 UI를 추가할 때는 라이트/다크 모드를 기본으로 포함합니다.
+
+- **기본값: 라이트.** 사용자가 명시적으로 다크 우선이나 시스템 따름을 요청하지 않는 한 라이트가 기본.
+- **저장소: localStorage** (`theme` 키, `"light"` 또는 `"dark"`).
+- **FOUC 방지**: `layout.tsx`의 `<head>`에 인라인 `<script>`를 넣어 첫 렌더 전에 `dark` 클래스를 적용.
+- **Tailwind v4**: `globals.css`에 `@variant dark (&:where(.dark, .dark *));` 선언.
+- **Tailwind v3**: `tailwind.config`에 `darkMode: 'class'` 설정.
+- **토글 컴포넌트**: `"use client"` 컴포넌트로 `document.documentElement.classList.toggle('dark')` + localStorage 저장.
+- 기존 앱에 다크 모드가 없으면 추가를 제안하되, 명시적 요청 없이 단독으로 수정하지는 않는다.
+
+### 색상 토큰 패턴 (Tailwind v4 기준)
+
+| 역할 | 라이트 | 다크 |
+|------|--------|------|
+| 배경 | `bg-white` | `dark:bg-gray-950` |
+| 본문 텍스트 | `text-gray-900` | `dark:text-gray-100` |
+| 보조 텍스트 | `text-gray-500` | `dark:text-gray-400` |
+| 테두리 | `border-gray-200` | `dark:border-gray-800` |
+| 헤더 배경 | (투명/white) | — |
+| 테이블 헤더 | `bg-gray-50` | `dark:bg-gray-900` |
+| 호버 배경 | `hover:bg-gray-100` | `dark:hover:bg-gray-800` |
+| 링크 | `text-blue-600` | `dark:text-blue-400` |
+
+앱별 컬러 팔레트가 있으면 그쪽을 우선합니다.
+
 ## Cloudflare, Edge, 배포
 
 - 많은 앱이 Cloudflare Pages 또는 Workers Edge Runtime에 배포됩니다.
