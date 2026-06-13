@@ -2,15 +2,15 @@
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🚀_서비스-pageshare.zowoo.uk-6366f1?style=for-the-badge)](https://pageshare.zowoo.uk)
+[![Live Demo](https://img.shields.io/badge/🚀_서비스-pagekeep.pages.dev-6366f1?style=for-the-badge)](https://pagekeep.pages.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-R2-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com/)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages_+_R2-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com/)
 
 **Chrome 익스텐션으로 캡처한 웹 페이지를 R2에 보관하고 언제 어디서든 공유하세요** ✨
 
-[🎯 주요 기능](#-주요-기능) | [🎮 사용 방법](#-사용-방법) | [💻 로컬 실행](#-로컬에서-실행하기) | [🏗️ 기술 스택](#-기술-스택)
+[🎯 주요 기능](#-주요-기능) | [🎮 사용 방법](#-사용-방법) | [💻 로컬 실행](#-로컬에서-실행하기) | [🚀 배포하기](#-배포하기-cloudflare-pages)
 
 > 🇺🇸 [English README](./README_EN.md)
 
@@ -23,7 +23,7 @@
 **Page Share**는 Chrome 익스텐션([page-share-ext](../page-share-ext/))과 함께 동작하는 웹 아카이브 뷰어입니다.  
 익스텐션이 캡처한 페이지 HTML을 **Cloudflare R2**에 직접 저장하고, 이 웹앱은 메타데이터(제목·원본 URL·저장 위치)를 Supabase DB에 기록합니다.
 
-Mac mini에서 로컬 서버를 돌리고 Cloudflare Tunnel로 외부에 공개하는 구조라, 비용 없이 자신만의 개인 아카이브 서비스를 운영할 수 있습니다.
+`@cloudflare/next-on-pages`로 Cloudflare Pages에 배포하여 서버리스 엣지 환경에서 운영합니다.
 
 ### ✨ 주요 기능
 
@@ -85,7 +85,7 @@ graph TD
 | Styling | Tailwind CSS v4 | 유틸리티 CSS |
 | Database | Supabase (PostgreSQL) | 아카이브 메타데이터 저장 |
 | Storage | Cloudflare R2 | HTML 파일 저장 및 CDN 서빙 |
-| Infra | Cloudflare Tunnel | Mac mini 로컬 서버 외부 노출 |
+| Deploy | Cloudflare Pages (Edge Runtime) | `@cloudflare/next-on-pages` |
 | Testing | Vitest + jsdom | 단위 테스트 |
 
 </div>
@@ -101,23 +101,21 @@ graph LR
 
     subgraph 인프라
         R2[☁️ Cloudflare R2\nHTML 파일 저장]
-        CF[🌐 Cloudflare Tunnel\npageshare.zowoo.uk]
+        CF[🌐 Cloudflare Pages\npagekeep.pages.dev]
     end
 
-    subgraph "Mac mini (로컬)"
-        WEB["📄 Next.js 웹앱\n:52741"]
+    subgraph 외부 서비스
         DB[(🗄️ Supabase\nps_archives)]
     end
 
     EXT -->|PUT HTML| R2
     EXT -->|POST metadata| CF
-    CF --> WEB
-    WEB <-->|CRUD| DB
+    CF <-->|CRUD| DB
     USER -->|GET| CF
     USER -->|HTML| R2
 
     style R2 fill:#F38020,color:#fff
-    style WEB fill:#6366f1,color:#fff
+    style CF fill:#6366f1,color:#fff
     style DB fill:#3FCF8E,color:#fff
 ```
 
@@ -129,29 +127,29 @@ graph LR
 page-share/
 ├── 📄 src/
 │   ├── app/
-│   │   ├── layout.tsx              # 헤더 + AdminBar
-│   │   ├── page.tsx                # 아카이브 목록
+│   │   ├── layout.tsx              # 헤더 + AdminBarWrapper (클라이언트)
+│   │   ├── page.tsx                # 아카이브 목록 (edge runtime)
+│   │   ├── not-found.tsx           # 404 페이지 (정적)
 │   │   ├── actions.ts              # Server Actions (deleteArchive, setPrivate)
-│   │   ├── archive/[id]/page.tsx   # storage_path 조회 → redirect (R2 or /raw)
+│   │   ├── archive/[id]/page.tsx   # storage_path 조회 → R2 URL로 redirect
 │   │   └── api/
-│   │       ├── admin/              # 로그인/로그아웃 (httpOnly 쿠키)
-│   │       └── archives/           # REST API (GET 목록, POST 업로드)
+│   │       ├── admin/              # 로그인/로그아웃/상태 (edge)
+│   │       └── archives/           # REST API (GET 목록, POST 업로드, edge)
 │   │           └── [id]/
-│   │               ├── route.ts    # GET/DELETE/PATCH
-│   │               └── raw/        # 로컬 저장 HTML 서빙 (legacy)
+│   │               └── route.ts    # GET/DELETE/PATCH (edge)
 │   ├── components/
-│   │   ├── admin-bar.tsx           # 관리자 로그인 UI
+│   │   ├── admin-bar.tsx           # 관리자 로그인 UI (클라이언트)
+│   │   ├── admin-bar-wrapper.tsx   # 관리자 상태 fetch 래퍼 (클라이언트)
 │   │   └── archive-row-actions.tsx # 삭제·비공개 토글
 │   ├── lib/
 │   │   ├── admin.ts                # 세션 검증
 │   │   ├── apikey.ts               # API Key 검증
-│   │   ├── sanitize.ts             # HTML 정제 (legacy 업로드)
 │   │   ├── supabase.ts             # DB 클라이언트
 │   │   └── storage/
-│   │       ├── types.ts            # StorageAdapter 인터페이스
-│   │       └── local-adapter.ts   # 로컬 파일 저장 (legacy)
+│   │       └── types.ts            # StorageAdapter 인터페이스
 │   └── types/archive.ts            # Archive 타입 정의
 ├── 📋 .env.example                 # 환경 변수 예시
+├── ⚙️ wrangler.jsonc               # Cloudflare Pages 설정
 └── 📦 package.json
 ```
 
@@ -179,7 +177,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://<PROJECT>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>     # 서버 전용 — NEXT_PUBLIC_ 금지
 
-# 공유 URL 생성 기준
+# 공유 URL 생성 기준 (로컬 dev)
 NEXT_PUBLIC_BASE_URL=http://localhost:52741
 
 # 관리자 비밀번호 (서버 전용)
@@ -224,29 +222,50 @@ npm run dev                  # http://localhost:52741
 | 명령어 | 설명 |
 |---|---|
 | `npm run dev` | 개발 서버 실행 (포트 52741) |
-| `npm run build` | 프로덕션 빌드 |
-| `npm run start` | 프로덕션 서버 실행 |
+| `npm run build` | Next.js 프로덕션 빌드 |
+| `npm run pages:build` | Cloudflare Pages 빌드 (`@cloudflare/next-on-pages`) |
+| `npm run preview` | 로컬 Cloudflare Pages 미리보기 (`wrangler pages dev`) |
 | `npm run test` | Vitest 단위 테스트 |
 | `npm run lint` | ESLint 검사 |
 
 ---
 
-## 🚀 배포하기 (Cloudflare Tunnel)
+## 🚀 배포하기 (Cloudflare Pages)
 
-Mac mini에서 로컬 서버를 돌리고 Cloudflare Tunnel로 외부에 공개합니다.
+### 빌드 설정 (Cloudflare Pages Dashboard)
+
+| 항목 | 값 |
+|---|---|
+| Framework preset | **None** |
+| Build command | `npm run pages:build` |
+| Build output directory | `.vercel/output/static` |
+| Root directory | `page-share` |
+
+> Cloudflare가 `npm install`을 자동 실행하므로 빌드 명령에 포함하지 않아도 됩니다.
+
+### 환경 변수 (Dashboard → Settings → Environment variables)
+
+| 변수명 | 비고 |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | 🔒 Encrypted, 서버 전용 |
+| `NEXT_PUBLIC_BASE_URL` | `https://pagekeep.pages.dev` |
+| `ADMIN_PASSWORD` | 🔒 Encrypted, 서버 전용 |
+| `API_KEY` | 🔒 Encrypted, 서버 전용 |
+
+> ⚠️ **중요**: `NEXT_PUBLIC_*` 변수는 빌드 시 인라인되므로 빌드 전에 반드시 설정해야 합니다.
+
+### nodejs_compat 활성화
+
+`wrangler.jsonc`에 이미 설정되어 있지만, Cloudflare Pages Dashboard에서도 확인:  
+**Settings → Functions → Compatibility flags** → Production 및 Preview 모두 `nodejs_compat` 추가
+
+### 수동 배포
 
 ```bash
-# 1. 로컬 서버 실행
-npm run dev
-
-# 2. Cloudflare Tunnel 설정
-# Cloudflare Zero Trust → Networks → Tunnels → Create Tunnel
-# Public Hostname: pageshare.zowoo.uk → localhost:52741
-```
-
-`.env.local`에서 URL 변경:
-```env
-NEXT_PUBLIC_BASE_URL=https://pageshare.zowoo.uk
+npm run pages:build
+npx wrangler pages deploy .vercel/output/static --project-name pagekeep
 ```
 
 ---
@@ -254,15 +273,6 @@ NEXT_PUBLIC_BASE_URL=https://pageshare.zowoo.uk
 ## 🔗 관련 프로젝트
 
 - **[page-share-ext](../page-share-ext/)** — 이 웹앱과 함께 사용하는 Chrome 익스텐션. R2 직접 업로드 + 자동 캡처.
-
----
-
-## 🎯 향후 개선 사항
-
-- [ ] Cloudflare Pages 배포 지원 (R2Adapter 구현)
-- [ ] 아카이브 검색 기능
-- [ ] 태그 / 폴더 분류
-- [ ] 공유 링크 만료일 설정
 
 ---
 
@@ -284,8 +294,8 @@ MIT License
 
 **⭐ 이 프로젝트가 마음에 드셨다면 Star를 눌러주세요! ⭐**
 
-Made with ❤️ using Next.js + Cloudflare R2 + Supabase
+Made with ❤️ using Next.js + Cloudflare Pages + R2 + Supabase
 
-[📄 지금 사용하기](https://pageshare.zowoo.uk)
+[📄 지금 사용하기](https://pagekeep.pages.dev)
 
 </div>

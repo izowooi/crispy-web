@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
-import { LocalAdapter } from "@/lib/storage/local-adapter";
-import { sanitizeHtml } from "@/lib/sanitize";
 import { isAdminRequest } from "@/lib/admin";
 import { isValidApiKey, extractApiKey } from "@/lib/apikey";
 
-// Node.js runtime: LocalAdapter needs filesystem access.
-// Switch to edge + R2Adapter for Cloudflare Pages deployment.
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function GET(request: Request) {
   const admin = isAdminRequest(request);
@@ -44,7 +40,6 @@ export async function POST(request: Request) {
   let body: {
     title?: string;
     original_url?: string;
-    html?: string;
     storage_path?: string;
     file_size?: number;
   };
@@ -54,39 +49,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { title, original_url, html, storage_path, file_size } = body;
+  const { title, original_url, storage_path, file_size } = body;
 
   if (!title || !original_url) {
     return NextResponse.json({ error: "title and original_url are required" }, { status: 400 });
   }
-  if (!html && !storage_path) {
-    return NextResponse.json({ error: "either html or storage_path is required" }, { status: 400 });
+  if (!storage_path) {
+    return NextResponse.json({ error: "storage_path is required" }, { status: 400 });
+  }
+  if (!storage_path.startsWith("https://")) {
+    return NextResponse.json({ error: "storage_path must be an absolute https URL" }, { status: 400 });
   }
 
   const id = crypto.randomUUID();
   const supabase = createServerClient();
-  let storagePath: string;
-  let fileSize: number;
-
-  if (storage_path) {
-    // R2 direct upload mode: HTML is already in R2; just record the public URL
-    if (!storage_path.startsWith("https://")) {
-      return NextResponse.json({ error: "storage_path must be an absolute https URL" }, { status: 400 });
-    }
-    storagePath = storage_path;
-    fileSize = file_size ?? 0;
-  } else {
-    // Legacy mode: sanitize HTML and store locally
-    const sanitized = sanitizeHtml(html!);
-    const adapter = new LocalAdapter();
-    const uploaded = await adapter.upload(id, sanitized);
-    storagePath = uploaded.storagePath;
-    fileSize = uploaded.fileSize;
-  }
 
   const { data, error } = await supabase
     .from("ps_archives")
-    .insert({ id, title, original_url, storage_path: storagePath, file_size: fileSize })
+    .insert({ id, title, original_url, storage_path, file_size: file_size ?? 0 })
     .select()
     .single();
 

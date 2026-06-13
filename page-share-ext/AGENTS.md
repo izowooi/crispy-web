@@ -107,12 +107,12 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 { "title": "...", "original_url": "...", "html": "<!DOCTYPE html>..." }
 ```
 
-응답 (공통): `{ "archive": {...}, "share_url": "https://pageshare.zowoo.uk/archive/uuid" }`
+응답 (공통): `{ "archive": {...}, "share_url": "https://pagekeep.pages.dev/archive/uuid" }`
 
 ## 운영 환경 연결
 
-팝업에서 아래 값을 설정 후 "설정 저장":
-- **API URL**: `https://pageshare.zowoo.uk`
+`config.local.json`의 `apiBase`를 운영 URL로 설정 후 `npm run build` 재실행:
+- **apiBase**: `https://pagekeep.pages.dev`
 - **API Key**: 서버의 `API_KEY` 환경변수 값과 동일하게 입력
 
 R2 직접 업로드를 사용하면 서버가 다운돼도 R2 PUT 자체는 성공하지만, DB 기록(POST /api/archives)은 실패합니다. 이 경우 공유 URL을 얻을 수 없습니다.

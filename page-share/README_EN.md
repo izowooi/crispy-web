@@ -2,15 +2,15 @@
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live-pageshare.zowoo.uk-6366f1?style=for-the-badge)](https://pageshare.zowoo.uk)
+[![Live Demo](https://img.shields.io/badge/🚀_Live-pagekeep.pages.dev-6366f1?style=for-the-badge)](https://pagekeep.pages.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-R2-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com/)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Pages_+_R2-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com/)
 
 **Archive web pages from any browser tab — stored directly in Cloudflare R2, accessible forever** ✨
 
-[🎯 Features](#-features) | [🎮 How to Use](#-how-to-use) | [💻 Local Setup](#-local-setup) | [🏗️ Tech Stack](#-tech-stack)
+[🎯 Features](#-about) | [🎮 How to Use](#-how-to-use) | [💻 Local Setup](#-local-setup) | [🚀 Deploy](#-deploying-to-cloudflare-pages)
 
 > 🇰🇷 [한국어 README](./README.md)
 
@@ -23,7 +23,7 @@
 **Page Share** is a web archive viewer that works alongside the [page-share-ext](../page-share-ext/) Chrome extension.  
 The extension captures the current tab's HTML and uploads it **directly to Cloudflare R2**. This web app records the metadata (title, original URL, storage path) in Supabase.
 
-It runs as a local Next.js server on a Mac mini, exposed publicly via Cloudflare Tunnel — a zero-cost personal archive service you fully own.
+Deployed on **Cloudflare Pages** via `@cloudflare/next-on-pages` — fully serverless, zero infrastructure to manage.
 
 ### ✨ Features
 
@@ -85,7 +85,7 @@ graph TD
 | Styling | Tailwind CSS v4 | Utility CSS |
 | Database | Supabase (PostgreSQL) | Archive metadata storage |
 | Storage | Cloudflare R2 | HTML file storage + CDN |
-| Infra | Cloudflare Tunnel | Expose Mac mini local server |
+| Deploy | Cloudflare Pages (Edge Runtime) | `@cloudflare/next-on-pages` |
 | Testing | Vitest + jsdom | Unit tests |
 
 </div>
@@ -101,23 +101,21 @@ graph LR
 
     subgraph Infrastructure
         R2[☁️ Cloudflare R2\nHTML storage]
-        CF[🌐 Cloudflare Tunnel\npageshare.zowoo.uk]
+        CF[🌐 Cloudflare Pages\npagekeep.pages.dev]
     end
 
-    subgraph "Mac mini (local)"
-        WEB["📄 Next.js\n:52741"]
+    subgraph "External Services"
         DB[(🗄️ Supabase\nps_archives)]
     end
 
     EXT -->|PUT HTML| R2
     EXT -->|POST metadata| CF
-    CF --> WEB
-    WEB <-->|CRUD| DB
+    CF <-->|CRUD| DB
     USER -->|GET| CF
     USER -->|HTML| R2
 
     style R2 fill:#F38020,color:#fff
-    style WEB fill:#6366f1,color:#fff
+    style CF fill:#6366f1,color:#fff
     style DB fill:#3FCF8E,color:#fff
 ```
 
@@ -129,29 +127,29 @@ graph LR
 page-share/
 ├── 📄 src/
 │   ├── app/
-│   │   ├── layout.tsx              # Header + AdminBar
-│   │   ├── page.tsx                # Archive list
+│   │   ├── layout.tsx              # Header + AdminBarWrapper (client)
+│   │   ├── page.tsx                # Archive list (edge runtime)
+│   │   ├── not-found.tsx           # 404 page (static)
 │   │   ├── actions.ts              # Server Actions (deleteArchive, setPrivate)
-│   │   ├── archive/[id]/page.tsx   # Fetch storage_path → redirect (R2 or /raw)
+│   │   ├── archive/[id]/page.tsx   # Fetch storage_path → redirect to R2 URL
 │   │   └── api/
-│   │       ├── admin/              # Login/logout (httpOnly cookie)
-│   │       └── archives/           # REST API (GET list, POST upload)
+│   │       ├── admin/              # Login/logout/status (edge)
+│   │       └── archives/           # REST API (GET list, POST upload, edge)
 │   │           └── [id]/
-│   │               ├── route.ts    # GET/DELETE/PATCH
-│   │               └── raw/        # Serve locally-stored HTML (legacy)
+│   │               └── route.ts    # GET/DELETE/PATCH (edge)
 │   ├── components/
-│   │   ├── admin-bar.tsx           # Admin login UI
+│   │   ├── admin-bar.tsx           # Admin login UI (client)
+│   │   ├── admin-bar-wrapper.tsx   # Admin state fetch wrapper (client)
 │   │   └── archive-row-actions.tsx # Delete + private toggle
 │   ├── lib/
 │   │   ├── admin.ts                # Session validation
 │   │   ├── apikey.ts               # API Key validation
-│   │   ├── sanitize.ts             # HTML sanitization (legacy upload)
 │   │   ├── supabase.ts             # DB client
 │   │   └── storage/
-│   │       ├── types.ts            # StorageAdapter interface
-│   │       └── local-adapter.ts    # Local file storage (legacy)
+│   │       └── types.ts            # StorageAdapter interface
 │   └── types/archive.ts            # Archive type definition
 ├── 📋 .env.example                 # Environment variable template
+├── ⚙️ wrangler.jsonc               # Cloudflare Pages config
 └── 📦 package.json
 ```
 
@@ -179,7 +177,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://<PROJECT>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>     # server-side only — never NEXT_PUBLIC_
 
-# Base URL for share links
+# Base URL for share links (local dev)
 NEXT_PUBLIC_BASE_URL=http://localhost:52741
 
 # Admin password (server-side only)
@@ -224,29 +222,50 @@ npm run dev                  # http://localhost:52741
 | Command | Description |
 |---|---|
 | `npm run dev` | Start dev server (port 52741) |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
+| `npm run build` | Next.js production build |
+| `npm run pages:build` | Cloudflare Pages build (`@cloudflare/next-on-pages`) |
+| `npm run preview` | Local Cloudflare Pages preview (`wrangler pages dev`) |
 | `npm run test` | Run Vitest unit tests |
 | `npm run lint` | ESLint check |
 
 ---
 
-## 🚀 Deploying with Cloudflare Tunnel
+## 🚀 Deploying to Cloudflare Pages
 
-Run a local Next.js server and expose it via Cloudflare Tunnel.
+### Build Settings (Cloudflare Pages Dashboard)
+
+| Field | Value |
+|---|---|
+| Framework preset | **None** |
+| Build command | `npm run pages:build` |
+| Build output directory | `.vercel/output/static` |
+| Root directory | `page-share` |
+
+> Cloudflare auto-runs `npm install`, so you don't need to include it in the build command.
+
+### Environment Variables (Dashboard → Settings → Environment variables)
+
+| Variable | Notes |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | 🔒 Encrypted, server-side only |
+| `NEXT_PUBLIC_BASE_URL` | `https://pagekeep.pages.dev` |
+| `ADMIN_PASSWORD` | 🔒 Encrypted, server-side only |
+| `API_KEY` | 🔒 Encrypted, server-side only |
+
+> ⚠️ **Important**: `NEXT_PUBLIC_*` vars are inlined at build time — set them before triggering a build.
+
+### Enable nodejs_compat
+
+Already in `wrangler.jsonc`, but verify in the Dashboard as well:  
+**Settings → Functions → Compatibility flags** → Add `nodejs_compat` to both Production and Preview.
+
+### Manual Deploy
 
 ```bash
-# 1. Start local server
-npm run dev
-
-# 2. Set up Cloudflare Tunnel
-# Cloudflare Zero Trust → Networks → Tunnels → Create Tunnel
-# Public Hostname: pageshare.zowoo.uk → localhost:52741
-```
-
-Update `.env.local`:
-```env
-NEXT_PUBLIC_BASE_URL=https://pageshare.zowoo.uk
+npm run pages:build
+npx wrangler pages deploy .vercel/output/static --project-name pagekeep
 ```
 
 ---
@@ -254,15 +273,6 @@ NEXT_PUBLIC_BASE_URL=https://pageshare.zowoo.uk
 ## 🔗 Related Project
 
 - **[page-share-ext](../page-share-ext/)** — Chrome extension that captures pages and uploads directly to R2.
-
----
-
-## 🎯 Roadmap
-
-- [ ] Cloudflare Pages deployment support (R2Adapter)
-- [ ] Full-text search across archives
-- [ ] Tags and folder organization
-- [ ] Expiring share links
 
 ---
 
@@ -284,8 +294,8 @@ Bug reports and feature requests welcome at [GitHub Issues](https://github.com/i
 
 **⭐ If you find this project useful, please give it a Star! ⭐**
 
-Made with ❤️ using Next.js + Cloudflare R2 + Supabase
+Made with ❤️ using Next.js + Cloudflare Pages + R2 + Supabase
 
-[📄 Try it now](https://pageshare.zowoo.uk)
+[📄 Try it now](https://pagekeep.pages.dev)
 
 </div>

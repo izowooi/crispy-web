@@ -1,13 +1,25 @@
+export const runtime = "edge";
+
 import type { Archive } from "@/types/archive";
 import { isAdminSession } from "@/lib/admin";
+import { createServerClient } from "@/lib/supabase";
 import ArchiveRowActions from "@/components/archive-row-actions";
 
 async function getArchives(admin: boolean): Promise<Archive[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:52741";
-  const res = await fetch(`${baseUrl}/api/archives`, { cache: "no-store" });
-  if (!res.ok) return [];
-  const json = await res.json();
-  return json.archives ?? [];
+  const supabase = createServerClient();
+  let query = supabase
+    .from("ps_archives")
+    .select("id, title, original_url, storage_path, file_size, created_at, is_private, deleted_at")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
+  if (!admin) {
+    query = query.eq("is_private", false);
+  }
+
+  const { data, error } = await query;
+  if (error) return [];
+  return data ?? [];
 }
 
 function formatDate(iso: string) {

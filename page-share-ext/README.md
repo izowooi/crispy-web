@@ -66,7 +66,7 @@ graph TD
 완료 후 공유 URL이 표시됩니다. **복사** 버튼으로 클립보드에 복사하세요.
 
 #### 3️⃣ 아카이브 확인
-웹앱(`pageshare.zowoo.uk`) 목록에서 저장된 페이지를 탐색할 수 있습니다.
+웹앱(`pagekeep.pages.dev`) 목록에서 저장된 페이지를 탐색할 수 있습니다.
 
 ---
 
@@ -96,7 +96,7 @@ cp config.local.example.json config.local.json
 
 ```json
 {
-  "apiBase": "http://localhost:52741",
+  "apiBase": "https://pagekeep.pages.dev",
   "apiKey": "",
   "r2Endpoint": "https://<ACCOUNT_ID>.r2.cloudflarestorage.com",
   "r2Bucket": "page-share",

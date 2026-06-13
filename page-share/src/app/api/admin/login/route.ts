@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { COOKIE_NAME } from "@/lib/admin";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: Request) {
   const adminPassword = process.env.ADMIN_PASSWORD;

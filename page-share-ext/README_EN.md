@@ -96,7 +96,7 @@ Fill `config.local.json` with real values (this file must **never** be committed
 
 ```json
 {
-  "apiBase": "http://localhost:52741",
+  "apiBase": "https://pagekeep.pages.dev",
   "apiKey": "",
   "r2Endpoint": "https://<ACCOUNT_ID>.r2.cloudflarestorage.com",
   "r2Bucket": "page-share",
