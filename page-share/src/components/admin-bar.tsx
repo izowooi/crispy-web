@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-export default function AdminBar({ isAdmin }: { isAdmin: boolean }) {
+export default function AdminBar({ isAdmin, onAuthChange }: { isAdmin: boolean; onAuthChange: () => Promise<void> }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -21,6 +21,7 @@ export default function AdminBar({ isAdmin }: { isAdmin: boolean }) {
     if (res.ok) {
       setOpen(false);
       setPassword("");
+      await onAuthChange();
       startTransition(() => router.refresh());
     } else {
       setError("비밀번호가 틀렸습니다.");
@@ -29,6 +30,7 @@ export default function AdminBar({ isAdmin }: { isAdmin: boolean }) {
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
+    await onAuthChange();
     startTransition(() => router.refresh());
   }
 
