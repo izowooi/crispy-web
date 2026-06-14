@@ -4,6 +4,7 @@ import type { Archive } from "@/types/archive";
 import { isAdminSession } from "@/lib/admin";
 import { createServerClient } from "@/lib/supabase";
 import ArchiveRowActions from "@/components/archive-row-actions";
+import AdminUpload from "@/components/admin-upload";
 
 async function getArchives(admin: boolean): Promise<Archive[]> {
   const supabase = createServerClient();
@@ -42,12 +43,18 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">아카이브 목록</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           총 {archives.length}개 · 크롬 익스텐션으로 페이지를 저장하세요
         </p>
       </div>
+
+      {admin && (
+        <div className="mb-6">
+          <AdminUpload />
+        </div>
+      )}
 
       {archives.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 py-16 text-center text-gray-400 dark:border-gray-700 dark:text-gray-500">
