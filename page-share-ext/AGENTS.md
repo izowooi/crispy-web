@@ -5,17 +5,20 @@
 
 ## 앱 개요
 
-Manifest V3 Chrome/Opera 익스텐션.
+Manifest V3 익스텐션. **Chrome · Edge · Opera · Safari** 4개 브라우저를 하나의 `src/`로 지원합니다.
 사용자가 팝업에서 "Save Page"를 클릭하면 현재 페이지를 SingleFile 스타일로 캡처해
 Cloudflare R2에 직접 업로드하거나(R2 설정 시), `page-share` 웹 앱 API에 전달합니다.
 
+크로스 브라우저 상세는 `docs/CROSS_BROWSER.md`, Safari 포팅은 `docs/SAFARI.md`를 참조합니다.
+
 ## 기술 스택
 
-- Chrome Extension Manifest V3
+- Manifest V3 (Chrome 90+ / Edge 90+ / Opera 76+ / Safari 16.4+)
 - TypeScript + Webpack 5 (`ts-loader`)
 - `aws4fetch` — SigV4 서명 (R2 업로드용, ~15KB 번들 추가)
 - Vitest + jsdom (테스트)
-- 빌드 출력: `dist/` (gitignored)
+- 빌드 출력: `dist/` (gitignored). Chromium 3종이 동일 `dist/`를 공유하고, Safari `safari/` Xcode 래퍼는 reference mode로 `dist/`를 가리킵니다.
+- 신규 dependency 없음. 크로스 브라우저 메시징은 `webextension-polyfill` 대신 dep-free shim(`src/shared/messaging.ts`)으로 처리 — 판단 근거는 `docs/CROSS_BROWSER.md`.
 
 ## 아키텍처
 
@@ -39,11 +42,12 @@ popup.ts  ◀──[UPLOAD_DONE share_url]────────
 
 | 파일 | 역할 |
 |------|------|
-| `src/popup/popup.ts` | UI 제어, 메시지 오케스트레이션 |
+| `src/popup/popup.ts` | UI 제어, 메시지 오케스트레이션 (promise form `sendMessage` + try/catch) |
 | `src/content/index.ts` | DOM cloneNode → 이미지 inline → CSS inline → script 제거 |
 | `src/background/index.ts` | R2 업로드 시도 후 fallback → 서버 HTML 업로드 |
 | `src/lib/r2-upload.ts` | `aws4fetch` 기반 SigV4 서명 + R2 PUT |
-| `src/shared/config.ts` | `chrome.storage.sync`에서 API/R2 설정 로드 |
+| `src/shared/messaging.ts` | 크로스 브라우저 메시징 shim (`onRequest`/`sendRequest`/`sendTabRequest`). Chromium은 `return true`+sendResponse, Safari/Firefox는 Promise 반환을 `browser` 전역 feature-detection으로 분기 |
+| `src/shared/config.ts` | webpack `DefinePlugin` 빌드 상수에서 API/R2 설정 로드 (`chrome.storage` 미사용) |
 | `src/shared/types.ts` | Message 유니언 타입 |
 
 ## 업로드 모드
@@ -84,7 +88,7 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 - Public URL: R2 Bucket → Settings → Public Access → R2.dev subdomain URL
 
 **보안 주의:**
-- R2 Key ID / Secret은 `chrome.storage.sync`에 저장됩니다. 본인 계정에서 발급한 값만 사용하세요.
+- R2 Key ID / Secret은 빌드 시 `DefinePlugin`으로 **번들 JS에 baked**됩니다(`chrome.storage` 미사용). 본인 계정에서 발급한 값만 사용하고, R2 시크릿이 baked된 `dist/`·zip을 공개 배포하지 마세요. 공개 스토어 제출은 R2 필드를 비운 서버 모드 빌드로 합니다.
 - R2에 업로드된 HTML은 Public URL로 누구나 접근 가능합니다(UUID로만 보호). 비공개 플래그는 목록 표시만 제어합니다.
 
 ### 서버 업로드 (R2 미설정 시 fallback)
@@ -94,8 +98,8 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 
 ## API 연동
 
-- 기본 API URL: `http://localhost:52741` (팝업 하단에서 변경 가능)
-- `chrome.storage.sync` 키: `apiBase`, `apiKey`, `r2Endpoint`, `r2Bucket`, `r2KeyId`, `r2Secret`, `r2PublicUrl`
+- 기본 API URL: `http://localhost:52741` (`config.local.json`의 `apiBase`로 변경 후 재빌드)
+- 설정 출처: `config.local.json` (gitignored) → webpack `DefinePlugin` 빌드 상수. 키: `apiBase`, `apiKey`, `r2Endpoint`, `r2Bucket`, `r2KeyId`, `r2Secret`, `r2PublicUrl`
 
 **R2 모드 POST body** (`storage_path` 있음, `html` 없음):
 ```json
@@ -125,11 +129,20 @@ npm install
 npm run build   # dist/ 생성
 ```
 
-Chrome에서 익스텐션 설치:
-1. `chrome://extensions/` → 개발자 모드 활성화
+Chromium 3종(Chrome/Edge/Opera)에 설치:
+1. `chrome://extensions/` · `edge://extensions/` · `opera://extensions/` → 개발자 모드 활성화 (Opera는 먼저 켜야 로드 버튼 노출)
 2. "압축 해제된 확장 프로그램 로드" → `dist/` 폴더 선택
 
-Opera도 동일한 방법으로 설치 가능 (`opera://extensions/`).
+스토어 제출 zip: `npm run package` → `packages/page-share-ext-v<version>.zip` (Chrome/Edge/Opera 공통, `*.map` 제외).
+Safari: `npm run safari:init` → `safari/` Xcode 래퍼 스캐폴딩. 이후 절차는 `docs/SAFARI.md`.
+
+## 크로스 브라우저 / Safari
+
+- **Chrome/Edge/Opera**: `chrome.*`가 네이티브로 동작해 코드 변경 불필요. 실효 최소 버전 Chrome 90 / Edge 90 / Opera 76 (`await chrome.scripting.executeScript` promise form이 binding floor).
+- **메시징 shim** (`src/shared/messaging.ts`): Chromium은 `onMessage`에서 `return true`+`sendResponse`가 필수이고 Safari/Firefox는 Promise 반환이 필요한데 둘이 상반됨. `browser` 전역 유무로 엔진을 감지해 각자의 네이티브 idiom을 선택한다. Chromium 경로는 기존과 동일. `webextension-polyfill`은 도입하지 않음(Chromium엔 불필요, Safari에선 passthrough라 문제를 못 풂).
+- **`storage` 권한 제거**: 설정이 빌드 시 baked되어 `chrome.storage` 미사용 → 매니페스트에서 제거(스토어 심사 시 불필요 권한 지적 회피).
+- **Safari R2/CORS (수동 작업)**: Safari는 Chromium과 달리 extension fetch에 CORS를 면제하지 않으므로 R2 버킷 CORS 정책이 필요하다(`AllowedOrigins:["*"]`, `Authorization` 헤더 명시). 막히면 서버 업로드 fallback으로 우회. 상세 JSON은 `docs/SAFARI.md`.
+- **스토어 심사**: `<all_urls>` + `scripting`은 강화 심사 대상. Chrome/Edge는 개인정보 처리방침 필수. 정당화 근거와 선택적 단순화 제안은 `docs/CROSS_BROWSER.md`.
 
 ## 테스트
 

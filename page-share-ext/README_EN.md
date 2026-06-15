@@ -19,7 +19,8 @@
 
 ## 🎯 About
 
-**Page Share Extension** is a Chrome/Opera Manifest V3 extension that works with the [page-share](../page-share/) web app.  
+**Page Share Extension** is a Manifest V3 extension that works with the [page-share](../page-share/) web app.  
+It supports **Chrome · Edge · Opera · Safari** from a single `src/` (cross-browser details → [docs/CROSS_BROWSER.md](./docs/CROSS_BROWSER.md), Safari port → [docs/SAFARI.md](./docs/SAFARI.md)).  
 Open the popup on any page, click **💾 Save Page**, and it:
 
 1. Captures the current tab's DOM, CSS, and images into a single self-contained HTML (scripts stripped)
@@ -121,13 +122,31 @@ Fill `config.local.json` with real values (this file must **never** be committed
 npm run build   # generates dist/
 ```
 
-### Step 4: Load in Chrome
+### Step 4: Load in a browser
 
-1. Go to `chrome://extensions/`
-2. Enable **Developer mode** (top-right toggle)
+**Chrome / Edge / Opera** (load the same `dist/` as unpacked):
+
+1. Go to `chrome://extensions/` · `edge://extensions/` · `opera://extensions/`
+2. Enable **Developer mode** (Opera: enable it first or the load button won't appear)
 3. Click **"Load unpacked"** → select the `dist/` folder
 
-> Opera works the same way: `opera://extensions/`
+Per-browser steps and minimum versions (Chrome 90 / Edge 90 / Opera 76) → [docs/CROSS_BROWSER.md](./docs/CROSS_BROWSER.md).
+
+**Safari** (macOS, Xcode wrapper):
+
+```bash
+npm run safari:init   # scaffold the Xcode project under safari/ (references dist/)
+```
+
+Then build in Xcode and enable "Allow unsigned extensions" → [docs/SAFARI.md](./docs/SAFARI.md). No paid Apple Developer account required.
+
+### Store-submission zip
+
+```bash
+npm run package   # → packages/page-share-ext-v<version>.zip (same file for Chrome/Edge/Opera)
+```
+
+`*.map` is excluded (protects baked secrets); never upload an R2-credential build to a public store. Permission review notes → [docs/CROSS_BROWSER.md](./docs/CROSS_BROWSER.md).
 
 ---
 
@@ -188,15 +207,20 @@ page-share-ext/
 │   │   └── r2-upload.ts     # aws4fetch-based R2 uploader
 │   ├── shared/
 │   │   ├── config.ts        # DefinePlugin constant getters
+│   │   ├── messaging.ts     # Cross-browser messaging shim (Chromium/Safari idioms)
 │   │   └── types.ts         # Message union types
 │   └── __tests__/
 │       ├── sanitize.test.ts  # HTML sanitization tests
+│       ├── messaging.test.ts # Messaging shim branch tests (5 cases)
 │       └── r2-upload.test.ts # R2 upload unit tests (9 cases)
-├── 📋 manifest.json          # Chrome Extension MV3 manifest
+├── 📋 manifest.json          # MV3 manifest (Chrome/Edge/Opera/Safari)
 ├── 🔑 config.local.example.json  # Credential template (committed)
 ├── 🔒 config.local.json      # Real credentials (gitignored — never commit)
 ├── ⚙️ webpack.config.js      # DefinePlugin + ts-loader setup
-└── 📦 package.json
+├── 📦 package.json
+├── 🗂️ scripts/               # package.mjs (store zip), safari-init.mjs (Safari scaffold)
+├── 🍎 safari/                # Safari Web Extension Xcode wrapper (references dist/)
+└── 📚 docs/                  # CROSS_BROWSER.md, SAFARI.md
 ```
 
 ---
@@ -243,6 +267,7 @@ npm run test    # vitest (jsdom environment)
 ```
 
 - `src/__tests__/sanitize.test.ts` — script and event-handler removal from DOM
+- `src/__tests__/messaging.test.ts` — messaging shim branches (Chromium return-true vs Safari/FF promise-return) (5 tests)
 - `src/__tests__/r2-upload.test.ts` — `isR2Configured` and `uploadHtmlToR2` (9 tests)
   - Uses `customFetch` parameter to inject mock fetch — no real network calls
 
@@ -253,7 +278,9 @@ npm run test    # vitest (jsdom environment)
 | `npm run build` | webpack build → generates `dist/` |
 | `npm run watch` | Watch mode (auto-rebuild during development) |
 | `npm run test` | Run Vitest unit tests |
-| `npm run lint` | ESLint check |
+| `npm run typecheck` | `tsc --noEmit` type check |
+| `npm run package` | Build, then create store-submission zip → `packages/` |
+| `npm run safari:init` | Scaffold the Safari Web Extension Xcode project → `safari/` |
 
 ---
 

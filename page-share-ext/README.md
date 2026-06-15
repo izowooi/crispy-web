@@ -19,7 +19,8 @@
 
 ## 🎯 프로젝트 소개
 
-**Page Share Extension**은 [page-share](../page-share/) 웹앱과 함께 동작하는 Chrome/Opera Manifest V3 익스텐션입니다.  
+**Page Share Extension**은 [page-share](../page-share/) 웹앱과 함께 동작하는 Manifest V3 익스텐션입니다.  
+**Chrome · Edge · Opera · Safari** 4개 브라우저를 하나의 `src/`로 지원합니다(크로스 브라우저 상세 → [docs/CROSS_BROWSER.md](./docs/CROSS_BROWSER.md), Safari 포팅 → [docs/SAFARI.md](./docs/SAFARI.md)).  
 저장할 페이지에서 팝업을 열고 **💾 Save Page**를 클릭하면:
 
 1. 현재 탭의 DOM, CSS, 이미지를 단일 HTML로 캡처 (스크립트 제거)
@@ -121,13 +122,31 @@ cp config.local.example.json config.local.json
 npm run build   # dist/ 폴더 생성
 ```
 
-### 4단계: Chrome에 로드
+### 4단계: 브라우저에 로드
 
-1. `chrome://extensions/` 접속
-2. 우측 상단 **개발자 모드** 활성화
+**Chrome / Edge / Opera** (동일한 `dist/`를 unpacked로 로드):
+
+1. `chrome://extensions/` · `edge://extensions/` · `opera://extensions/` 접속
+2. **개발자 모드** 활성화 (Opera는 먼저 켜야 로드 버튼이 나타남)
 3. **"압축 해제된 확장 프로그램 로드"** → `dist/` 폴더 선택
 
-> Opera도 동일: `opera://extensions/`
+브라우저별 단계와 최소 버전(Chrome 90 / Edge 90 / Opera 76)은 [docs/CROSS_BROWSER.md](./docs/CROSS_BROWSER.md) 참조.
+
+**Safari** (macOS, Xcode 래퍼):
+
+```bash
+npm run safari:init   # safari/ 에 Xcode 프로젝트 스캐폴딩 (dist/ 참조 모드)
+```
+
+이후 Xcode 빌드 + "Allow unsigned extensions" 절차는 [docs/SAFARI.md](./docs/SAFARI.md) 참조. 유료 Apple Developer 계정은 불필요합니다.
+
+### 스토어 제출 zip
+
+```bash
+npm run package   # → packages/page-share-ext-v<version>.zip (Chrome/Edge/Opera 공통)
+```
+
+`*.map`은 제외되며(시크릿 보호), R2 시크릿이 baked된 빌드는 공개 스토어에 올리지 마세요. 심사 권한 주의사항은 [docs/CROSS_BROWSER.md](./docs/CROSS_BROWSER.md) 참조.
 
 ---
 
@@ -188,15 +207,20 @@ page-share-ext/
 │   │   └── r2-upload.ts     # aws4fetch 기반 R2 업로드
 │   ├── shared/
 │   │   ├── config.ts        # DefinePlugin 상수 getter
+│   │   ├── messaging.ts     # 크로스 브라우저 메시징 shim (Chromium/Safari idiom 분기)
 │   │   └── types.ts         # Message 유니언 타입
 │   └── __tests__/
-│       ├── sanitize.test.ts # HTML 정제 단위 테스트
+│       ├── sanitize.test.ts  # HTML 정제 단위 테스트
+│       ├── messaging.test.ts # 메시징 shim 분기 테스트 (5개)
 │       └── r2-upload.test.ts # R2 업로드 단위 테스트 (9개)
-├── 📋 manifest.json          # Chrome Extension MV3 매니페스트
+├── 📋 manifest.json          # MV3 매니페스트 (Chrome/Edge/Opera/Safari 공통)
 ├── 🔑 config.local.example.json  # 크레덴셜 템플릿 (커밋 O)
 ├── 🔒 config.local.json      # 실제 크레덴셜 (gitignored — 절대 커밋 금지)
 ├── ⚙️ webpack.config.js      # DefinePlugin, ts-loader 설정
-└── 📦 package.json
+├── 📦 package.json
+├── 🗂️ scripts/               # package.mjs (스토어 zip), safari-init.mjs (Safari 스캐폴딩)
+├── 🍎 safari/                # Safari Web Extension Xcode 래퍼 (dist/ 참조 모드)
+└── 📚 docs/                  # CROSS_BROWSER.md, SAFARI.md
 ```
 
 ---
@@ -253,7 +277,9 @@ npm run test    # vitest run (jsdom 환경)
 | `npm run build` | webpack 빌드 → `dist/` 생성 |
 | `npm run watch` | watch 모드 (개발 중 자동 재빌드) |
 | `npm run test` | Vitest 단위 테스트 실행 |
-| `npm run lint` | ESLint 검사 |
+| `npm run typecheck` | `tsc --noEmit` 타입 체크 |
+| `npm run package` | 빌드 후 스토어 제출 zip 생성 → `packages/` |
+| `npm run safari:init` | Safari Web Extension Xcode 프로젝트 스캐폴딩 → `safari/` |
 
 ---
 
