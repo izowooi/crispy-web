@@ -1,3 +1,12 @@
 node_modules/
 dist/
 *.tsbuildinfo
+
+# Store-submission zips
+packages/
+
+# Safari / Xcode build artifacts (the scaffold itself is committed)
+safari/**/build/
+**/DerivedData/
+**/xcuserdata/
+*.xcuserstate
