@@ -1,3 +1,4 @@
+import { onRequest } from "../shared/messaging";
 import type { Message, CaptureResult } from "../shared/types";
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -104,17 +105,10 @@ async function capturePage(): Promise<CaptureResult> {
 const w = window as Window & { __pageShareInjected?: boolean };
 if (!w.__pageShareInjected) {
   w.__pageShareInjected = true;
-  chrome.runtime.onMessage.addListener(
-    (msg: Message, _sender, sendResponse) => {
-      if (msg.type !== "CAPTURE_PAGE") return false;
-
-      capturePage()
-        .then((payload) => sendResponse({ type: "CAPTURE_DONE", payload }))
-        .catch((err: Error) =>
-          sendResponse({ type: "CAPTURE_ERROR", message: err.message }),
-        );
-
-      return true; // keep message channel open for async response
-    },
-  );
+  onRequest((msg) => {
+    if (msg.type !== "CAPTURE_PAGE") return undefined;
+    return capturePage()
+      .then((payload): Message => ({ type: "CAPTURE_DONE", payload }))
+      .catch((err: Error): Message => ({ type: "CAPTURE_ERROR", message: err.message }));
+  });
 }

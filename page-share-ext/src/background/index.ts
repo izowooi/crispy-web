@@ -1,5 +1,6 @@
 import { getApiBase, getApiKey, getR2Config } from "../shared/config";
 import { uploadHtmlToR2, isR2Configured } from "../lib/r2-upload";
+import { onRequest } from "../shared/messaging";
 import type { Message, CaptureResult } from "../shared/types";
 
 async function uploadPage(capture: CaptureResult): Promise<string> {
@@ -53,18 +54,9 @@ async function uploadPage(capture: CaptureResult): Promise<string> {
   return data.share_url as string;
 }
 
-chrome.runtime.onMessage.addListener(
-  (msg: Message, _sender, sendResponse) => {
-    if (msg.type !== "CAPTURE_DONE") return false;
-
-    uploadPage(msg.payload)
-      .then((shareUrl) =>
-        sendResponse({ type: "UPLOAD_DONE", share_url: shareUrl }),
-      )
-      .catch((err: Error) =>
-        sendResponse({ type: "UPLOAD_ERROR", message: err.message }),
-      );
-
-    return true;
-  },
-);
+onRequest((msg) => {
+  if (msg.type !== "CAPTURE_DONE") return undefined;
+  return uploadPage(msg.payload)
+    .then((shareUrl): Message => ({ type: "UPLOAD_DONE", share_url: shareUrl }))
+    .catch((err: Error): Message => ({ type: "UPLOAD_ERROR", message: err.message }));
+});

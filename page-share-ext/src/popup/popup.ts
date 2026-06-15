@@ -1,4 +1,4 @@
-import type { Message } from "../shared/types";
+import { sendRequest, sendTabRequest } from "../shared/messaging";
 
 const saveBtn = document.getElementById("save-btn") as HTMLButtonElement;
 const statusEl = document.getElementById("status") as HTMLDivElement;
@@ -28,50 +28,41 @@ saveBtn.addEventListener("click", async () => {
   setStatus("페이지 캡처 중...", "saving");
   resultEl.classList.add("hidden");
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab.id) {
-    setStatus("탭을 찾을 수 없습니다", "error");
-    setLoading(false);
-    return;
-  }
-
-  // Step 1: ensure content script is running (handles tabs open before extension load)
   try {
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ["content/index.js"],
-    });
-  } catch {
-    // Tab may not support scripting (chrome://, PDF, etc.) — let sendMessage surface the real error
-  }
-
-  // Step 2: capture via content script
-  chrome.tabs.sendMessage(tab.id, { type: "CAPTURE_PAGE" } satisfies Message, (captureMsg: Message) => {
-    if (chrome.runtime.lastError || captureMsg.type === "CAPTURE_ERROR") {
-      const msg = chrome.runtime.lastError?.message ?? (captureMsg as { type: "CAPTURE_ERROR"; message: string }).message;
-      setStatus(`캡처 실패: ${msg}`, "error");
-      setLoading(false);
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab.id) {
+      setStatus("탭을 찾을 수 없습니다", "error");
       return;
     }
 
-    if (captureMsg.type !== "CAPTURE_DONE") return;
+    // Step 1: ensure content script is running (handles tabs open before extension load)
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["content/index.js"],
+      });
+    } catch {
+      // Tab may not support scripting (chrome://, PDF, etc.) — sendTabRequest surfaces the real error
+    }
+
+    // Step 2: capture via content script (promise-form messaging — Safari/Firefox safe)
+    const captureMsg = await sendTabRequest(tab.id, { type: "CAPTURE_PAGE" });
+    if (captureMsg.type === "CAPTURE_ERROR") throw new Error(captureMsg.message);
+    if (captureMsg.type !== "CAPTURE_DONE") throw new Error("예상치 못한 캡처 응답");
 
     setStatus("R2 업로드 중...", "saving");
 
     // Step 3: upload via background service worker
-    chrome.runtime.sendMessage(captureMsg, (uploadMsg: Message) => {
-      setLoading(false);
-      if (chrome.runtime.lastError || uploadMsg.type === "UPLOAD_ERROR") {
-        const msg = chrome.runtime.lastError?.message ?? (uploadMsg as { type: "UPLOAD_ERROR"; message: string }).message;
-        setStatus(`업로드 실패: ${msg}`, "error");
-        return;
-      }
+    const uploadMsg = await sendRequest(captureMsg);
+    if (uploadMsg.type === "UPLOAD_ERROR") throw new Error(uploadMsg.message);
+    if (uploadMsg.type !== "UPLOAD_DONE") throw new Error("예상치 못한 업로드 응답");
 
-      if (uploadMsg.type !== "UPLOAD_DONE") return;
-
-      setStatus("저장 완료! 🎉", "success");
-      shareUrlInput.value = uploadMsg.share_url;
-      resultEl.classList.remove("hidden");
-    });
-  });
+    setStatus("저장 완료! 🎉", "success");
+    shareUrlInput.value = uploadMsg.share_url;
+    resultEl.classList.remove("hidden");
+  } catch (err) {
+    setStatus(`실패: ${(err as Error).message}`, "error");
+  } finally {
+    setLoading(false);
+  }
 });

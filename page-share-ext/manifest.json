@@ -5,8 +5,7 @@
   "description": "현재 페이지를 저장하고 팀원과 공유 URL을 생성합니다.",
   "permissions": [
     "activeTab",
-    "scripting",
-    "storage"
+    "scripting"
   ],
   "host_permissions": ["<all_urls>"],
   "action": {
