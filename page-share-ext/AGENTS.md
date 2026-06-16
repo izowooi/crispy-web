@@ -89,7 +89,7 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 
 **보안 주의:**
 - R2 Key ID / Secret은 빌드 시 `DefinePlugin`으로 **번들 JS에 baked**됩니다(`chrome.storage` 미사용). 본인 계정에서 발급한 값만 사용하고, R2 시크릿이 baked된 `dist/`·zip을 공개 배포하지 마세요. 공개 스토어 제출은 R2 필드를 비운 서버 모드 빌드로 합니다.
-- R2에 업로드된 HTML은 Public URL로 누구나 접근 가능합니다(UUID로만 보호). 비공개 플래그는 목록 표시만 제어합니다.
+- R2에 업로드된 HTML은 Public URL로 누구나 접근 가능합니다(UUID로만 보호). 비공개(is_private)는 목록·상세(`/archive/{id}`)에서 비admin 접근을 차단하지만, raw R2 URL 자체는 막지 못합니다(아래 "비공개 저장" 참조).
 
 ### 서버 업로드 (R2 미설정 시 fallback)
 
@@ -103,15 +103,23 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 
 **R2 모드 POST body** (`storage_path` 있음, `html` 없음):
 ```json
-{ "title": "...", "original_url": "...", "storage_path": "https://pub-xxx.r2.dev/uuid.html", "file_size": 12345 }
+{ "title": "...", "original_url": "...", "storage_path": "https://pub-xxx.r2.dev/uuid.html", "file_size": 12345, "is_private": false }
 ```
 
 **Legacy 모드 POST body** (`html` 있음, `storage_path` 없음):
 ```json
-{ "title": "...", "original_url": "...", "html": "<!DOCTYPE html>..." }
+{ "title": "...", "original_url": "...", "html": "<!DOCTYPE html>...", "is_private": false }
 ```
 
 응답 (공통): `{ "archive": {...}, "share_url": "https://pagekeep.pages.dev/archive/uuid" }`
+
+## 비공개 저장 (is_private)
+
+팝업의 "🔒 비공개로 저장" 체크박스로 설정합니다(기본값 공개). 비공개는 popup → background로 `CAPTURE_DONE` 메시지에 `is_private`로 전달되고, background가 POST body에 포함합니다.
+
+- **공개**: 기존과 동일 — R2 PUT 후 raw R2 public URL을 share URL로 반환, DB 등록은 best-effort.
+- **비공개**: DB 등록이 게이트이므로 **POST 성공이 필수**(실패 시 에러). share URL은 raw R2 URL이 아니라 웹앱의 `/archive/{id}`(비admin 접근 시 404)를 반환.
+- **한계**: R2 객체 자체는 여전히 public URL(UUID 난수)에 있습니다. `/archive/{id}` 게이트는 UI 접근만 차단하며, raw R2 URL을 직접 아는 사람은 접근 가능합니다(웹앱 `page-share`의 기존 비공개 모델과 동일). 진짜 at-rest 비공개는 비public 버킷/프록시가 필요(미적용).
 
 ## 운영 환경 연결
 

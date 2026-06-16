@@ -21,7 +21,8 @@ export interface UploadResponse {
 
 export type Message =
   | { type: "CAPTURE_PAGE" }
-  | { type: "CAPTURE_DONE"; payload: CaptureResult }
+  // is_private is set by the popup before forwarding to the background (default public).
+  | { type: "CAPTURE_DONE"; payload: CaptureResult; is_private?: boolean }
   | { type: "CAPTURE_ERROR"; message: string }
   | { type: "UPLOAD_DONE"; share_url: string }
   | { type: "UPLOAD_ERROR"; message: string };

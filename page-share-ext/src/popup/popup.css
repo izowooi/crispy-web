@@ -25,6 +25,18 @@ header h1 { font-size: 15px; font-weight: 600; }
 .status.success { border-color: #22c55e; color: #86efac; }
 .status.error { border-color: #ef4444; color: #fca5a5; }
 
+.private-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #cbd5e1;
+  cursor: pointer;
+  user-select: none;
+}
+.private-toggle input { width: 15px; height: 15px; accent-color: #3b82f6; cursor: pointer; }
+.private-toggle small { color: #94a3b8; font-size: 11px; }
+
 .btn-primary {
   width: 100%;
   padding: 10px;

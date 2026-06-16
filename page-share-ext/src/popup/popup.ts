@@ -6,6 +6,7 @@ const statusText = document.getElementById("status-text") as HTMLParagraphElemen
 const resultEl = document.getElementById("result") as HTMLDivElement;
 const shareUrlInput = document.getElementById("share-url") as HTMLInputElement;
 const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement;
+const privateToggle = document.getElementById("private-toggle") as HTMLInputElement;
 
 function setStatus(msg: string, state: "idle" | "saving" | "success" | "error") {
   statusText.textContent = msg;
@@ -27,6 +28,8 @@ saveBtn.addEventListener("click", async () => {
   setLoading(true);
   setStatus("페이지 캡처 중...", "saving");
   resultEl.classList.add("hidden");
+
+  const isPrivate = privateToggle.checked;
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -50,14 +53,14 @@ saveBtn.addEventListener("click", async () => {
     if (captureMsg.type === "CAPTURE_ERROR") throw new Error(captureMsg.message);
     if (captureMsg.type !== "CAPTURE_DONE") throw new Error("예상치 못한 캡처 응답");
 
-    setStatus("R2 업로드 중...", "saving");
+    setStatus(isPrivate ? "비공개 저장 중..." : "R2 업로드 중...", "saving");
 
-    // Step 3: upload via background service worker
-    const uploadMsg = await sendRequest(captureMsg);
+    // Step 3: upload via background service worker (carry the privacy choice)
+    const uploadMsg = await sendRequest({ ...captureMsg, is_private: isPrivate });
     if (uploadMsg.type === "UPLOAD_ERROR") throw new Error(uploadMsg.message);
     if (uploadMsg.type !== "UPLOAD_DONE") throw new Error("예상치 못한 업로드 응답");
 
-    setStatus("저장 완료! 🎉", "success");
+    setStatus(isPrivate ? "🔒 비공개로 저장 완료!" : "저장 완료! 🎉", "success");
     shareUrlInput.value = uploadMsg.share_url;
     resultEl.classList.remove("hidden");
   } catch (err) {
