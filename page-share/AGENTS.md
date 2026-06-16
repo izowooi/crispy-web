@@ -23,9 +23,9 @@
 | 라우트 | 종류 | 비고 |
 |--------|------|------|
 | `/` | Edge Page | 아카이브 목록, admin 여부에 따라 관리 열 |
-| `/archive/[id]` | Edge Page | storage_path → R2 URL 리다이렉트 |
+| `/archive/[id]` | Edge Page | 비공개면 admin만(`canViewArchive`), 아니면 404. 통과 시 storage_path → R2 URL 리다이렉트 |
 | `/_not-found` | Static | Next.js 특수 파일, runtime 선언 무시됨 |
-| `POST /api/archives` | Edge API | R2 직접 업로드 등록만 허용 (legacy html 경로 제거) |
+| `POST /api/archives` | Edge API | R2 직접 업로드 등록만 허용 (legacy html 경로 제거). `is_private` 수용(기본 false) |
 | `GET /api/archives/[id]` | Edge API | 단건 조회 |
 | `DELETE/PATCH /api/archives/[id]` | Edge API | soft delete, is_private 토글. admin 필수 |
 | `GET /api/archives/[id]/raw` | Edge API | 410 Gone (legacy 로컬 저장 폐기) |
@@ -88,7 +88,7 @@ layout.tsx (non-async, Edge)
 - `src/lib/admin.ts`: `isAdminSession()` (Server Component/Action), `isAdminRequest()` (Route Handler).
 - 관리자 인증 시: 비공개 아카이브 포함 전체 목록, 삭제·비공개 토글 버튼 노출.
 
-**비공개(is_private)**: 목록 노출만 제어. R2 Public URL을 아는 사람은 누구나 접근 가능.
+**비공개(is_private)**: 익스텐션 저장 시(체크박스) 또는 목록 토글로 설정. 목록·`GET /api/archives[/id]`·`/archive/[id]` 상세 페이지 모두 비admin에게 비공개를 숨긴다(`src/lib/visibility.ts`의 `canViewArchive`로 규칙 통일). 익스텐션은 비공개 저장 시 raw R2 URL이 아닌 `/archive/{id}`(게이트 경유)를 share URL로 반환. **한계**: R2 객체 자체는 여전히 public URL(UUID 난수)에 있어, 그 URL을 직접 아는 사람은 접근 가능. 진짜 at-rest 비공개는 비public 버킷/프록시가 필요(미적용).
 
 ## DB 스키마
 

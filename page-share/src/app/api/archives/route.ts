@@ -42,6 +42,7 @@ export async function POST(request: Request) {
     original_url?: string;
     storage_path?: string;
     file_size?: number;
+    is_private?: boolean;
   };
   try {
     body = await request.json();
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { title, original_url, storage_path, file_size } = body;
+  const { title, original_url, storage_path, file_size, is_private } = body;
 
   if (!title || !original_url) {
     return NextResponse.json({ error: "title and original_url are required" }, { status: 400 });
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("ps_archives")
-    .insert({ id, title, original_url, storage_path, file_size: file_size ?? 0 })
+    .insert({ id, title, original_url, storage_path, file_size: file_size ?? 0, is_private: !!is_private })
     .select()
     .single();
 
