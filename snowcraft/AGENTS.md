@@ -1,7 +1,7 @@
 # AGENTS.md - Snowcraft (Layer 3)
 
 이 문서는 `snowcraft` 프로젝트 전용 Layer 3 지침입니다.
-상위 Layer 2 지침은 `../AGENTS.md`, 전역 Layer 1 지침은 `$HOME/git/AGENTS.md`입니다. 충돌하면 이 파일처럼 더 구체적인 하위 지침을 우선합니다.
+상위 Layer 2 지침은 `../AGENTS.md`를 따릅니다. 충돌하면 이 파일처럼 더 구체적인 하위 지침을 우선합니다.
 
 ## 프로젝트 개요
 

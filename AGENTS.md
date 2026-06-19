@@ -1,4 +1,4 @@
-# AGENTS.md
+# AGENTS.md — crispy-web (Layer 2)
 
 이 문서는 `crispy-web` 모노레포의 Layer 2 작업 지침입니다.
 상위 Layer 1 전역 지침은 `$HOME/git/AGENTS.md`를 따르며, 하위 폴더에 더 구체적인 `AGENTS.md`가 있으면 그 지침을 우선합니다.
@@ -6,6 +6,17 @@
 이 저장소는 여러 개의 독립 웹앱을 한 곳에서 관리하는 모노레포입니다. 대부분의 앱은 Next.js App Router, TypeScript, Tailwind CSS를 기반으로 하고, Cloudflare Pages/Workers, R2, Supabase, Replicate, Firebase Remote Config, Google OAuth 같은 외부 서비스를 앱별로 조합합니다.
 
 이 문서는 저장소 루트의 공통 작업 지침입니다. 하위 폴더에 별도의 `AGENTS.md`, README, docs, `.claude/skills`, `.codex/`가 있으면 해당 앱에서는 더 구체적인 하위 지침을 우선합니다.
+
+## 계층과 상속
+
+- Layer 1: `$HOME/git/AGENTS.md` — 사용자 전역 개발·안전·Git 정책.
+- Layer 2: 이 파일 — `crispy-web` 모노레포 공통 운영 규칙.
+- Layer 3: 모노레포의 직속 프로젝트·도메인 폴더에 있는 `AGENTS.md`.
+- Layer 4: Layer 3 프로젝트 내부의 더 구체적인 앱·서비스·도구 폴더에 있는 `AGENTS.md`.
+- 직속 폴더에 자체 `.git`이 있으면 이 모노레포의 Layer 3이 아니라 별도 Layer 2 저장소로 취급하고 Git 경계를 분리합니다.
+- 각 `AGENTS.md`는 바로 위 계층의 `AGENTS.md`를 따르고, 충돌하면 더 가까운 하위 지침을 우선합니다. 로컬 `AGENTS.md`가 없는 폴더는 가장 가까운 상위 지침을 그대로 상속합니다.
+- 표준 파일명은 `AGENTS.md`입니다. 단수형 `AGENT.md`는 사용하지 않습니다.
+- 각 계층의 `CLAUDE.md`에는 중복 지침을 쓰지 않고 동일 폴더의 `AGENTS.md`를 불러오는 `@AGENTS.md` 한 줄만 둡니다.
 
 ## 저장소 구조
 

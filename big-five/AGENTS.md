@@ -1,7 +1,7 @@
-# Project AGENTS.md
+# AGENTS.md — big-five (Layer 3)
 
-이 문서는 `big-five` 하위 프로젝트에만 적용되는 작업 지침이다.
-공통 규칙(npm 사용, lint→test→build 순서, TDD, Cloudflare 일반론, 비밀값 금지, 커밋 스타일, 워크트리 안전)은 상위 모노레포 `../AGENTS.md`를 따른다. 여기서는 big-five 고유 사항만 적는다.
+이 문서는 `big-five` 프로젝트에 적용되는 Layer 3 작업 지침이다.
+상위 Layer 2 지침은 `../AGENTS.md`를 따른다. 여기서는 big-five 고유 사항만 적는다.
 
 ## 프로젝트 목적
 

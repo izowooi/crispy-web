@@ -1,7 +1,7 @@
-# AGENTS.md — page-share (L4)
+# AGENTS.md — page-share (Layer 3)
 
-이 문서는 `crispy-web/page-share` 앱의 L4 작업 지침입니다.
-상위 L2 지침은 `crispy-web/AGENTS.md`, 전역 L1 지침은 `$HOME/git/AGENTS.md`를 따릅니다.
+이 문서는 `page-share` 앱에 적용되는 Layer 3 작업 지침입니다.
+상위 Layer 2 지침은 `../AGENTS.md`를 따릅니다.
 
 ## 앱 개요
 
@@ -9,7 +9,7 @@
 익스텐션이 R2에 HTML을 직접 업로드한 뒤, 공개 URL을 이 서버에 등록합니다.
 이 앱은 DB 메타데이터(제목, 원본 URL, R2 공개 URL)만 관리하고, 뷰어는 R2 URL로 직접 리다이렉트합니다.
 
-배포: **Cloudflare Pages** (`pagekeep.pages.dev`)
+배포: **Cloudflare Pages** (`<PROJECT_DOMAIN>`)
 
 ## 기술 스택
 

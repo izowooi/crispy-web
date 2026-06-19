@@ -1,7 +1,7 @@
-# AGENTS.md — page-share-ext (L4)
+# AGENTS.md — page-share-ext (Layer 3)
 
-이 문서는 `crispy-web/page-share-ext` Chrome 익스텐션의 L4 작업 지침입니다.
-상위 L3 지침은 `crispy-web/AGENTS.md`, 전역 L1 지침은 `$HOME/git/AGENTS.md`를 따릅니다.
+이 문서는 `page-share-ext` Chrome 익스텐션에 적용되는 Layer 3 작업 지침입니다.
+상위 Layer 2 지침은 `../AGENTS.md`를 따릅니다.
 
 ## 앱 개요
 
@@ -111,7 +111,7 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 { "title": "...", "original_url": "...", "html": "<!DOCTYPE html>...", "is_private": false }
 ```
 
-응답 (공통): `{ "archive": {...}, "share_url": "https://pagekeep.pages.dev/archive/uuid" }`
+응답 (공통): `{ "archive": {...}, "share_url": "https://<PROJECT_DOMAIN>/archive/uuid" }`
 
 ## 비공개 저장 (is_private)
 
@@ -124,7 +124,7 @@ R2 크레덴셜은 **빌드 시 번들에 포함**됩니다. 팝업 입력 없�
 ## 운영 환경 연결
 
 `config.local.json`의 `apiBase`를 운영 URL로 설정 후 `npm run build` 재실행:
-- **apiBase**: `https://pagekeep.pages.dev`
+- **apiBase**: `https://<PROJECT_DOMAIN>`
 - **API Key**: 서버의 `API_KEY` 환경변수 값과 동일하게 입력
 
 R2 직접 업로드를 사용하면 서버가 다운돼도 R2 PUT 자체는 성공하지만, DB 기록(POST /api/archives)은 실패합니다. 이 경우 공유 URL을 얻을 수 없습니다.

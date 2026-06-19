@@ -1,3 +1,8 @@
+# AGENTS.md — ductcanvas (Layer 3)
+
+이 문서는 `ductcanvas` 프로젝트에 적용되는 Layer 3 작업 지침이다.
+상위 Layer 2 지침은 `../AGENTS.md`를 따른다.
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
