@@ -1,0 +1,29 @@
+# dependencies
+/node_modules/
+
+# Next.js / Cloudflare output
+/.next/
+/.vercel/
+/.open-next/
+/.wrangler/
+/.pages-out/
+/out/
+
+# tests and tooling
+/coverage/
+/.playwright-mcp/
+*.log
+
+# environment and credentials
+.env*
+!.env.example
+!.env*.example
+.dev.vars*
+!.dev.vars.example
+*.key
+*.pem
+id_rsa
+
+# system / editor
+.DS_Store
+*.tsbuildinfo

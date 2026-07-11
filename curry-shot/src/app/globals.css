@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  --canvas: #f6faff;
+  --canvas-raised: #fbfdff;
+  --canvas-glass: rgba(246, 250, 255, 0.8);
+  --panel: #ffffff;
+  --panel-raised: #ffffff;
+  --panel-muted: #eef6ff;
+  --ink: #12233a;
+  --ink-soft: #31465f;
+  --muted: #6f8198;
+  --muted-light: #9aabc0;
+  --line: #d8e7f7;
+  --line-soft: rgba(62, 112, 163, 0.12);
+  --line-strong: #b8d3ee;
+  --accent: #1878f2;
+  --accent-hover: #0e60cf;
+  --accent-ink: #1265cf;
+  --accent-soft: #e8f4ff;
+  --accent-line: #b8dcff;
+  --accent-halo: rgba(35, 135, 255, 0.18);
+  --accent-gradient: linear-gradient(135deg, #1976f3 0%, #37b7f6 55%, #8ce6ff 100%);
+  --danger: #d14c5a;
+  --danger-soft: #fff0f2;
+  --success: #227f68;
+  --success-soft: #eaf9f4;
+  --shadow-xs: 0 1px 2px rgba(27, 87, 142, 0.06);
+  --shadow-sm: 0 12px 32px rgba(42, 108, 166, 0.09);
+  --shadow-lg: 0 30px 80px rgba(32, 94, 151, 0.16);
+}
+
+.dark {
+  --canvas: #071220;
+  --canvas-raised: #0c1929;
+  --canvas-glass: rgba(7, 18, 32, 0.84);
+  --panel: #0f1e30;
+  --panel-raised: #14263a;
+  --panel-muted: #122942;
+  --ink: #edf7ff;
+  --ink-soft: #c6d8ea;
+  --muted: #9ab1c7;
+  --muted-light: #6f88a2;
+  --line: #25435f;
+  --line-soft: rgba(199, 231, 255, 0.09);
+  --line-strong: #365f85;
+  --accent: #58b8ff;
+  --accent-hover: #8bd6ff;
+  --accent-ink: #8bd6ff;
+  --accent-soft: #0e3154;
+  --accent-line: #1f5a8b;
+  --accent-halo: rgba(83, 184, 255, 0.22);
+  --accent-gradient: linear-gradient(135deg, #1687f5 0%, #35bff4 55%, #7ce9ff 100%);
+  --danger: #ff929e;
+  --danger-soft: #351b28;
+  --success: #74d5b8;
+  --success-soft: #12342f;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 12px 40px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 35px 90px rgba(0, 0, 0, 0.45);
+}
+
+@theme inline {
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-ui);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--canvas);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% -8%, rgba(81, 185, 255, 0.2), transparent 28rem),
+    radial-gradient(circle at 96% 16%, rgba(132, 222, 255, 0.17), transparent 24rem),
+    var(--canvas);
+  color: var(--ink);
+  font-family:
+    Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Noto Sans KR", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+body::before {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+summary,
+label,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled),
+summary,
+select {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+.font-display {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+.brand-mark {
+  position: relative;
+  width: 35px;
+  height: 35px;
+  overflow: hidden;
+  border: 1px solid rgba(151, 221, 255, 0.78);
+  border-radius: 10px;
+  background: var(--accent-gradient);
+  box-shadow: var(--shadow-xs);
+}
+
+.brand-mark span {
+  position: absolute;
+  inset: 7px;
+  border: 2px solid rgba(255, 255, 255, 0.84);
+  border-radius: 50%;
+}
+
+.brand-mark span:nth-child(2) {
+  clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+  background: rgba(8, 54, 116, 0.46);
+}
+
+.brand-mark span:nth-child(3) {
+  inset: 14px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.ambient-glow {
+  position: absolute;
+  z-index: 0;
+  border-radius: 999px;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.ambient-glow-one {
+  top: 3rem;
+  right: -15rem;
+  width: 40rem;
+  height: 40rem;
+  background: radial-gradient(circle, rgba(56, 180, 247, 0.15), transparent 67%);
+}
+
+.ambient-glow-two {
+  top: 34rem;
+  left: -19rem;
+  width: 34rem;
+  height: 34rem;
+  background: radial-gradient(circle, rgba(88, 147, 255, 0.12), transparent 68%);
+}
+
+.studio-panel {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-shell::after {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.38;
+  background-image: linear-gradient(rgba(57, 143, 220, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(57, 143, 220, 0.025) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, black, transparent 42rem);
+}
+
+.field-control {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--canvas-raised);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.field-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-halo);
+}
+
+.field-control::placeholder {
+  color: var(--muted-light);
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  animation: shimmer 1.8s infinite;
+}
+
+.dialogue-overlay {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

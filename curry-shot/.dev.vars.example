@@ -1,0 +1,6 @@
+OPENAI_API_KEY=
+REPLICATE_API_KEY=
+# REPLICATE_API_TOKEN can be used instead of REPLICATE_API_KEY.
+REPLICATE_API_TOKEN=
+# Private, random value of at least 12 characters. Required for Workers preview.
+CURRY_SHOT_ACCESS_CODE=
