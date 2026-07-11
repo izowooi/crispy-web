@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminUpload() {
@@ -12,6 +12,7 @@ export default function AdminUpload() {
   const [status, setStatus] = useState<{ type: "error" | "success"; msg: string } | null>(null);
   const [uploading, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
+  const fileInputId = useId();
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -61,22 +62,20 @@ export default function AdminUpload() {
         <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <label className="flex-shrink-0">
-                <span className="sr-only">HTML 파일 선택</span>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".html,.htm"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <span
-                  role="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="cursor-pointer rounded border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors select-none"
-                >
-                  파일 선택
-                </span>
+              <input
+                id={fileInputId}
+                ref={fileRef}
+                type="file"
+                accept=".html,.htm,text/html"
+                aria-label="HTML 파일 선택"
+                onChange={handleFileChange}
+                className="peer sr-only"
+              />
+              <label
+                htmlFor={fileInputId}
+                className="flex-shrink-0 cursor-pointer select-none rounded border border-gray-300 px-3 py-1.5 text-xs transition-colors hover:bg-gray-50 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-600 dark:border-gray-700 dark:hover:bg-gray-800 dark:peer-focus-visible:outline-blue-400"
+              >
+                파일 선택
               </label>
               <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">
                 {fileName || "선택된 파일 없음"}
