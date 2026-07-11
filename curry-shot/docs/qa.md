@@ -55,7 +55,7 @@
 
 in-app Browser 연결이 앱 로드 전 도구 메타데이터 검증 단계에서 실패했다. 메인 작업과 별도 QA 에이전트에서 재확인했으며 `node_repl/js` 요청의 `sandboxPolicy` metadata 누락이 원인이었다. Browser 스킬 지침에 따라 standalone Playwright나 Computer Use로 우회하지 않았다.
 
-대신 production HTML 생성, Tailwind responsive/dark variant, static sample asset 포함, overlay geometry와 canvas 저장 로직의 수치 일치, Next/OpenNext build를 확인했다. 실제 desktop/mobile viewport, light/dark toggle, upload·paste·sample interaction의 시각 QA는 Browser 연결 복구 후 다시 수행해야 한다.
+대신 production HTML 생성, Tailwind responsive/dark variant, overlay geometry와 canvas 저장 로직의 수치 일치, Next/OpenNext build를 확인했다. 실제 desktop/mobile viewport, light/dark toggle, upload·paste interaction의 시각 QA는 Browser 연결 복구 후 다시 수행해야 한다.
 
 ### 2026-07-11 UI 간소화 재검증
 
@@ -64,3 +64,12 @@ in-app Browser 연결이 앱 로드 전 도구 메타데이터 검증 단계에�
 - `npm run typecheck`, `npm run lint`, `npm test` (38 tests), `npm run build`, `npm run cloudflare:build`를 다시 통과했다.
 - local Next HTML에서 새 헤더 `리얼 프레임`과 `결과 미리보기`가 렌더되고, 제거 요청된 hero/label 문자열이 남지 않은 것을 확인했다.
 - in-app Browser 연결은 동일한 metadata 오류로 재시도도 실패했다. Browser 스킬에 따라 대체 자동화 도구로 우회하지 않았으므로 actual viewport screenshot QA는 여전히 미검증이다.
+
+### 2026-07-11 파일 선택 회귀 수정
+
+- 초기 server render에서 `videoHydrated=false` 때문에 업로드 영역 전체가 disabled fieldset으로 출력되던 조건을 제거했다.
+- JavaScript의 `input.click()`에 의존하던 파일 선택 버튼을 native label/input 연결로 교체했다.
+- 샘플 선택 UI, static image import, fetch·loading 상태를 모두 제거하고 README와 Workers 가이드를 동기화했다.
+- server-render regression test에서 fieldset이 disabled가 아니며 `for="studio-file-input"`과 file input id가 연결되고 샘플 문구가 없는 것을 확인했다.
+- local Next dev HTML에서도 `<fieldset aria-busy="false">`, label/input 연결, 샘플 문구 부재를 확인했다.
+- in-app Browser는 앱 연결 전 동일한 metadata 오류로 실패해 실제 OS 파일 선택 창 자동화는 수행하지 못했다.

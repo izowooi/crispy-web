@@ -66,7 +66,7 @@ npm run cloudflare:build
 - `npm run pages:build`는 상위 모노레포 명령과의 compatibility alias일 뿐이며 결과물은 Pages가 아니라 Workers용 `.open-next`다.
 - dependency 변경 시 `npm audit --audit-level=moderate`도 실행한다.
 - API route 변경은 비용 없는 validation, access-code, same-origin HTTP contract를 local Workers preview에서 확인한다.
-- UI 변경은 desktop/mobile, light/dark, upload·paste·sample, 접힌 advanced controls, loading/error/partial success, overlay, video cost confirmation을 확인한다.
+- UI 변경은 desktop/mobile, light/dark, upload·paste, 접힌 advanced controls, loading/error/partial success, overlay, video cost confirmation을 확인한다.
 - browser 검증을 실행할 수 없으면 이를 성공으로 간주하지 말고 `docs/qa.md`에 원인과 미검증 범위를 기록한다.
 - live provider smoke를 실행했다면 provider, model, 호출 수, 결과와 비용 관련 제한을 기록하되 prediction ID, URL, credential은 남기지 않는다.
 
@@ -108,7 +108,7 @@ npm run cloudflare:build
 
 Title과 dialogue는 image model의 text rendering에 맡기지 않는다. 사용자가 확인한 title, speaker, dialogue를 browser에서 deterministic overlay로 합성하며 preview와 download canvas의 위치·크기·줄바꿈을 일치시킨다. Static overlay는 text wobble을 피하기 위해 video source에서 제외한다.
 
-사용자 custom prompt는 composition lock과 mode cleanup보다 낮은 우선순위다. 이 순서를 바꾸거나 sample별 특수 처리를 일반 규칙으로 추가할 때는 `example/` 세 유형과 prompt tests를 함께 검증한다.
+사용자 custom prompt는 composition lock과 mode cleanup보다 낮은 우선순위다. 이 순서를 바꾸거나 example별 특수 처리를 일반 규칙으로 추가할 때는 `example/` 세 유형과 prompt tests를 함께 검증한다.
 
 ## Replicate async와 video 안전성
 

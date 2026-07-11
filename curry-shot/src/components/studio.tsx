@@ -19,7 +19,7 @@ import {
   Sparkles,
   WandSparkles,
 } from "lucide-react";
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 import {
   type ChangeEvent,
   type DragEvent,
@@ -30,9 +30,6 @@ import {
   useRef,
   useState,
 } from "react";
-import forgottenCd from "../../example/forgotten-saga-cd.webp";
-import forgottenEnding from "../../example/forgotten-saga-ending.jpg";
-import forgottenScreenshot from "../../example/forgotten-saga-screenshot.png";
 import {
   ACCESS_CODE_STORAGE_KEY,
   VIDEO_JOB_STORAGE_KEY,
@@ -79,18 +76,6 @@ type ImageApiResponse =
       model?: string;
     };
 
-type Sample = {
-  id: string;
-  label: string;
-  hint: string;
-  fileName: string;
-  image: StaticImageData;
-  mode: SourceMode;
-  title?: string;
-  speaker?: string;
-  dialogue?: string;
-};
-
 type AccessState = {
   required: boolean;
   misconfigured: boolean;
@@ -129,36 +114,6 @@ function restoreVideoJob(value: string | null): VideoJob | null {
     return null;
   }
 }
-
-const SAMPLES: Sample[] = [
-  {
-    id: "cover",
-    label: "오래된 CD 표지",
-    hint: "케이스를 걷어내고 아트만",
-    fileName: "forgotten-saga-cd.webp",
-    image: forgottenCd,
-    mode: "cover",
-    title: "Forgotten Saga",
-  },
-  {
-    id: "dialogue",
-    label: "픽셀 대사 화면",
-    hint: "초상화는 실사, 대사는 정확히",
-    fileName: "forgotten-saga-screenshot.png",
-    image: forgottenScreenshot,
-    mode: "dialogue",
-    speaker: "[샤이아]",
-    dialogue: "이것이 저해상도모드 엔딩이래요",
-  },
-  {
-    id: "cinematic",
-    label: "엔딩 일러스트",
-    hint: "달과 두 인물의 구도를 고정",
-    fileName: "forgotten-saga-ending.jpg",
-    image: forgottenEnding,
-    mode: "scene",
-  },
-];
 
 const REPLICATE_LABELS: Record<ReplicateModel, string> = {
   flux: "Replicate · FLUX.2 Flex",
@@ -212,8 +167,6 @@ export function Studio() {
   const [dimensions, setDimensions] = useState<ImageDimensions | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [sampleLoading, setSampleLoading] = useState<string | null>(null);
-
   const [sourceMode, setSourceMode] = useState<SourceMode>("scene");
   const [treatment, setTreatment] = useState<Treatment>("faithful");
   const [provider, setProvider] = useState<Provider>("openai");
@@ -236,7 +189,6 @@ export function Studio() {
   const [videoJob, setVideoJob] = useState<VideoJob | null>(null);
   const [videoHydrated, setVideoHydrated] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
   const runRef = useRef(0);
   const paidRequestRef = useRef(false);
@@ -261,7 +213,7 @@ export function Studio() {
 
   const pending = submitting || results.some((result) => result.status === "queued");
   const videoActive = videoJob?.status === "starting" || videoJob?.status === "processing";
-  const controlsLocked = !videoHydrated || pending || videoActive;
+  const controlsLocked = pending || videoActive;
   const accessAllowed = Boolean(
     accessState &&
       !accessState.misconfigured &&
@@ -350,7 +302,7 @@ export function Studio() {
   }, []);
 
   const acceptFile = useCallback(
-    async (nextFile: File, sample?: Sample) => {
+    async (nextFile: File) => {
       const validationError = validateImageFile(nextFile);
       if (validationError) {
         setFileError(validationError);
@@ -366,11 +318,11 @@ export function Studio() {
         setFile(nextFile);
         setDimensions(nextDimensions);
         setFileError(null);
-        setSourceMode(sample?.mode ?? "scene");
-        setKeepTitle(Boolean(sample?.title));
-        setPreservedTitle(sample?.title ?? "");
-        setSpeaker(sample?.speaker ?? "");
-        setDialogue(sample?.dialogue ?? "");
+        setSourceMode("scene");
+        setKeepTitle(false);
+        setPreservedTitle("");
+        setSpeaker("");
+        setDialogue("");
         setOutputRatio("source");
         resetOutput();
       } catch {
@@ -379,21 +331,6 @@ export function Studio() {
     },
     [resetOutput],
   );
-
-  async function loadSample(sample: Sample) {
-    if (controlsLocked) return;
-    setSampleLoading(sample.id);
-    try {
-      const response = await fetch(sample.image.src);
-      if (!response.ok) throw new Error("sample fetch failed");
-      const blob = await response.blob();
-      await acceptFile(new File([blob], sample.fileName, { type: blob.type }), sample);
-    } catch {
-      setFileError("샘플 이미지를 불러오지 못했습니다.");
-    } finally {
-      setSampleLoading(null);
-    }
-  }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     if (controlsLocked) return;
@@ -763,39 +700,19 @@ export function Studio() {
                 </div>
                 <p className="text-sm font-bold text-[var(--ink)]">이미지를 놓거나 파일을 선택하세요</p>
                 <p className="mt-1.5 text-xs leading-5 text-[var(--muted)]">JPG · PNG · WebP · 최대 10MB · 붙여넣기 가능</p>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-5 inline-flex h-10 items-center rounded-full bg-[var(--ink)] px-5 text-xs font-bold text-[var(--canvas)] transition hover:-translate-y-0.5"
+                <label
+                  htmlFor="studio-file-input"
+                  className="mt-5 inline-flex h-10 cursor-pointer items-center rounded-full bg-[var(--ink)] px-5 text-xs font-bold text-[var(--canvas)] transition hover:-translate-y-0.5"
                 >
                   파일 고르기
-                </button>
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} className="sr-only" />
-              </div>
-
-              <div className="mt-4">
-                <p className="mb-2.5 text-[10px] font-bold tracking-[0.12em] text-[var(--muted)] uppercase">또는 샘플로 시작</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {SAMPLES.map((sample) => (
-                    <button
-                      type="button"
-                      key={sample.id}
-                      onClick={() => void loadSample(sample)}
-                      disabled={Boolean(sampleLoading)}
-                      className="group overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--panel)] p-1.5 text-left transition hover:-translate-y-0.5 hover:border-[var(--line-strong)] disabled:opacity-50"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-black">
-                        <Image src={sample.image} alt="" fill className="object-cover opacity-90 transition group-hover:scale-[1.04] group-hover:opacity-100" sizes="120px" />
-                        {sampleLoading === sample.id ? (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/45">
-                            <LoaderCircle size={16} className="animate-spin text-white" />
-                          </div>
-                        ) : null}
-                      </div>
-                      <span className="mt-1.5 block truncate px-0.5 text-[10px] font-bold text-[var(--ink)]">{sample.label}</span>
-                    </button>
-                  ))}
-                </div>
+                </label>
+                <input
+                  id="studio-file-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  className="sr-only"
+                />
               </div>
             </div>
           ) : (
