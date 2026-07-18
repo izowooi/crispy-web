@@ -1,0 +1,12 @@
+{
+  "count": 281545,
+  "sourceSha256": "7f1a45f89e321787e764bd986aa42da78f453a92bda3663b544fe6d4983ce684",
+  "schema": "[tag,count,typeCode]",
+  "typeCodes": {
+    "0": "general",
+    "1": "meta",
+    "2": "character",
+    "3": "copyright",
+    "4": "artist"
+  }
+}

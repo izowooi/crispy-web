@@ -1,0 +1,4 @@
+NAI_TOKEN=pst-your-token-here
+QUEUE_SERVICE_SECRET=replace-with-the-same-secret-as-web
+# 선택: 로컬 mock 서버를 쓸 때만 설정
+# NAI_BASE_URL=http://127.0.0.1:8788

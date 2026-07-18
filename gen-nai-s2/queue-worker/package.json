@@ -1,0 +1,21 @@
+{
+  "name": "gen-nai-s2-queue",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply gen-nai-s2-db --local",
+    "db:export:local": "wrangler d1 export gen-nai-s2-db --local --output data-export.sql"
+  },
+  "dependencies": { "fflate": "^0.8.2", "zod": "^4.3.6" },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260711.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0",
+    "wrangler": "4.110.0"
+  }
+}
