@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { rememberDaycare } from "@/app/actions";
 import { DayCard, type Legend, allergenMark } from "@/components/day-card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { addDays, daysInMonth, formatKoreanDate, isWeekend, nearestDate, weekdayKo, ymOf } from "@/lib/dates";
+import { addDays, daysInMonth, formatKoreanDate, isWeekend, nearestDate, todayKST, weekdayKo, ymOf } from "@/lib/dates";
 import type { DayMenu, StoredMonth } from "@/lib/schema";
 
 type View = "day" | "month";
@@ -53,6 +53,19 @@ export function MenuViewer({ daycare, months, today, initialDate, initialView, e
   useEffect(() => {
     syncUrl(date, view, today);
   }, [date, view, today]);
+
+  useEffect(() => {
+    // 홈 화면 앱·bfcache는 다음 날 새로고침 없이 재개된다. 날짜가 바뀌었으면 새 "오늘"로 다시 연다.
+    function refreshIfDayChanged() {
+      if (document.visibilityState === "visible" && todayKST() !== today) window.location.replace(window.location.pathname);
+    }
+    document.addEventListener("visibilitychange", refreshIfDayChanged);
+    window.addEventListener("pageshow", refreshIfDayChanged);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshIfDayChanged);
+      window.removeEventListener("pageshow", refreshIfDayChanged);
+    };
+  }, [today]);
 
   const prevDate = nearestDate(sortedDates, date, -1);
   const nextDate = nearestDate(sortedDates, date, 1);
