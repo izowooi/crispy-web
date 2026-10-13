@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  --canvas: #f7f7ef;
+  --panel: #fffef9;
+  --panel-muted: #eaece2;
+  --lunch: #eaf0e3;
+  --lunch-line: #d6e0ca;
+  --ink: #293d30;
+  --ink-soft: #3c563d;
+  --muted: #71816a;
+  --line: #e0e5d8;
+  --accent: #426550;
+  --accent-ink: #ffffff;
+  --accent-soft: #e8ecdf;
+  --warm: #c38436;
+  --warm-soft: #f3ead6;
+  --warm-ink: #7b6235;
+  --danger: #b5473c;
+  --danger-soft: #f8e7e3;
+}
+
+.dark {
+  --canvas: #111712;
+  --panel: #18211a;
+  --panel-muted: #212c23;
+  --lunch: #1d2a20;
+  --lunch-line: #2c3d2f;
+  --ink: #e6ede4;
+  --ink-soft: #cddbc9;
+  --muted: #98a893;
+  --line: #2a352b;
+  --accent: #8dbb98;
+  --accent-ink: #102015;
+  --accent-soft: #233026;
+  --warm: #e0a95e;
+  --warm-soft: #3a3020;
+  --warm-ink: #f0d6a8;
+  --danger: #f08a7e;
+  --danger-soft: #3a211e;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-panel-muted: var(--panel-muted);
+  --color-lunch: var(--lunch);
+  --color-lunch-line: var(--lunch-line);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-warm: var(--warm);
+  --color-warm-soft: var(--warm-soft);
+  --color-warm-ink: var(--warm-ink);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+}
+
+html {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+:focus-visible {
+  outline: 3px solid var(--warm);
+  outline-offset: 3px;
+}

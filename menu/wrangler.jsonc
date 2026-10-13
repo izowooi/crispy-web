@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "baby-menu",
+  "main": ".open-next/worker.js",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_date": "2026-07-11",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // 한국 요청이 HKG colo로 들어오면 Anthropic API가 403(지원 지역 아님)을 준다. 서울 리전에 고정한다.
+  "placement": { "mode": "targeted", "region": "aws:ap-northeast-2" },
+  "routes": [
+    { "pattern": "bm.zowoo.uk", "custom_domain": true }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "baby-menu",
+      "database_id": "29c588bd-2b3b-4dfb-9804-94d0e632940e",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "IMAGES", "bucket_name": "baby-menu" }
+  ],
+  "vars": {
+    "CLAUDE_MODEL": "claude-sonnet-5-5"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
