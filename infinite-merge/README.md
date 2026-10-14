@@ -1,45 +1,66 @@
 # 인피니티 머지 · 五行 Alchemy
 
-나무(木)·불(火)·흙(土)·금속(金)·물(水) 다섯 원소에서 시작하는 단어 연금술 게임입니다. 원소 두 개를 겹치면 AI가 새 원소를 만들어 내고, 그 AI 호출은 **Sign in with ChatGPT로 로그인한 사용자의 ChatGPT Plus/Pro 플랜 사용량**으로 처리됩니다. 개발자의 API 키는 쓰지 않습니다.
+나무(木)·불(火)·흙(土)·금속(金)·물(水) 다섯 원소에서 시작하는 단어 연금술 게임입니다. 원소 두 개를 겹치면 AI가 새 원소를 만들어 내고, 한 번 발견된 조합은 모든 플레이어가 공유하는 레시피 책에 남습니다.
 
-> 이 프로젝트의 목적은 "API 키 없이, 구독 사용자의 사용량으로 AI 서비스를 만들 수 있는가"를 검증하는 것입니다. 결론과 제약 조건은 아래 [검증 결과](#검증-결과)를 참고하세요.
+- **호스팅:** https://merge.zowoo.uk (Cloudflare Workers + D1). 로그인 없이 바로 시작하며, 연성은 운영자의 Claude Haiku 크레딧으로 처리합니다.
+- **내 PC에서 실행:** **Sign in with ChatGPT**로 로그인하면 내 ChatGPT Plus/Pro 플랜 사용량으로 연성합니다. 개발자의 API 키가 필요 없습니다.
+
+> 이 프로젝트는 두 가지를 실험합니다. (1) API 키 없이 구독자의 사용량으로 AI 서비스를 만들 수 있는가, (2) Cloudflare 무료 플랜만으로 공개 AI 게임을 안전하게 운영할 수 있는가. Cloudflare 학습 교재는 [`docs/learn/`](docs/learn/README.md)에 있습니다.
 
 ## 빠른 시작
 
+### 처음 클론했다면 (Cloudflare 계정 없이)
+
 ```bash
 npm install
-npm run dev          # http://127.0.0.1:3000  (localhost 말고 127.0.0.1)
+npm run dev:local    # 로컬 D1(.wrangler/state)에 테이블을 만들고 http://127.0.0.1:3000 실행
 ```
 
-1. 브라우저에서 **http://127.0.0.1:3000**을 엽니다. `localhost`로 열면 자동으로 127.0.0.1로 이동합니다.
-2. **Continue with ChatGPT**를 누릅니다.
-3. OpenAI 화면에서 다음 순서로 진행합니다.
-   1. ChatGPT 계정으로 로그인합니다.
-   2. 워크스페이스를 고릅니다.
-   3. 에이전트 이름(기본값 `Infinite Merge`, 수정 가능)과 권한을 확인한 뒤 승인합니다. 이 권한에는 *ChatGPT 플랜 사용*이 포함되어야 합니다.
-4. 게임으로 돌아오면 "ChatGPT 플랜을 사용하고 있어요" 안내가 한 번 나옵니다. 이후 원소를 끌어다 겹치면 됩니다.
+1. **http://127.0.0.1:3000**을 엽니다(`localhost`로 열면 127.0.0.1로 이동합니다).
+2. **Continue with ChatGPT**를 누르고 OpenAI 화면에서 로그인 → 워크스페이스 선택 → 에이전트 이름(기본값 `Infinite Merge`)과 권한(*ChatGPT 플랜 사용* 포함)을 승인합니다.
+3. 게임으로 돌아오면 원소를 끌어다 겹치면 됩니다.
 
-로그인 없이 UI만 확인하려면 `npm run dev:mock`을 실행하세요. 오프라인 가짜 연성 엔진으로 동작합니다.
+AI 없이 UI만 보려면 `npm run dev:mock`을 쓰세요(오프라인 가짜 연성).
+
+### 운영자 (호스팅과 같은 DB 사용)
+
+```bash
+npx wrangler login   # 최초 1회
+npm run dev          # 원격 D1(운영 DB)에 붙어서 http://127.0.0.1:3000 실행
+```
+
+`npm run dev`에서 만든 레시피는 merge.zowoo.uk에도 바로 보입니다. 원격 DB는 운영 데이터이므로 위험한 실험은 `npm run dev:local`에서 하세요.
+
+### 내 Cloudflare 계정으로 호스팅하려면 (fork)
+
+1. `npx wrangler d1 create infinite-merge` → 출력된 `database_id`를 `wrangler.jsonc`에 넣습니다.
+2. `wrangler.jsonc`의 `routes`(도메인)와 `TURNSTILE_SITE_KEY`를 내 것으로 바꾸거나 지웁니다.
+3. `npm run db:migrate:remote` → `npm run deploy`
+4. `npx wrangler secret put ANTHROPIC_API_KEY` (게스트 모드용, 선택)
+
+자세한 내용은 [docs/HOSTING.md](docs/HOSTING.md)와 [교재 2장](docs/learn/02-workers-stack.md)을 보세요.
 
 ## 게스트 모드 (로그인 없이, Claude Haiku 5.5)
 
-ChatGPT 구독이 없는 사람도 플레이할 수 있게 첫 화면에 **"로그인 없이 바로 시작"** 버튼을 두었습니다. 게스트의 연성은 운영자의 Anthropic API 크레딧으로 `claude-haiku-5-5`가 처리합니다(`effort: low`, JSON 스키마 구조화 출력).
+ChatGPT 구독이 없는 사람도 플레이할 수 있게 **"로그인 없이 바로 시작"** 버튼을 두었습니다. 호스팅에서는 이것이 유일한 입장 방법입니다. 게스트의 연성은 운영자의 Anthropic API 크레딧으로 `claude-haiku-5-5`가 처리합니다(`effort: low`, JSON 스키마 구조화 출력).
 
-1. `.env.local`에 `ANTHROPIC_API_KEY=sk-ant-...`를 넣고 개발 서버를 재시작합니다. 키가 없거나 `sk-ant-`로 시작하지 않으면(예: `==`, 따옴표 오타) 버튼이 비활성화되고 서버 로그에 `[guest] ANTHROPIC_API_KEY does not start with "sk-ant-"` 경고가 찍힙니다.
-2. 한도를 정합니다. 둘 다 한국 시간 자정에 초기화됩니다.
-   - `INFINITE_MERGE_GUEST_DAILY`: 게스트 한 명당 하루 모델 호출 수 (기본 60)
-   - `INFINITE_MERGE_GUEST_GLOBAL_DAILY`: 모든 게스트를 합친 하루 모델 호출 수 (기본 1500)
-3. 즉시 끄려면 `INFINITE_MERGE_GUEST=off`로 설정하거나 키를 제거합니다.
+- 로컬: `.env.local`에 `ANTHROPIC_API_KEY=sk-ant-...`를 넣고 재시작합니다. 키가 없거나 `sk-ant-`로 시작하지 않으면 버튼이 비활성화되고 서버 로그에 경고가 찍힙니다.
+- 호스팅: `npx wrangler secret put ANTHROPIC_API_KEY` ([교재 3장](docs/learn/03-secrets.md))
+
+| 한도 (한국 시간 자정 초기화) | 기본값 | 설정 |
+| --- | --- | --- |
+| 게스트 1명당 모델 호출 | 60 | `INFINITE_MERGE_GUEST_DAILY` |
+| IP 1개당 모델 호출 | 150 | `INFINITE_MERGE_GUEST_IP_DAILY` |
+| IP 1개당 새 게스트 수 | 20 | `INFINITE_MERGE_GUEST_JOIN_IP_DAILY` |
+| 전체 게스트 합계 | 1,500 | `INFINITE_MERGE_GUEST_GLOBAL_DAILY` |
+| 즉시 끄기 | — | `INFINITE_MERGE_GUEST=off` 또는 키 제거 |
 
 | 항목 | 동작 |
 | --- | --- |
-| 레시피 캐시 | 전체 플레이어가 공유합니다. 이미 누군가 발견한 조합은 모델을 호출하지 않아 횟수와 크레딧을 쓰지 않습니다 |
-| 게스트 한도 소진 | "오늘의 게스트 연성 횟수를 모두 썼어요" 안내와 함께 Continue with ChatGPT 버튼을 보여 줍니다 |
-| 전체 한도 소진·크레딧 부족·키 오류 | 게스트 모드를 일시 중단하고 ChatGPT 로그인을 권합니다 |
-| 게스트 → ChatGPT 로그인 | 게스트로 발견한 원소를 ChatGPT 계정으로 옮깁니다 |
-| 크레딧 비용 감 | 연성 한 번에 입력 약 600토큰, 출력 수십 토큰입니다. Haiku 5.5 단가($0.10/$0.50 per MTok) 기준 1,500회에 약 0.1~0.2달러로 추정합니다(실측 아님) |
-
-> 게스트 한도는 브라우저 쿠키 단위라서, 쿠키를 지우면 새 게스트가 됩니다. 전체 일일 한도가 크레딧의 최종 상한 역할을 합니다. 호스팅할 때는 IP 단위 제한이나 Cloudflare Turnstile 추가를 권장합니다.
+| 레시피 캐시 | 전체 플레이어가 공유합니다. 이미 발견된 조합은 모델을 호출하지 않아 횟수와 크레딧을 쓰지 않습니다 |
+| 호스팅 방어 | same-origin 검사, Rate Limiting binding, Turnstile, IP 해시별 일일 쿼터 ([교재 4장](docs/learn/04-defense.md)) |
+| 게스트 → ChatGPT 로그인 (로컬) | 게스트로 발견한 원소를 ChatGPT 계정으로 옮깁니다 |
+| 비용 | 연성 1회에 입력 약 1,300토큰, 출력 약 50토큰. Haiku 5.5 기준 약 $0.00016, 전체 한도 1,500회는 약 $0.25/일 |
 
 ## Sign in with ChatGPT 설정 가이드 (처음 하는 경우)
 
@@ -56,7 +77,7 @@ ChatGPT 구독이 없는 사람도 플레이할 수 있게 첫 화면에 **"로�
 | resource | `https://api.openai.com/v1` |
 | 추론 호출 | `POST https://api.openai.com/v1/responses` + `Authorization: Bearer <access_token>`, `store:false`, `stream:true` 필수 |
 
-따라서 `.env`도 필요 없습니다. 선택 옵션은 `.env.example`에 정리되어 있습니다.
+따라서 ChatGPT 로그인만 쓴다면 `.env`도 필요 없습니다. 선택 옵션은 `.env.example`에 정리되어 있습니다.
 
 ### 사용자 쪽 조건
 
@@ -71,18 +92,18 @@ ChatGPT 구독이 없는 사람도 플레이할 수 있게 첫 화면에 **"로�
 
 ```
 브라우저 ──Continue with ChatGPT──▶ /auth/chatgpt
-  host id(urn:uuid) 준비, state·nonce·PKCE 생성 → oauth_pending 테이블에 저장
+  host id(urn:uuid) 준비, state·nonce·PKCE 생성 → D1 im_oauth_pending에 저장
   ──302──▶ auth.openai.com/api/accounts/authorize?client_id=dynamic_agent_client&agent_name_hint=Infinite Merge&…
 사용자 로그인·동의
   ──302──▶ http://127.0.0.1:3000/auth/callback?code&state&client_id=oaiapp_…
 /auth/callback
   state 검증 → 코드 교환(PKCE) → ID 토큰 JWKS 서명·iss·aud·nonce 검증
   → 권한 범위에 chatgpt.tokens.use.direct가 있는지 확인
-  → .data/credentials/<client_id>.json (0600) 저장 → 세션 쿠키 발급
+  → .data/credentials/<client_id>.json (0600) 저장 → D1 im_sessions + 세션 쿠키 발급
 게임 /api/combine
   레시피 캐시에 있으면 즉시 반환
   없으면 access token(만료 2분 전 자동 refresh) → /v1/responses 스트리밍
-  → JSON 파싱 → DB 저장
+  → JSON 파싱 → D1 저장
 ```
 
 ## 검증 결과
@@ -94,6 +115,8 @@ ChatGPT 구독이 없는 사람도 플레이할 수 있게 첫 화면에 **"로�
 | `reasoning` 파라미터 거절 시 자동 제외 후 재시도, 스트림 중 `usage_limit` → 한도 모달 | ✅ 가짜 서버로 확인 |
 | **실제 ChatGPT 계정으로 끝까지 연성** | ✅ 2026-10-13 확인 (`oaiapp_…` 발급 → 연성 성공, 사용 모델 기록됨) |
 | 일시 과부하(`server_is_overloaded`) | ✅ 실계정에서 1회 관측 → 자동 재시도로 대응 (아래 참고) |
+| 호스팅(merge.zowoo.uk): Turnstile → 게스트 입장 → Haiku 연성 → D1 기록 | ✅ 2026-10-14 실제 브라우저로 확인 (연성 28회, 서울 placement로 HKG 403 없음) |
+| 로컬 `npm run dev`와 호스팅이 같은 D1을 공유 | ✅ 로컬에서 만든 레시피가 원격 `im_recipes`에 기록됨 |
 
 ### 실제 계정 수동 검증 체크리스트
 
@@ -121,33 +144,48 @@ ChatGPT 구독이 없는 사람도 플레이할 수 있게 첫 화면에 **"로�
   - 전체 15초 예산을 넘길 것 같으면 재시도하지 않고 바로 사용자에게 넘깁니다.
 - 사용 한도 초과, 자격 없음, 인증 만료, 지원하지 않는 기능 오류는 **재시도하지 않습니다**. 재시도해도 성공할 수 없고 사용자 플랜만 소모하기 때문입니다.
 
-## 배포 전에 알아야 할 제약 (중요)
+## 호스팅과 Sign in with ChatGPT
 
-- **plan usage를 자유롭게 쓸 수 있는 범위는 "오픈소스·로컬 실행 앱"입니다.** 원격으로 호스팅하는 웹사이트나 유료 앱이 사용자의 플랜을 쓰려면 [interest form](https://openai.com/form/sign-in-with-chatgpt-interest/)으로 신청해 승인을 받아야 합니다.
-- 웹사이트용 경로(`/siwc/website`)는 현재 **identity-only**입니다. 이름·이메일·사진만 받을 수 있고, 미리 등록한 client_id가 필요하며, 선택된 파트너에게만 제공됩니다.
-- 루프백 콜백(127.0.0.1)은 브라우저를 띄운 컴퓨터로만 돌아옵니다. 그래서 지금 구조는 "각 사용자가 자기 컴퓨터에서 실행하는 앱"입니다. 모바일이나 원격 배포로 가려면 OpenAI의 승인을 받은 client_id와 HTTPS 콜백 방식으로 바꿔야 합니다.
+- **plan usage를 자유롭게 쓸 수 있는 범위는 "오픈소스·로컬 실행 앱"입니다.** 원격 호스팅이 사용자의 플랜을 쓰려면 [interest form](https://openai.com/form/sign-in-with-chatgpt-interest/)으로 승인을 받아야 합니다.
+- 그래서 merge.zowoo.uk에서는 SIWC를 끕니다. `/auth/chatgpt`와 `/auth/callback`은 루프백(127.0.0.1)이 아닌 호스트에서 404를 돌려주고, 화면에서도 ChatGPT 버튼을 숨깁니다(`StateResponse.siwc`). `INFINITE_MERGE_SIWC=off`로 로컬에서도 끌 수 있습니다.
+- 웹사이트용 경로(`/siwc/website`)는 현재 identity-only라 플랜 사용을 할 수 없습니다.
 
-## 데이터 (로컬)
+## 데이터
 
-`.data/`는 gitignore 대상입니다.
+게임 데이터는 Cloudflare **D1**(`infinite-merge`)에 있고, 모든 테이블 이름은 `im_`으로 시작합니다. 스키마는 [`migrations/`](migrations/)에 있습니다.
 
-| 파일 | 내용 |
+| 테이블 | 내용 |
 | --- | --- |
-| `infinite-merge.db` | `node:sqlite` DB. 테이블: `elements`, `recipes`(전 세계 공용 레시피 캐시), `discoveries`(사용자별 보유), `accounts`, `sessions`, `oauth_pending`. Cloudflare D1과 호환되는 SQLite 문법입니다 |
-| `host.json` | 이 설치본의 `ext_agent_host_id` (`urn:uuid:…`) |
-| `credentials/<client_id>.json` | 토큰 (0600, 원자적 쓰기). 브라우저에는 저장하지 않습니다 |
+| `im_elements` | 세계의 모든 원소 (기본 5원소는 migration이 넣음) |
+| `im_recipes` | 전 세계 공용 레시피 캐시 |
+| `im_discoveries` | 플레이어별 보유 원소 |
+| `im_accounts`, `im_sessions` | 게스트·ChatGPT 계정, 로그인 세션 |
+| `im_oauth_pending` | SIWC 진행 중 상태 (로컬 전용) |
+| `im_guest_usage` | 게스트 일일 사용량 (방어 카운터) |
+| `im_counters` | trigger가 유지하는 원소 수 |
 
-Supabase나 D1로 옮길 때는 `lib/server/db.ts`의 스키마와 쿼리를 그대로 가져가면 됩니다. 단, 토큰은 DB가 아닌 별도의 비밀 저장소에 두는 것을 권장합니다.
+| 실행 방법 | 바라보는 D1 |
+| --- | --- |
+| merge.zowoo.uk, `npm run dev` | 원격(운영) D1 |
+| `npm run dev:local`, `dev:mock`, `preview` | 로컬 사본 `.wrangler/state/` |
+
+SIWC 토큰은 DB에 넣지 않고 로컬 `.data/credentials/<client_id>.json`(0600)에, 설치 ID는 `.data/host.json`에 둡니다. `.data/`와 `.wrangler/`는 gitignore 대상입니다.
 
 ## 명령어
 
 | 명령 | 설명 |
 | --- | --- |
-| `npm run dev` | 개발 서버 (127.0.0.1:3000) |
-| `npm run dev:mock` | 로그인 없는 오프라인 mock 연성 |
-| `npm test` | vitest 단위 테스트 (PKCE, authorize URL, SSE 파서, 에러 매핑, 출력 파싱, 조합 로직) |
-| `npm run lint` / `npx tsc --noEmit` | 정적 검사 |
-| `npm run build && npm start` | 프로덕션 빌드와 실행 (127.0.0.1:3000) |
+| `npm run dev` | 개발 서버 (127.0.0.1:3000, **원격 D1**) |
+| `npm run dev:local` | 개발 서버 (로컬 D1, Cloudflare 계정 불필요) |
+| `npm run dev:mock` | 로그인 없는 오프라인 mock 연성 (로컬 D1) |
+| `npm test` | vitest (D1 shim, 쿼터, 가드, PKCE, SSE 파서, 조합 로직) |
+| `npm run lint` / `npm run typecheck` | 정적 검사 |
+| `npm run db:migrate:local` / `db:migrate:remote` | D1 migration 적용 |
+| `npm run preview` | Cloudflare 빌드 후 workerd(실제 Workers 런타임)로 로컬 실행 (127.0.0.1:8787, 로컬 D1) |
+| `npm run deploy` | Cloudflare 빌드(정적 페이지 승격, 시크릿 scrub/verify) 후 배포 |
+| `npm run lab:d1` · `lab:size` · `lab:clone-remote` · `lab:hammer` | 학습 실습 도구 ([docs/learn](docs/learn/README.md)) |
+
+`npx tsc --noEmit`은 `npm run dev`나 `npm run build`를 한 번 실행한 뒤에 돌리세요. Next가 `LayoutProps` 같은 타입을 그때 생성합니다.
 
 ## 문제 해결
 

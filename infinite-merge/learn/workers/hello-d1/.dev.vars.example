@@ -1,0 +1,2 @@
+# 복사해서 .dev.vars 로 만들면 wrangler dev가 env.LAB_SECRET 으로 읽는다 (.dev.vars는 gitignore 대상)
+LAB_SECRET=change-me-local-only

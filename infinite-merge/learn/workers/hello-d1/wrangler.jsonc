@@ -1,0 +1,19 @@
+// 실습용 미니 Worker. 본 앱(infinite-merge)과 완전히 분리된 이름·DB를 쓴다.
+// 로컬 실습:   npx wrangler d1 execute im-hello-lab --local --file schema.sql
+//             npx wrangler dev
+{
+  "$schema": "../../../node_modules/wrangler/config-schema.json",
+  "name": "im-hello-lab",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+
+  // 로컬 실습만 할 때는 database_id가 아무 문자열이어도 된다(.wrangler/state에 파일로 생긴다).
+  // 실제로 배포해 보려면: npx wrangler d1 create im-hello-lab → 출력된 id로 바꾼다.
+  "d1_databases": [{ "binding": "DB", "database_name": "im-hello-lab", "database_id": "local-only-hello-lab" }],
+
+  "ratelimits": [{ "name": "LIMITER", "namespace_id": "7399", "simple": { "limit": 5, "period": 10 } }],
+
+  // vars: 대시보드에 그대로 보이는 일반 설정. 비밀이 아닌 값만.
+  "vars": { "GREETING": "안녕하세요" }
+  // secrets: 여기에 쓰지 않는다. 로컬은 .dev.vars, 배포본은 `npx wrangler secret put LAB_SECRET`.
+}
