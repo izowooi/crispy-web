@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "infinite-merge",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+
+  // Requests from Korea can land on the HKG colo, where the Anthropic API answers 403 (unsupported region).
+  // Run the Worker next to Seoul instead. Do not remove.
+  "placement": { "mode": "targeted", "region": "aws:ap-northeast-2" },
+
+  "routes": [{ "pattern": "merge.zowoo.uk", "custom_domain": true }],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "infinite-merge",
+      // Forks: run `npx wrangler d1 create infinite-merge` and paste your own id here.
+      "database_id": "68173cfa-13c3-486f-98a7-41a330a54c13",
+      "migrations_dir": "migrations",
+      // `npm run dev` (IM_D1=remote) talks to this deployed database, so local and hosted share one world.
+      // `npm run dev:local` / `npm run preview` turn remote bindings off and use .wrangler/state instead.
+      "remote": true
+    }
+  ],
+
+  // Workers Rate Limiting: per-location burst limits keyed by hashed client IP (lib/server/guard.ts).
+  "ratelimits": [
+    { "name": "COMBINE_LIMITER", "namespace_id": "7301", "simple": { "limit": 20, "period": 10 } },
+    { "name": "GUEST_START_LIMITER", "namespace_id": "7302", "simple": { "limit": 3, "period": 60 } }
+  ],
+
+  // Plain settings (visible in the dashboard). Credentials go in secrets: wrangler secret put <NAME>.
+  "vars": {
+    "INFINITE_MERGE_SIWC": "off",
+    "INFINITE_MERGE_GUEST_DAILY": "60",
+    "INFINITE_MERGE_GUEST_GLOBAL_DAILY": "1500",
+    "INFINITE_MERGE_GUEST_IP_DAILY": "150",
+    "INFINITE_MERGE_GUEST_JOIN_IP_DAILY": "20",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFWmlebc_Pmt77c4"
+  },
+
+  "observability": { "enabled": true }
+}

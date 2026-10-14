@@ -48,3 +48,6 @@ next-env.d.ts
 /.wrangler/
 .dev.vars*
 /.open-next/
+
+# browser automation captures
+/.playwright-mcp/

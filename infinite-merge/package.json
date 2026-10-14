@@ -3,30 +3,39 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 127.0.0.1 -p 3000",
-    "dev:mock": "INFINITE_MERGE_AI=mock next dev -H 127.0.0.1 -p 3000",
+    "dev": "IM_D1=remote next dev -H 127.0.0.1 -p 3000",
+    "dev:local": "npm run db:migrate:local && next dev -H 127.0.0.1 -p 3000",
+    "dev:mock": "npm run db:migrate:local && INFINITE_MERGE_AI=mock next dev -H 127.0.0.1 -p 3000",
     "build": "next build",
-    "start": "next start -H 127.0.0.1 -p 3000",
     "lint": "eslint",
-    "test": "vitest run"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate:local": "wrangler d1 migrations apply infinite-merge --local",
+    "db:migrate:remote": "wrangler d1 migrations apply infinite-merge --remote",
+    "cloudflare:build": "opennextjs-cloudflare build && node scripts/scrub-build-secrets.mjs && node scripts/verify-build-secrets.mjs",
+    "preview": "npm run cloudflare:build && npm run db:migrate:local && wrangler dev --local --ip 127.0.0.1 --port 8787",
+    "deploy": "npm run cloudflare:build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
     "jose": "^6.2.12",
     "motion": "^14.1.0",
-    "next": "16.4.0",
+    "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261014.1",
+    "@opennextjs/cloudflare": "1.20.11",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^5.0.4"
+    "vitest": "^5.0.4",
+    "wrangler": "^4.151.0"
   }
 }
