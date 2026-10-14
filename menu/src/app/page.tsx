@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CreateDaycareForm } from "@/components/forms";
+import { InstallGuide } from "@/components/install-guide";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LAST_DAYCARE_COOKIE } from "@/lib/server/auth";
 import { getDaycare, searchDaycares } from "@/lib/server/db";
@@ -82,6 +83,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         <p className="mt-1 text-sm text-muted">관리 비밀번호는 식단표를 올리거나 고칠 때만 필요해요. 보기는 누구나 할 수 있어요.</p>
         <CreateDaycareForm />
       </section>
+
+      <InstallGuide />
     </main>
   );
 }

@@ -24,6 +24,21 @@ flowchart LR
 - **원본 사진 보관 180일**: R2 lifecycle 규칙 `expire-menu-photos-180d`(prefix `daycares/`)가 업로드 180일 뒤 사진을 자동 삭제합니다. 식단 텍스트(D1)는 계속 남고, 만료된 달은 "원본 보기"만 숨겨집니다. 기간을 바꾸면 `src/lib/dates.ts`의 `PHOTO_RETENTION_DAYS`도 함께 바꾸세요.
 - **남용 방지**: 분석은 어린이집당 하루 10회·전체 하루 60회, 생성은 IP당 하루 5회로 제한합니다(`src/lib/server/limits.ts`).
 
+## 홈 화면에 설치 (PWA)
+
+앱 스토어 없이 휴대폰 홈 화면에 아이콘을 만들어 앱처럼 열 수 있습니다.
+
+| 기기 | 방법 |
+|---|---|
+| iPhone / iPad | **Safari**로 어린이집 식단 화면(`/c/<id>`)을 열고 공유 버튼 → **홈 화면에 추가** |
+| Android | **Chrome**에서 어린이집 식단 화면을 열고 화면 아래 **앱 설치** 버튼(또는 ⋮ 메뉴 → 앱 설치) |
+
+- 어린이집 화면에서 설치하면 그 어린이집이 시작 화면이 됩니다(어린이집별 manifest: `/c/<id>/manifest.webmanifest`). 카카오톡 같은 앱 안 브라우저에서는 설치할 수 없어 안내 문구가 뜹니다.
+- iOS 홈 화면 앱은 Safari와 쿠키가 분리될 수 있습니다. 처음 열 때 한 번 어린이집 화면을 거치면 그 뒤로는 그대로 오늘 식단이 열리고, 식단 올리기용 관리 비밀번호는 앱에서 한 번 더 입력해야 할 수 있습니다.
+- 서비스 워커(`public/sw.js`)는 페이지를 캐시하지 않습니다(어제 식단이 보이는 것을 막기 위해). 정적 파일만 캐시하고, 인터넷이 없으면 `/offline` 안내 화면을 보여줍니다.
+- 아이콘과 iOS 시작 화면은 `docs/brand/icon-master.png`에서 `python3 scripts/generate-pwa-assets.py`(Pillow 필요)로 다시 만들 수 있습니다. 마스터 이미지는 Codex CLI의 이미지 생성으로 그렸습니다.
+- 서비스 워커를 고치면 `public/sw.js`의 `VERSION`을 올려야 이전 캐시가 정리됩니다.
+
 ## 로컬 실행
 
 ```bash

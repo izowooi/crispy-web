@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MenuViewer } from "@/components/menu-viewer";
 import { isIsoDate, todayKST } from "@/lib/dates";
+import { appleWebApp } from "@/lib/pwa";
 import { getDaycare, listMonths } from "@/lib/server/db";
 import { getEnv } from "@/lib/server/env";
 import { canEdit } from "@/lib/server/session";
@@ -16,7 +17,13 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const daycare = await getDaycare(await getEnv(), id);
-  return { title: daycare ? `${daycare.name} 식단 · 우리 아기 식단` : "우리 아기 식단" };
+  if (!daycare) return { title: "우리 아기 식단" };
+  return {
+    title: `${daycare.name} 식단 · 우리 아기 식단`,
+    // 홈 화면에 추가하면 이 어린이집이 바로 열리도록 어린이집별 manifest를 쓴다.
+    manifest: `/c/${daycare.id}/manifest.webmanifest`,
+    appleWebApp: appleWebApp(`${daycare.name} 식단`.slice(0, 12)),
+  };
 }
 
 export default async function DaycarePage({ params, searchParams }: Props) {

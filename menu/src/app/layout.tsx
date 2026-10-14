@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { PwaRegister } from "@/components/pwa-register";
+import { appleWebApp } from "@/lib/pwa";
 import "./globals.css";
 
 const themeScript = `
@@ -19,7 +21,8 @@ export const metadata: Metadata = {
   title: "우리 아기 식단",
   description: "어린이집 월간 식단표 사진을 올리면 오늘의 간식과 점심을 바로 보여줍니다.",
   applicationName: "우리 아기 식단",
-  appleWebApp: { capable: true, title: "아기 식단", statusBarStyle: "default" },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: appleWebApp("아기 식단"),
 };
 
 export const viewport: Viewport = {
@@ -34,7 +37,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="bg-canvas text-ink antialiased">{children}</body>
+      <body className="bg-canvas text-ink antialiased">
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }

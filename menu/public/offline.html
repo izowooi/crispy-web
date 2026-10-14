@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#426550" />
+    <title>인터넷 연결 없음 · 우리 아기 식단</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+        background: #f7f7ef; color: #1f2a24; text-align: center; }
+      @media (prefers-color-scheme: dark) { body { background: #151b17; color: #e8ece6; } }
+      main { max-width: 22rem; }
+      .bowl { font-size: 3.5rem; }
+      h1 { font-size: 1.4rem; margin: 0.6rem 0 0.4rem; }
+      p { margin: 0 0 1.4rem; line-height: 1.6; opacity: 0.75; }
+      button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 0.8rem 1.6rem;
+        background: #426550; color: #f7f7ef; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="bowl" aria-hidden="true">🍚</div>
+      <h1>인터넷에 연결되어 있지 않아요</h1>
+      <p>오늘 식단은 연결이 되면 바로 보여드릴게요.<br />Wi-Fi나 데이터를 확인한 뒤 다시 시도해 주세요.</p>
+      <button type="button" onclick="location.reload()">다시 시도</button>
+    </main>
+  </body>
+</html>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { rememberDaycare } from "@/app/actions";
 import { DayCard, type Legend, allergenMark } from "@/components/day-card";
+import { InstallGuide } from "@/components/install-guide";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { addDays, daysInMonth, formatKoreanDate, isWeekend, nearestDate, todayKST, weekdayKo, ymOf } from "@/lib/dates";
 import type { DayMenu, StoredMonth } from "@/lib/schema";
@@ -232,6 +233,7 @@ export function MenuViewer({ daycare, months, today, initialDate, initialView, e
       )}
 
       <MonthDetails month={currentMonth} legend={legend} />
+      <InstallGuide />
     </main>
   );
 }
