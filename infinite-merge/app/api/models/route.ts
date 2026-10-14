@@ -3,6 +3,7 @@ import { resolveModel } from "@/lib/server/alchemy/combine";
 import { aiProvider, GUEST_MODEL } from "@/lib/server/config";
 import { getDb } from "@/lib/server/db";
 import { AppError, errorResponse } from "@/lib/server/errors";
+import { assertSameOrigin } from "@/lib/server/guard";
 import { readJson } from "@/lib/server/http";
 import { getCurrentAccount, isGuest } from "@/lib/server/session";
 import { getValidAccessToken } from "@/lib/server/siwc/oauth";
@@ -32,6 +33,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    assertSameOrigin(request);
     const account = await getCurrentAccount();
     if (!account) throw new AppError("not_signed_in");
     const body = await readJson<{ slug?: unknown }>(request);
@@ -44,7 +46,7 @@ export async function POST(request: Request) {
     if (!models.some((m) => m.slug === body.slug)) {
       throw new AppError("bad_request", { message: "이 계정에서 사용할 수 없는 모델이에요." });
     }
-    getDb().prepare("UPDATE accounts SET selected_model = ? WHERE sub = ?").run(body.slug, account.sub);
+    await getDb().prepare("UPDATE im_accounts SET selected_model = ? WHERE sub = ?").bind(body.slug, account.sub).run();
     return Response.json({ models, selected: body.slug } satisfies ModelsResponse);
   } catch (err) {
     return errorResponse(err);

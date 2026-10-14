@@ -1,4 +1,5 @@
 import "server-only";
+import { siwcDisabled } from "./config";
 
 export type HostInfo = { hostname: string; port: string };
 
@@ -19,6 +20,15 @@ export function loopbackOrigin(port: string): string {
 
 export function isLocalAlias(hostname: string): boolean {
   return hostname === "localhost" || hostname === "[::1]";
+}
+
+export function isLoopbackHost(hostname: string): boolean {
+  return hostname === "127.0.0.1" || isLocalAlias(hostname);
+}
+
+/** SIWC plan usage is approved for local apps only, and its callback must be a loopback URL. */
+export function siwcAvailable(request: Request): boolean {
+  return !siwcDisabled() && isLoopbackHost(hostInfo(request).hostname);
 }
 
 export async function readJson<T>(request: Request): Promise<T | null> {

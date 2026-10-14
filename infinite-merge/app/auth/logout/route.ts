@@ -1,9 +1,16 @@
+import { errorResponse } from "@/lib/server/errors";
+import { assertSameOrigin } from "@/lib/server/guard";
 import { destroySession, getCurrentAccount } from "@/lib/server/session";
 import { clearTokens, readCredentials } from "@/lib/server/siwc/credentials";
 import { revokeRefreshToken } from "@/lib/server/siwc/oauth";
 import { forgetModels } from "@/lib/server/siwc/responses";
 
-export async function POST() {
+export async function POST(request: Request) {
+  try {
+    assertSameOrigin(request);
+  } catch (err) {
+    return errorResponse(err);
+  }
   const account = await getCurrentAccount();
   let revoked = false;
   if (account?.client_id) {

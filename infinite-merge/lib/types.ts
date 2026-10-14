@@ -10,7 +10,7 @@ export type ElementView = {
   base?: boolean;
   /** Unix ms when this user first obtained the element. */
   discoveredAt?: number;
-  /** True when this user was the first in the world (this local DB) to create it. */
+  /** True when this user was the first in the shared world to create it. */
   firstDiscovery?: boolean;
 };
 
@@ -37,6 +37,8 @@ export type GuestInfo = {
   available: boolean;
   model: string;
   dailyLimit: number;
+  /** Cloudflare Turnstile site key when bot checks are on; the guest start must then carry a token. */
+  turnstileSiteKey: string | null;
 };
 
 /** GET /api/state */
@@ -44,10 +46,15 @@ export type StateResponse = {
   user: UserView | null;
   plan: PlanView | null;
   elements: ElementView[];
-  /** Total distinct elements discovered by anyone in this local world. */
+  /** Total distinct elements discovered by anyone in the shared world. */
   worldCount: number;
   guest: GuestInfo;
+  /** Sign in with ChatGPT is offered only on a local loopback run (http://127.0.0.1), never when hosted. */
+  siwc: boolean;
 };
+
+/** POST /auth/guest body */
+export type GuestStartRequest = { turnstileToken?: string };
 
 /** POST /api/combine body */
 export type CombineRequest = { a: string; b: string };
@@ -80,6 +87,9 @@ export type AppErrorCode =
   | "unknown_element"
   | "guest_limit"
   | "guest_unavailable"
+  | "rate_limited"
+  | "forbidden"
+  | "bot_check_failed"
   | "internal";
 
 export type ErrorAction = "signin" | "manage_usage" | "retry" | "none";

@@ -19,6 +19,8 @@ type Props = {
   onReset: () => void;
   onClearBoard: () => void;
   onModelChange: (slug: string) => void;
+  /** Hosted runs have no Sign in with ChatGPT, so its upsell is hidden. */
+  siwc: boolean;
 };
 
 export function TopBar(props: Props) {
@@ -151,7 +153,7 @@ function GuestChip({ plan }: { plan: PlanView }) {
   );
 }
 
-function AccountMenu({ user, plan, onLogout, onReset, onClearBoard, onModelChange }: Props & { user: UserView }) {
+function AccountMenu({ user, plan, siwc, onLogout, onReset, onClearBoard, onModelChange }: Props & { user: UserView }) {
   const [open, setOpen] = useState(false);
   const [models, setModels] = useState<ModelsResponse | null>(null);
   const [modelError, setModelError] = useState<string | null>(null);
@@ -279,10 +281,14 @@ function AccountMenu({ user, plan, onLogout, onReset, onClearBoard, onModelChang
                   운영자 크레딧으로 제공되는 체험이에요. 오늘 남은 연성 {plan.remaining ?? 0}회. 이미 누군가 발견한 조합은 횟수에
                   포함되지 않아요.
                 </p>
-                <div className="mt-2.5">
-                  <ChatGPTButton size="sm" />
-                </div>
-                <p className="mt-1.5 text-[0.68rem] text-white/40">로그인하면 지금까지 발견한 원소를 그대로 가져가요.</p>
+                {siwc && (
+                  <>
+                    <div className="mt-2.5">
+                      <ChatGPTButton size="sm" />
+                    </div>
+                    <p className="mt-1.5 text-[0.68rem] text-white/40">로그인하면 지금까지 발견한 원소를 그대로 가져가요.</p>
+                  </>
+                )}
               </div>
             )}
 

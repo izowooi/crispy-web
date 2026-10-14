@@ -78,6 +78,7 @@ export function Game() {
   const boardLoaded = useRef(false);
 
   const signedIn = Boolean(state?.user);
+  const siwc = state?.siwc ?? false;
 
   // ---------- boot ----------
 
@@ -259,7 +260,7 @@ export function Game() {
           kind: "error",
           title: err.message,
           action:
-            err.action === "signin"
+            err.action === "signin" && siwc
               ? { label: "Continue with ChatGPT", href: "/auth/chatgpt" }
               : err.action === "manage_usage"
                 ? { label: "Manage usage", href: "https://chatgpt.com/settings/usage", external: true }
@@ -318,7 +319,7 @@ export function Game() {
         }
       }
     },
-    [addBurst, loadState, pushToast, setModelShown],
+    [addBurst, loadState, pushToast, setModelShown, siwc],
   );
 
   useEffect(() => {
@@ -539,13 +540,17 @@ export function Game() {
     }
   };
 
-  const startGuest = async () => {
-    const res = await fetch("/auth/guest", { method: "POST" });
+  const startGuest = async (turnstileToken: string | null): Promise<boolean> => {
+    const res = await fetch("/auth/guest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ turnstileToken: turnstileToken ?? undefined }),
+    });
     if (!res.ok) {
       const body = (await res.json().catch(() => null)) as ErrorResponse | null;
       pushToast({ kind: "error", title: body?.error.message ?? "게스트로 입장하지 못했어요" });
       await loadState();
-      return;
+      return false;
     }
     await loadState();
     pushToast({
@@ -553,6 +558,7 @@ export function Game() {
       title: "게스트로 입장했어요",
       body: `Claude Haiku로 하루 ${state?.guest.dailyLimit ?? ""}회 연성할 수 있어요. 이미 발견된 조합은 횟수에 포함되지 않아요.`,
     });
+    return true;
   };
 
   const resetProgress = async () => {
@@ -620,6 +626,7 @@ export function Game() {
         onClearBoard={clearBoard}
         onModelChange={setModelShown}
         boardCount={tiles.length}
+        siwc={siwc}
       />
 
       <Inventory
@@ -644,7 +651,7 @@ export function Game() {
 
       <AnimatePresence>
         {state && !signedIn && (
-          <Landing key="landing" worldCount={state.worldCount} guest={state.guest} onGuestStart={startGuest} />
+          <Landing key="landing" worldCount={state.worldCount} guest={state.guest} siwc={state.siwc} onGuestStart={startGuest} />
         )}
       </AnimatePresence>
 

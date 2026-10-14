@@ -2,7 +2,7 @@ import "server-only";
 import { BASE_NAMES, normalizeName, pairKey } from "@/lib/elements";
 import type { CombineResponse, ElementView } from "@/lib/types";
 import { aiProvider, GUEST_MODEL, guestConfig, modelOverride } from "../config";
-import { getDb, transaction } from "../db";
+import { getDb } from "../db";
 import { AppError } from "../errors";
 import { claudeAlchemy } from "../guest/claude";
 import { consumeGuestCall, guestRemaining } from "../guest/quota";
@@ -16,13 +16,19 @@ import { ALCHEMY_INSTRUCTIONS, buildAlchemyInput } from "./prompt";
 
 type ElementRow = { name: string; emoji: string; desc: string | null; first_by_sub: string | null };
 
-function owns(sub: string, name: string): boolean {
-  if (BASE_NAMES.has(name)) return true;
-  return Boolean(getDb().prepare("SELECT 1 FROM discoveries WHERE sub = ? AND element_name = ?").get(sub, name));
+async function ownsBoth(sub: string, a: string, b: string): Promise<boolean> {
+  const needed = [a, b].filter((n) => !BASE_NAMES.has(n));
+  if (needed.length === 0) return true;
+  const { results } = await getDb()
+    .prepare("SELECT element_name FROM im_discoveries WHERE sub = ? AND element_name IN (?, ?)")
+    .bind(sub, needed[0], needed[1] ?? needed[0])
+    .all<{ element_name: string }>();
+  const owned = new Set(results.map((r) => r.element_name));
+  return needed.every((n) => owned.has(n));
 }
 
 export async function resolveModel(sub: string, accessToken: string): Promise<string> {
-  const account = findAccount(sub);
+  const account = await findAccount(sub);
   if (account?.selected_model) return account.selected_model;
   const override = modelOverride();
   if (override) return override;
@@ -37,9 +43,11 @@ export async function resolveModel(sub: string, accessToken: string): Promise<st
 // budget caps how long the fusion animation can spin before we hand control back to the player.
 const TRANSIENT_RETRY = { delaysMs: [800, 2500], budgetMs: 15_000 };
 
-async function generate(sub: string, a: string, b: string): Promise<{ element: ParsedElement; model: string }> {
+type CallerContext = { ipKey: string | null };
+
+async function generate(sub: string, a: string, b: string, ctx: CallerContext): Promise<{ element: ParsedElement; model: string }> {
   if (aiProvider() === "mock") return { element: await mockCombine(a, b), model: "mock" };
-  if (isGuest(sub)) return generateAsGuest(sub, a, b);
+  if (isGuest(sub)) return generateAsGuest(sub, a, b, ctx);
 
   const { accessToken } = await getValidAccessToken(sub);
   const model = await resolveModel(sub, accessToken);
@@ -68,12 +76,17 @@ async function generate(sub: string, a: string, b: string): Promise<{ element: P
   }
 }
 
-async function generateAsGuest(sub: string, a: string, b: string): Promise<{ element: ParsedElement; model: string }> {
+async function generateAsGuest(
+  sub: string,
+  a: string,
+  b: string,
+  ctx: CallerContext,
+): Promise<{ element: ParsedElement; model: string }> {
   const { enabled, limits } = guestConfig();
   if (!enabled) throw new AppError("guest_unavailable", { detail: "guest mode disabled" });
   for (let attempt = 0; ; attempt++) {
     // Every model call is charged against the quota, including a retry after bad output.
-    consumeGuestCall(sub, limits);
+    await consumeGuestCall(sub, ctx.ipKey, limits);
     const text = await claudeAlchemy(a, b);
     try {
       return { element: parseAlchemyOutput(text), model: GUEST_MODEL };
@@ -85,28 +98,29 @@ async function generateAsGuest(sub: string, a: string, b: string): Promise<{ ele
   }
 }
 
-// Two quick drops of the same pair must not spend the user's plan twice.
+// Two quick drops of the same pair must not spend the user's plan twice (per Worker isolate).
 const inflight = new Map<string, Promise<{ result: ParsedElement; model: string | null; generated: boolean }>>();
 
-function recipeFor(key: string): (ElementRow & { model: string | null }) | undefined {
+async function recipeFor(key: string): Promise<(ElementRow & { model: string | null }) | null> {
   return getDb()
     .prepare(
       `SELECT e.name, e.emoji, e.desc, e.first_by_sub, r.model
-         FROM recipes r JOIN elements e ON e.name = r.result_name
+         FROM im_recipes r JOIN im_elements e ON e.name = r.result_name
         WHERE r.pair_key = ?`,
     )
-    .get(key) as (ElementRow & { model: string | null }) | undefined;
+    .bind(key)
+    .first<ElementRow & { model: string | null }>();
 }
 
-export async function combine(sub: string, rawA: string, rawB: string): Promise<CombineResponse> {
+export async function combine(sub: string, rawA: string, rawB: string, ctx: CallerContext = { ipKey: null }): Promise<CombineResponse> {
   const started = Date.now();
   const a = normalizeName(rawA ?? "");
   const b = normalizeName(rawB ?? "");
   if (!a || !b) throw new AppError("bad_request");
-  if (!owns(sub, a) || !owns(sub, b)) throw new AppError("unknown_element");
+  if (!(await ownsBoth(sub, a, b))) throw new AppError("unknown_element");
 
   const key = pairKey(a, b);
-  const cached = recipeFor(key);
+  const cached = await recipeFor(key);
   let outcome: { result: ParsedElement; model: string | null; generated: boolean };
   if (cached) {
     outcome = { result: { name: cached.name, emoji: cached.emoji, desc: cached.desc ?? undefined }, model: cached.model, generated: false };
@@ -114,7 +128,7 @@ export async function combine(sub: string, rawA: string, rawB: string): Promise<
     let task = inflight.get(key);
     if (!task) {
       const [x, y] = [a, b].sort();
-      task = generate(sub, x, y)
+      task = generate(sub, x, y, ctx)
         .then(({ element, model }) => ({ result: element, model, generated: true }))
         .finally(() => inflight.delete(key));
       inflight.set(key, task);
@@ -124,82 +138,93 @@ export async function combine(sub: string, rawA: string, rawB: string): Promise<
 
   const db = getDb();
   const now = Date.now();
-  return transaction(db, () => {
-    let isFirstDiscovery = false;
-    let element = db.prepare("SELECT name, emoji, desc, first_by_sub FROM elements WHERE name = ?").get(outcome.result.name) as
-      | ElementRow
-      | undefined;
-    if (!element) {
-      db.prepare("INSERT INTO elements (name, emoji, desc, created_at, first_by_sub) VALUES (?, ?, ?, ?, ?)").run(
-        outcome.result.name,
-        outcome.result.emoji,
-        outcome.result.desc ?? null,
-        now,
-        sub,
-      );
-      element = { name: outcome.result.name, emoji: outcome.result.emoji, desc: outcome.result.desc ?? null, first_by_sub: sub };
-      isFirstDiscovery = true;
-    }
-    if (outcome.generated) {
-      const [x, y] = [a, b].sort();
-      db.prepare(
-        "INSERT OR IGNORE INTO recipes (pair_key, a, b, result_name, model, created_at, created_by_sub) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      ).run(key, x, y, element.name, outcome.model, now, sub);
-    }
-
-    let isNew = false;
-    let discoveredAt = now;
-    let firstDiscovery = isFirstDiscovery;
-    if (BASE_NAMES.has(element.name)) {
-      discoveredAt = 0;
-    } else {
-      const existing = db
-        .prepare("SELECT discovered_at, first_discovery FROM discoveries WHERE sub = ? AND element_name = ?")
-        .get(sub, element.name) as { discovered_at: number; first_discovery: number } | undefined;
-      if (existing) {
-        discoveredAt = existing.discovered_at;
-        firstDiscovery = existing.first_discovery === 1;
-      } else {
-        db.prepare("INSERT INTO discoveries (sub, element_name, discovered_at, first_discovery) VALUES (?, ?, ?, ?)").run(
-          sub,
-          element.name,
-          now,
-          isFirstDiscovery ? 1 : 0,
-        );
-        isNew = true;
+  let isFirstDiscovery = false;
+  let resultName = outcome.result.name;
+  if (outcome.generated) {
+    // D1 runs a batch as one transaction: the element and its recipe land together or not at all.
+    const [x, y] = [a, b].sort();
+    const [elementWrite, recipeWrite] = await db.batch([
+      db
+        .prepare(
+          "INSERT OR IGNORE INTO im_elements (name, emoji, desc, created_at, first_by_sub) VALUES (?, ?, ?, ?, ?) RETURNING name",
+        )
+        .bind(outcome.result.name, outcome.result.emoji, outcome.result.desc ?? null, now, sub),
+      db
+        .prepare(
+          "INSERT OR IGNORE INTO im_recipes (pair_key, a, b, result_name, model, created_at, created_by_sub) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING pair_key",
+        )
+        .bind(key, x, y, outcome.result.name, outcome.model, now, sub),
+    ]);
+    // RETURNING yields a row only when the insert happened. meta.changes is no help here: on D1 it also
+    // counts rows touched by triggers (the im_counters bump), so a fresh element reports 2.
+    isFirstDiscovery = elementWrite.results.length === 1;
+    if (recipeWrite.results.length === 0) {
+      // Another Worker isolate recorded this pair a moment earlier: the shared recipe book wins.
+      const canonical = await recipeFor(key);
+      if (canonical && canonical.name !== resultName) {
+        resultName = canonical.name;
+        outcome = { ...outcome, model: canonical.model };
+        isFirstDiscovery = false;
       }
     }
+  }
 
-    const result: ElementView = {
-      name: element.name,
-      emoji: element.emoji,
-      desc: element.desc ?? undefined,
-      discoveredAt,
-      firstDiscovery,
-    };
-    if (BASE_NAMES.has(element.name)) result.base = true;
-    return {
-      result,
-      isNew,
-      isFirstDiscovery,
-      cached: !outcome.generated,
-      model: outcome.model,
-      elapsedMs: Date.now() - started,
-      remaining: isGuest(sub) ? guestRemaining(sub, guestConfig().limits) : undefined,
-    };
-  });
+  const isBase = BASE_NAMES.has(resultName);
+  const statements = [db.prepare("SELECT name, emoji, desc, first_by_sub FROM im_elements WHERE name = ?").bind(resultName)];
+  if (!isBase) {
+    statements.push(
+      db
+        .prepare(
+          "INSERT OR IGNORE INTO im_discoveries (sub, element_name, discovered_at, first_discovery) VALUES (?, ?, ?, ?) RETURNING sub",
+        )
+        .bind(sub, resultName, now, isFirstDiscovery ? 1 : 0),
+      db.prepare("SELECT discovered_at, first_discovery FROM im_discoveries WHERE sub = ? AND element_name = ?").bind(sub, resultName),
+    );
+  }
+  const [elementRead, discoveryWrite, discoveryRead] = await db.batch(statements);
+  const element = elementRead.results[0] as ElementRow | undefined;
+  if (!element) throw new AppError("internal", { detail: `element ${resultName} missing after combine` });
+
+  let isNew = false;
+  let discoveredAt = 0;
+  let firstDiscovery = false;
+  if (!isBase) {
+    const row = discoveryRead.results[0] as { discovered_at: number; first_discovery: number };
+    isNew = discoveryWrite.results.length === 1;
+    discoveredAt = row.discovered_at;
+    firstDiscovery = row.first_discovery === 1;
+  }
+
+  const result: ElementView = {
+    name: element.name,
+    emoji: element.emoji,
+    desc: element.desc ?? undefined,
+    discoveredAt,
+    firstDiscovery,
+  };
+  if (isBase) result.base = true;
+  return {
+    result,
+    isNew,
+    isFirstDiscovery,
+    cached: !outcome.generated,
+    model: outcome.model,
+    elapsedMs: Date.now() - started,
+    remaining: isGuest(sub) ? await guestRemaining(sub, guestConfig().limits) : undefined,
+  };
 }
 
-export function listUserElements(sub: string): ElementView[] {
-  const rows = getDb()
+export async function listUserElements(sub: string): Promise<ElementView[]> {
+  const { results } = await getDb()
     .prepare(
       `SELECT e.name, e.emoji, e.desc, d.discovered_at, d.first_discovery
-         FROM discoveries d JOIN elements e ON e.name = d.element_name
+         FROM im_discoveries d JOIN im_elements e ON e.name = d.element_name
         WHERE d.sub = ?
         ORDER BY d.discovered_at ASC`,
     )
-    .all(sub) as { name: string; emoji: string; desc: string | null; discovered_at: number; first_discovery: number }[];
-  return rows.map((r) => ({
+    .bind(sub)
+    .all<{ name: string; emoji: string; desc: string | null; discovered_at: number; first_discovery: number }>();
+  return results.map((r) => ({
     name: r.name,
     emoji: r.emoji,
     desc: r.desc ?? undefined,
@@ -208,10 +233,11 @@ export function listUserElements(sub: string): ElementView[] {
   }));
 }
 
-export function worldCount(): number {
-  return (getDb().prepare("SELECT COUNT(*) AS n FROM elements").get() as { n: number }).n;
+/** Kept by triggers on im_elements (see migrations/0001_init.sql), so this reads one row, not the whole table. */
+export async function worldCount(): Promise<number> {
+  return (await getDb().prepare("SELECT value FROM im_counters WHERE key = 'elements'").first<number>("value")) ?? 0;
 }
 
-export function resetProgress(sub: string): void {
-  getDb().prepare("DELETE FROM discoveries WHERE sub = ?").run(sub);
+export async function resetProgress(sub: string): Promise<void> {
+  await getDb().prepare("DELETE FROM im_discoveries WHERE sub = ?").bind(sub).run();
 }

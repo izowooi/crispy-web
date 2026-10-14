@@ -1,50 +1,73 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { openDatabase, setDbForTests } from "@/lib/server/db";
+import { getDb, setDbForTests } from "@/lib/server/db";
 import { AppError } from "@/lib/server/errors";
 import { claudeErrorToAppError, extractAlchemyText } from "@/lib/server/guest/claude";
-import { consumeGuestCall, guestRemaining, kstDay } from "@/lib/server/guest/quota";
+import { consumeGuestCall, consumeGuestJoin, guestRemaining, kstDay } from "@/lib/server/guest/quota";
+import { createTestD1 } from "./support/d1";
 
-const limits = { perGuest: 3, global: 5 };
+const limits = { perGuest: 3, global: 5, perIp: 4, joinsPerIp: 2 };
+const NOW = Date.UTC(2026, 9, 13, 3);
+
+async function usage(scope: string): Promise<number> {
+  return (await getDb().prepare("SELECT count FROM im_guest_usage WHERE scope = ?").bind(scope).first<number>("count")) ?? 0;
+}
 
 describe("guest quota", () => {
-  beforeEach(() => setDbForTests(openDatabase(":memory:")));
+  beforeEach(() => setDbForTests(createTestD1()));
   afterEach(() => setDbForTests(undefined));
 
-  it("counts model calls per guest per day", () => {
-    const now = Date.UTC(2026, 9, 13, 3);
-    expect(guestRemaining("guest:a", limits, now)).toBe(3);
-    consumeGuestCall("guest:a", limits, now);
-    consumeGuestCall("guest:a", limits, now);
-    expect(guestRemaining("guest:a", limits, now)).toBe(1);
-    expect(guestRemaining("guest:b", limits, now)).toBe(3);
+  it("counts model calls per guest per day", async () => {
+    expect(await guestRemaining("guest:a", limits, NOW)).toBe(3);
+    await consumeGuestCall("guest:a", null, limits, NOW);
+    expect(await consumeGuestCall("guest:a", null, limits, NOW)).toBe(1);
+    expect(await guestRemaining("guest:a", limits, NOW)).toBe(1);
+    expect(await guestRemaining("guest:b", limits, NOW)).toBe(3);
   });
 
-  it("stops a guest at the per-guest limit with guest_limit", () => {
-    const now = Date.UTC(2026, 9, 13, 3);
-    for (let i = 0; i < 3; i++) consumeGuestCall("guest:a", limits, now);
-    expect(() => consumeGuestCall("guest:a", limits, now)).toThrowError(
-      expect.objectContaining({ code: "guest_limit" }),
-    );
+  it("stops a guest at the per-guest limit with guest_limit, without charging the global pool", async () => {
+    for (let i = 0; i < 3; i++) await consumeGuestCall("guest:a", null, limits, NOW);
+    await expect(consumeGuestCall("guest:a", null, limits, NOW)).rejects.toMatchObject({ code: "guest_limit" });
+    // The failed attempt handed its global unit back.
+    expect(await usage("*")).toBe(3);
   });
 
-  it("stops everyone when the operator's global budget is spent, with guest_unavailable", () => {
-    const now = Date.UTC(2026, 9, 13, 3);
-    for (const g of ["guest:a", "guest:a", "guest:b", "guest:b", "guest:c"]) consumeGuestCall(g, limits, now);
-    expect(() => consumeGuestCall("guest:d", limits, now)).toThrowError(
-      expect.objectContaining({ code: "guest_unavailable" }),
-    );
+  it("stops everyone when the operator's global budget is spent, with guest_unavailable", async () => {
+    for (const g of ["guest:a", "guest:a", "guest:b", "guest:b", "guest:c"]) await consumeGuestCall(g, null, limits, NOW);
+    await expect(consumeGuestCall("guest:d", null, limits, NOW)).rejects.toMatchObject({ code: "guest_unavailable" });
     // The guest who still has personal quota left is reported as having none.
-    expect(guestRemaining("guest:d", limits, now)).toBe(0);
+    expect(await guestRemaining("guest:d", limits, NOW)).toBe(0);
+    expect(await usage("guest:d")).toBe(0);
   });
 
-  it("resets at midnight KST", () => {
+  it("caps one IP across many guests (cookie clearing doesn't reset it)", async () => {
+    const wide = { ...limits, global: 100 };
+    for (const g of ["guest:a", "guest:a", "guest:b", "guest:c"]) await consumeGuestCall(g, "iphash", wide, NOW);
+    await expect(consumeGuestCall("guest:d", "iphash", wide, NOW)).rejects.toMatchObject({ code: "guest_limit", detail: "ip daily limit" });
+    expect(await usage("guest:d")).toBe(0);
+    expect(await usage("*")).toBe(4);
+    await expect(consumeGuestCall("guest:d", "otherhash", wide, NOW)).resolves.toBe(2);
+  });
+
+  it("treats a zero limit as closed", async () => {
+    await expect(consumeGuestCall("guest:a", null, { ...limits, global: 0 }, NOW)).rejects.toMatchObject({ code: "guest_unavailable" });
+    expect(await usage("guest:a")).toBe(0);
+  });
+
+  it("limits new guest sessions per IP per day", async () => {
+    await consumeGuestJoin("iphash", limits, NOW);
+    await consumeGuestJoin("iphash", limits, NOW);
+    await expect(consumeGuestJoin("iphash", limits, NOW)).rejects.toMatchObject({ code: "guest_limit", detail: "join daily limit" });
+    await expect(consumeGuestJoin("iphash", limits, NOW + 86_400_000)).resolves.toBeUndefined();
+  });
+
+  it("resets at midnight KST", async () => {
     const before = Date.UTC(2026, 9, 13, 14, 59); // 23:59 KST
     const after = Date.UTC(2026, 9, 13, 15, 1); // 00:01 KST next day
     expect(kstDay(before)).toBe("2026-10-13");
     expect(kstDay(after)).toBe("2026-10-14");
-    for (let i = 0; i < 3; i++) consumeGuestCall("guest:a", limits, before);
-    expect(guestRemaining("guest:a", limits, after)).toBe(3);
+    for (let i = 0; i < 3; i++) await consumeGuestCall("guest:a", null, limits, before);
+    expect(await guestRemaining("guest:a", limits, after)).toBe(3);
   });
 });
 

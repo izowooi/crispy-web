@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { pairKey } from "@/lib/elements";
 import { BadOutputError, parseAlchemyOutput } from "@/lib/server/alchemy/parse";
+import { createTestD1 } from "./support/d1";
 
 describe("pairKey", () => {
   it("is commutative and normalizes whitespace", () => {
@@ -72,8 +73,8 @@ describe("combine (mock provider, isolated DB)", () => {
   });
 
   beforeEach(async () => {
-    const { openDatabase, setDbForTests } = await import("@/lib/server/db");
-    setDbForTests(openDatabase(":memory:"));
+    const { setDbForTests } = await import("@/lib/server/db");
+    setDbForTests(createTestD1());
     mockSpy.mockClear();
   });
 
@@ -98,7 +99,7 @@ describe("combine (mock provider, isolated DB)", () => {
     expect(repeat).toMatchObject({ isNew: false, isFirstDiscovery: false, cached: true });
     expect(repeat.result.firstDiscovery).toBe(true);
 
-    expect(listUserElements("alice").map((e) => e.name)).toEqual(["증기"]);
+    expect((await listUserElements("alice")).map((e) => e.name)).toEqual(["증기"]);
   });
 
   it("rejects elements the user hasn't discovered", async () => {
@@ -112,5 +113,37 @@ describe("combine (mock provider, isolated DB)", () => {
     expect(mockSpy).toHaveBeenCalledTimes(1);
     expect(x.result.name).toBe(y.result.name);
     expect([x.isNew, y.isNew].sort()).toEqual([false, true]);
+  });
+  it("bumps the world counter only for brand-new elements", async () => {
+    const { worldCount } = await import("@/lib/server/alchemy/combine");
+    expect(await worldCount()).toBe(5);
+    await combine("alice", "불", "물");
+    await combine("bob", "물", "불");
+    expect(await worldCount()).toBe(6);
+  });
+
+  it("keeps the shared recipe when another isolate already recorded the pair", async () => {
+    const { getDb } = await import("@/lib/server/db");
+    // Simulate a concurrent writer: the pair is recorded with a different result just before ours lands.
+    mockSpy.mockImplementationOnce(async () => {
+      const db = getDb();
+      await db.batch([
+        db.prepare("INSERT INTO im_elements (name, emoji, desc, created_at, first_by_sub) VALUES ('안개', '🌫️', NULL, 1, 'carol')"),
+        db.prepare("INSERT INTO im_recipes (pair_key, a, b, result_name, model, created_at, created_by_sub) VALUES ('물+불', '물', '불', '안개', 'other', 1, 'carol')"),
+      ]);
+      return { name: "증기", emoji: "♨️", desc: "x" };
+    });
+    const res = await combine("alice", "불", "물");
+    expect(res.result.name).toBe("안개");
+    expect(res).toMatchObject({ isFirstDiscovery: false, isNew: true, model: "other" });
+  });
+
+  it("resetProgress clears only that player's collection", async () => {
+    const { resetProgress } = await import("@/lib/server/alchemy/combine");
+    await combine("alice", "불", "물");
+    await combine("bob", "불", "물");
+    await resetProgress("alice");
+    expect(await listUserElements("alice")).toEqual([]);
+    expect((await listUserElements("bob")).map((e) => e.name)).toEqual(["증기"]);
   });
 });

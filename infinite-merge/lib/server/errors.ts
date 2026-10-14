@@ -33,6 +33,9 @@ const DEFAULTS: Record<AppErrorCode, { status: number; message: string; action: 
     message: "게스트 모드가 지금은 쉬고 있어요. ChatGPT로 로그인해 계속해 주세요.",
     action: "signin",
   },
+  rate_limited: { status: 429, message: "요청이 너무 빨라요. 잠시 후 다시 시도해 주세요.", action: "retry" },
+  forbidden: { status: 403, message: "허용되지 않은 요청이에요.", action: "none" },
+  bot_check_failed: { status: 403, message: "자동 입력 방지 확인에 실패했어요. 새로고침 후 다시 시도해 주세요.", action: "none" },
   internal: { status: 500, message: "알 수 없는 오류가 발생했어요.", action: "retry" },
 };
 

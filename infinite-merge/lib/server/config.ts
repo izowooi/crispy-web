@@ -37,7 +37,16 @@ export function modelOverride(): string | null {
 
 export const GUEST_MODEL = "claude-haiku-5-5";
 
-export type GuestLimits = { perGuest: number; global: number };
+export type GuestLimits = {
+  /** Model calls per guest per KST day. */
+  perGuest: number;
+  /** Model calls for all guests combined per KST day: the hard ceiling on operator spend. */
+  global: number;
+  /** Model calls per hashed client IP per KST day; survives cookie clearing. */
+  perIp: number;
+  /** New guest sessions per hashed client IP per KST day. */
+  joinsPerIp: number;
+};
 
 function intEnv(name: string, fallback: number): number {
   const n = Number.parseInt(process.env[name] ?? "", 10);
@@ -57,8 +66,27 @@ export function guestConfig(): { enabled: boolean; apiKey: string | null; limits
     limits: {
       perGuest: intEnv("INFINITE_MERGE_GUEST_DAILY", 60),
       global: intEnv("INFINITE_MERGE_GUEST_GLOBAL_DAILY", 1500),
+      perIp: intEnv("INFINITE_MERGE_GUEST_IP_DAILY", 150),
+      joinsPerIp: intEnv("INFINITE_MERGE_GUEST_JOIN_IP_DAILY", 20),
     },
   };
+}
+
+/** Kill switch for Sign in with ChatGPT; it is also off on any non-loopback host (see siwcAvailable). */
+export function siwcDisabled(): boolean {
+  return process.env.INFINITE_MERGE_SIWC === "off";
+}
+
+/** Both keys come from the Turnstile widget; without them the bot check is skipped (local runs). */
+export function turnstileConfig(): { siteKey: string; secretKey: string } | null {
+  const siteKey = process.env.TURNSTILE_SITE_KEY?.trim();
+  const secretKey = process.env.TURNSTILE_SECRET_KEY?.trim();
+  return siteKey && secretKey ? { siteKey, secretKey } : null;
+}
+
+/** Salt for hashing client IPs so raw addresses never reach the database. Set as a Worker secret. */
+export function ipSalt(): string {
+  return process.env.IM_IP_SALT?.trim() || "infinite-merge-local";
 }
 
 let warnedKeyShape = false;

@@ -4,6 +4,9 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import type { GuestInfo } from "@/lib/types";
 import { ChatGPTButton } from "./ChatGPTButton";
+import { TurnstileWidget } from "./Turnstile";
+
+const SOURCE_URL = "https://github.com/izowooi/crispy-web/tree/main/infinite-merge";
 
 // Clockwise order is the 상생 cycle: 火生土 → 土生金 → 金生水 → 水生木 → 木生火.
 const WHEEL = [
@@ -25,10 +28,20 @@ const star = [0, 2, 4, 1, 3, 0].map((i) => `${points[i].x},${points[i].y}`).join
 
 const TITLE = "인피니티 머지";
 
-type Props = { worldCount: number; guest: GuestInfo; onGuestStart: () => Promise<void> };
+type Props = {
+  worldCount: number;
+  guest: GuestInfo;
+  /** False on the hosted site: plan usage is approved for local runs only. */
+  siwc: boolean;
+  /** Resolves true when the guest session started; a Turnstile token is single-use either way. */
+  onGuestStart: (turnstileToken: string | null) => Promise<boolean>;
+};
 
-export function Landing({ worldCount, guest, onGuestStart }: Props) {
+export function Landing({ worldCount, guest, siwc, onGuestStart }: Props) {
   const [starting, setStarting] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [widgetKey, setWidgetKey] = useState(0);
+  const needsToken = Boolean(guest.turnstileSiteKey) && guest.available;
   return (
     <motion.section
       className="absolute inset-0 z-[65] overflow-y-auto bg-[radial-gradient(ellipse_at_center,rgb(7_8_12/0.55),rgb(7_8_12/0.92)_70%)] backdrop-blur-[2px]"
@@ -133,18 +146,29 @@ export function Landing({ worldCount, guest, onGuestStart }: Props) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 20 }}
         >
-          <ChatGPTButton />
-          <div className="flex items-center gap-3 text-[0.7rem] text-white/30">
-            <span className="h-px flex-1 bg-white/10" />
-            또는
-            <span className="h-px flex-1 bg-white/10" />
-          </div>
+          {siwc && (
+            <>
+              <ChatGPTButton />
+              <div className="flex items-center gap-3 text-[0.7rem] text-white/30">
+                <span className="h-px flex-1 bg-white/10" />
+                또는
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+            </>
+          )}
+          {needsToken && guest.turnstileSiteKey && (
+            <TurnstileWidget key={widgetKey} siteKey={guest.turnstileSiteKey} onToken={setToken} />
+          )}
           <button
-            disabled={!guest.available || starting}
+            disabled={!guest.available || starting || (needsToken && !token)}
             onClick={async () => {
               setStarting(true);
               try {
-                await onGuestStart();
+                const ok = await onGuestStart(token);
+                if (!ok && needsToken) {
+                  setToken(null);
+                  setWidgetKey((k) => k + 1);
+                }
               } finally {
                 setStarting(false);
               }
@@ -152,12 +176,14 @@ export function Landing({ worldCount, guest, onGuestStart }: Props) {
             className="group inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-6 text-[0.95rem] font-semibold text-white/90 transition hover:border-white/35 hover:bg-white/[0.08] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span className="text-earth transition group-hover:rotate-90">✦</span>
-            {starting ? "입장하는 중…" : "로그인 없이 바로 시작"}
+            {starting ? "입장하는 중…" : needsToken && !token ? "자동 입력 방지 확인 중…" : siwc ? "로그인 없이 바로 시작" : "바로 시작하기"}
           </button>
           <p className="text-[0.72rem] leading-relaxed text-white/40">
             {guest.available
               ? `Claude Haiku 게스트 · 하루 ${guest.dailyLimit}회 · 운영자 크레딧으로 제공돼 예고 없이 종료될 수 있어요`
-              : "게스트 모드는 지금 쉬는 중이에요. ChatGPT로 계속해 주세요."}
+              : siwc
+                ? "게스트 모드는 지금 쉬는 중이에요. ChatGPT로 계속해 주세요."
+                : "오늘의 체험 연성이 모두 소진됐어요. 한국 시간 자정에 다시 열려요."}
           </p>
         </motion.div>
 
@@ -167,10 +193,25 @@ export function Landing({ worldCount, guest, onGuestStart }: Props) {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.3 }}
         >
-          <Note icon="⚡">ChatGPT로 계속하면 내 ChatGPT Plus·Pro 플랜 사용량으로 연성해요. API 키가 필요 없어요.</Note>
-          <Note icon="🔒">앱이 받는 정보는 이름·이메일·프로필 사진뿐이에요. 대화 내용은 공유되지 않아요.</Note>
-          <Note icon="🎟️">게스트로 시작해도 나중에 ChatGPT로 로그인하면 발견한 원소를 그대로 가져가요.</Note>
-          <Note icon="🖥️">현재는 로컬 실행 전용이에요 (http://127.0.0.1).</Note>
+          {siwc ? (
+            <>
+              <Note icon="⚡">ChatGPT로 계속하면 내 ChatGPT Plus·Pro 플랜 사용량으로 연성해요. API 키가 필요 없어요.</Note>
+              <Note icon="🔒">앱이 받는 정보는 이름·이메일·프로필 사진뿐이에요. 대화 내용은 공유되지 않아요.</Note>
+              <Note icon="🎟️">게스트로 시작해도 나중에 ChatGPT로 로그인하면 발견한 원소를 그대로 가져가요.</Note>
+            </>
+          ) : (
+            <>
+              <Note icon="🌍">모든 플레이어가 하나의 레시피 책을 공유해요. 누군가 이미 발견한 조합은 바로 나와요.</Note>
+              <Note icon="🎟️">로그인 없이 하루 {guest.dailyLimit}회 새 조합을 연성할 수 있어요. 이미 발견된 조합은 횟수에 들어가지 않아요.</Note>
+              <Note icon="🖥️">
+                내 ChatGPT 플랜으로 마음껏 하려면{" "}
+                <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="font-semibold text-water hover:underline">
+                  오픈소스
+                </a>
+                를 내려받아 내 PC에서 실행하세요.
+              </Note>
+            </>
+          )}
         </motion.ul>
 
         {worldCount > 5 && (

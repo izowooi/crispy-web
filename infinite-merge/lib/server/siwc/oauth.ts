@@ -175,9 +175,10 @@ async function doRefresh(clientId: string): Promise<CredentialRecord> {
 const REFRESH_SKEW_MS = 120_000;
 
 export async function getValidAccessToken(sub: string): Promise<{ accessToken: string; record: CredentialRecord }> {
-  const row = getDb().prepare("SELECT client_id FROM accounts WHERE sub = ?").get(sub) as
-    | { client_id: string | null }
-    | undefined;
+  const row = await getDb()
+    .prepare("SELECT client_id FROM im_accounts WHERE sub = ?")
+    .bind(sub)
+    .first<{ client_id: string | null }>();
   if (!row?.client_id) throw new AppError("not_signed_in");
   let record = readCredentials(row.client_id);
   if (!record?.access_token && !record?.refresh_token) throw new AppError("session_expired");

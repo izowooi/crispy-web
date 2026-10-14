@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { SIWC } from "@/lib/server/config";
 import { getDb, PENDING_TTL_MS } from "@/lib/server/db";
-import { hostInfo, loopbackOrigin, redirectTo } from "@/lib/server/http";
+import { hostInfo, loopbackOrigin, redirectTo, siwcAvailable } from "@/lib/server/http";
 import { createSession, getCurrentAccount, isGuest, mergeGuestInto } from "@/lib/server/session";
 import { writeCredentials } from "@/lib/server/siwc/credentials";
 import { getHostId } from "@/lib/server/siwc/hostId";
@@ -19,6 +19,8 @@ type PendingRow = {
 };
 
 export async function GET(request: NextRequest) {
+  // The hosted site shares this database; it must never consume a local sign-in's pending state.
+  if (!siwcAvailable(request)) return new Response("Not found", { status: 404 });
   const origin = loopbackOrigin(hostInfo(request).port);
   const fail = (code: string, diagnostic?: string) => {
     console.warn(`[siwc] sign-in failed: ${code}${diagnostic ? ` (${diagnostic})` : ""}`);
@@ -30,8 +32,7 @@ export async function GET(request: NextRequest) {
   if (!state) return fail("invalid_state", "missing state");
 
   const db = getDb();
-  const pending = db.prepare("SELECT * FROM oauth_pending WHERE state = ?").get(state) as PendingRow | undefined;
-  db.prepare("DELETE FROM oauth_pending WHERE state = ?").run(state);
+  const pending = await db.prepare("DELETE FROM im_oauth_pending WHERE state = ? RETURNING *").bind(state).first<PendingRow>();
   if (!pending || Date.now() - pending.created_at > PENDING_TTL_MS) return fail("invalid_state", "unknown or expired state");
 
   const oauthError = params.get("error");
@@ -86,19 +87,22 @@ export async function GET(request: NextRequest) {
       expires_at: now + tokens.expires_in * 1000,
     });
 
-    db.prepare(
-      `INSERT INTO accounts (sub, email, name, picture, client_id, selected_model, created_at, last_login_at)
+    await db
+      .prepare(
+        `INSERT INTO im_accounts (sub, email, name, picture, client_id, selected_model, created_at, last_login_at)
        VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
        ON CONFLICT(sub) DO UPDATE SET
          email = excluded.email, name = excluded.name, picture = excluded.picture,
          client_id = excluded.client_id, last_login_at = excluded.last_login_at`,
-    ).run(sub, email, name, picture, clientId, now, now);
+      )
+      .bind(sub, email, name, picture, clientId, now, now)
+      .run();
     forgetModels(sub);
 
     // A guest who signs in keeps what they discovered.
     const previous = await getCurrentAccount();
     if (previous && isGuest(previous.sub)) {
-      const moved = mergeGuestInto(previous.sub, sub);
+      const moved = await mergeGuestInto(previous.sub, sub);
       console.info(`[siwc] merged ${moved} guest discoveries into the signed-in account`);
     }
 
