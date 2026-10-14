@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ElementView } from "@/lib/types";
 
 /** Center-stage reveal for a world-first discovery: kinetic letters + shimmer. */
@@ -31,25 +31,36 @@ export function DiscoveryBanner({ element, onDone }: { element: ElementView; onD
       >
         ✦ 세계 최초 발견 ✦
       </motion.p>
-      <motion.div
-        className="mt-3 text-6xl md:text-7xl"
-        initial={{ scale: 0, rotate: -30 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.1 }}
-        style={{ filter: "drop-shadow(0 10px 30px rgb(255 211 107 / 0.45))" }}
-      >
-        {element.emoji}
-      </motion.div>
-      <h2 className="mt-2 font-serif text-4xl font-black tracking-tight md:text-5xl">
+      <div className="relative mt-3 grid place-items-center">
+        {/* Badge-unlock light: slow god-rays behind the emoji, fading in as it lands. */}
+        <motion.div
+          aria-hidden
+          className="discovery-rays absolute size-56 md:size-72"
+          initial={{ opacity: 0, scale: 0.4, rotate: 0 }}
+          animate={{ opacity: 1, scale: 1, rotate: 60 }}
+          transition={{ opacity: { duration: 0.6, delay: 0.15 }, scale: { type: "spring", stiffness: 120, damping: 14 }, rotate: { duration: 3, ease: "linear" } }}
+        />
+        <motion.div
+          className="relative text-6xl md:text-7xl"
+          initial={{ scale: 0, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.1 }}
+          style={{ filter: "drop-shadow(0 10px 30px rgb(255 211 107 / 0.45))" }}
+        >
+          {element.emoji}
+        </motion.div>
+      </div>
+      <h2 className="mt-2 font-serif text-4xl font-black tracking-tight md:text-5xl" aria-label={element.name}>
         {[...element.name].map((ch, i) => (
           <motion.span
             key={i}
+            aria-hidden
             className="inline-block"
             initial={{ y: 28, opacity: 0, filter: "blur(8px)" }}
             animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
             transition={{ delay: 0.22 + i * 0.06, type: "spring", stiffness: 300, damping: 20 }}
           >
-            {ch === " " ? " " : ch}
+            {ch === " " ? "\u00a0" : <ScrambleChar char={ch} startMs={220 + i * 60} />}
           </motion.span>
         ))}
       </h2>
@@ -65,4 +76,31 @@ export function DiscoveryBanner({ element, onDone }: { element: ElementView; onD
       )}
     </motion.div>
   );
+}
+
+const GLYPHS = "木火土金水";
+
+/** Kinetic type: each letter flickers through the five-element glyphs before settling on itself. */
+function ScrambleChar({ char, startMs }: { char: string; startMs: number }) {
+  const [shown, setShown] = useState(() => GLYPHS[char.charCodeAt(0) % GLYPHS.length]);
+  useEffect(() => {
+    let frame = 0;
+    let interval: number | undefined;
+    const start = window.setTimeout(() => {
+      interval = window.setInterval(() => {
+        frame += 1;
+        if (frame >= 7) {
+          setShown(char);
+          window.clearInterval(interval);
+        } else {
+          setShown(GLYPHS[(frame + char.charCodeAt(0)) % GLYPHS.length]);
+        }
+      }, 55);
+    }, startMs);
+    return () => {
+      window.clearTimeout(start);
+      if (interval) window.clearInterval(interval);
+    };
+  }, [char, startMs]);
+  return <>{shown}</>;
 }

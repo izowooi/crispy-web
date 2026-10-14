@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, MotionConfig } from "motion/react";
 import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type {
   CombineResponse,
@@ -11,6 +11,7 @@ import type {
 import { BoardTileView, type BoardTile } from "./BoardTile";
 import { Burst, makeSparks, type BurstSpec } from "./Burst";
 import { DiscoveryBanner } from "./DiscoveryBanner";
+import { crossedMilestone, MilestoneBadge, type Milestone } from "./MilestoneBadge";
 import { FusionNode, type FusionSpec } from "./FusionNode";
 import { Inventory } from "./Inventory";
 import { Landing } from "./Landing";
@@ -573,8 +574,36 @@ export function Game() {
   const elements = useMemo(() => state?.elements ?? [], [state]);
   const ownedCount = elements.length;
   const firstCount = elements.filter((e) => e.firstDiscovery).length;
+  const discoveredCount = elements.filter((e) => !e.base).length;
+
+  // Milestone titles unlock only when the count crosses a step during play, never on page load.
+  const lastCount = useRef<number | null>(null);
+  const [milestone, setMilestone] = useState<Milestone | null>(null);
+  const [pendingMilestone, setPendingMilestone] = useState<Milestone | null>(null);
+  useEffect(() => {
+    if (!state?.user) {
+      lastCount.current = null;
+      return;
+    }
+    const before = lastCount.current;
+    lastCount.current = discoveredCount;
+    if (before === null) return;
+    const crossed = crossedMilestone(before, discoveredCount);
+    if (crossed) setPendingMilestone(crossed);
+  }, [discoveredCount, state?.user]);
+  // Let a world-first banner finish before the badge takes the stage.
+  useEffect(() => {
+    if (pendingMilestone && !banner) {
+      const t = window.setTimeout(() => {
+        setMilestone(pendingMilestone);
+        setPendingMilestone(null);
+      }, 300);
+      return () => window.clearTimeout(t);
+    }
+  }, [pendingMilestone, banner]);
 
   return (
+    <MotionConfig reducedMotion="user">
     <main className="fixed inset-0 select-none overflow-hidden">
       <Sky />
 
@@ -647,6 +676,10 @@ export function Game() {
         {banner && <DiscoveryBanner key={banner.key} element={banner.element} onDone={() => setBanner(null)} />}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {milestone && <MilestoneBadge key={milestone.count} milestone={milestone} onDone={() => setMilestone(null)} />}
+      </AnimatePresence>
+
       <Toasts toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
 
       <AnimatePresence>
@@ -697,6 +730,7 @@ export function Game() {
         </div>
       )}
     </main>
+    </MotionConfig>
   );
 }
 

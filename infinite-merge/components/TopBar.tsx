@@ -4,7 +4,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import type { ModelsResponse, PlanView, UserView } from "@/lib/types";
-import { ChatGPTButton } from "./ChatGPTButton";
+import { ChatGPTButton, SIWC_PENDING_NOTE } from "./ChatGPTButton";
 
 const USAGE_URL = "https://chatgpt.com/settings/usage";
 
@@ -281,14 +281,12 @@ function AccountMenu({ user, plan, siwc, onLogout, onReset, onClearBoard, onMode
                   운영자 크레딧으로 제공되는 체험이에요. 오늘 남은 연성 {plan.remaining ?? 0}회. 이미 누군가 발견한 조합은 횟수에
                   포함되지 않아요.
                 </p>
-                {siwc && (
-                  <>
-                    <div className="mt-2.5">
-                      <ChatGPTButton size="sm" />
-                    </div>
-                    <p className="mt-1.5 text-[0.68rem] text-white/40">로그인하면 지금까지 발견한 원소를 그대로 가져가요.</p>
-                  </>
-                )}
+                <div className="mt-2.5">
+                  <ChatGPTButton size="sm" pending={!siwc} />
+                </div>
+                <p id={siwc ? undefined : "siwc-pending-note"} className="mt-1.5 text-[0.68rem] text-white/40">
+                  {siwc ? "로그인하면 지금까지 발견한 원소를 그대로 가져가요." : SIWC_PENDING_NOTE}
+                </p>
               </div>
             )}
 

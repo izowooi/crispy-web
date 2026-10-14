@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { BASE_ELEMENTS } from "@/lib/elements";
 import { tintOf } from "./tint";
 
@@ -43,6 +43,8 @@ export const BoardTileView = memo(function BoardTileView({
 }: Props) {
   const fresh = tile.born > 0 && Date.now() - tile.born < 1500;
   const hanja = HANJA.get(tile.name);
+  // Decided once at mount so re-renders during a drag don't replay the landing.
+  const [landing] = useState(fresh);
   return (
     <motion.div
       className="absolute left-0 top-0"
@@ -62,6 +64,13 @@ export const BoardTileView = memo(function BoardTileView({
         opacity: tile.fusing ? { duration: 0.2, delay: 0.14 } : { duration: 0.16 },
       }}
     >
+      {/* Squash & stretch on birth: lands flat, overshoots tall, settles. Origin (0,0) is the tile's visual center. */}
+      <motion.div
+        style={{ transformOrigin: "0px 0px" }}
+        initial={false}
+        animate={landing ? { scaleX: [1.35, 0.82, 1.08, 0.97, 1], scaleY: [0.6, 1.22, 0.92, 1.03, 1] } : undefined}
+        transition={{ duration: 0.62, times: [0, 0.3, 0.55, 0.8, 1], ease: "easeOut" }}
+      >
       <div
         key={tile.shake ?? 0}
         ref={registerEl}
@@ -78,6 +87,7 @@ export const BoardTileView = memo(function BoardTileView({
         <span>{tile.name}</span>
         {hanja && <span className="tile__hanja">{hanja}</span>}
       </div>
+      </motion.div>
     </motion.div>
   );
 });

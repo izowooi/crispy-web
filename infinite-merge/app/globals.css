@@ -286,6 +286,15 @@ body {
   scrollbar-color: rgb(255 255 255 / 0.14) transparent;
 }
 
+/* Badge-unlock style god-rays behind a world-first emoji / milestone badge. */
+.discovery-rays {
+  border-radius: 9999px;
+  background: repeating-conic-gradient(from 0deg, rgb(255 211 107 / 0.32) 0deg 7deg, transparent 7deg 22.5deg);
+  mask-image: radial-gradient(circle, black 18%, transparent 68%);
+  -webkit-mask-image: radial-gradient(circle, black 18%, transparent 68%);
+  filter: blur(0.5px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sky__orb,
   .fusion-ring,

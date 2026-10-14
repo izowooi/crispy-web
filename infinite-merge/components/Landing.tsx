@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import type { GuestInfo } from "@/lib/types";
-import { ChatGPTButton } from "./ChatGPTButton";
+import { ChatGPTButton, SIWC_PENDING_NOTE } from "./ChatGPTButton";
 import { TurnstileWidget } from "./Turnstile";
 
 const SOURCE_URL = "https://github.com/izowooi/crispy-web/tree/main/infinite-merge";
@@ -146,16 +146,17 @@ export function Landing({ worldCount, guest, siwc, onGuestStart }: Props) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 20 }}
         >
-          {siwc && (
-            <>
-              <ChatGPTButton />
-              <div className="flex items-center gap-3 text-[0.7rem] text-white/30">
-                <span className="h-px flex-1 bg-white/10" />
-                또는
-                <span className="h-px flex-1 bg-white/10" />
-              </div>
-            </>
+          <ChatGPTButton pending={!siwc} />
+          {!siwc && (
+            <p id="siwc-pending-note" className="-mt-1 text-[0.72rem] leading-relaxed text-white/45">
+              {SIWC_PENDING_NOTE}
+            </p>
           )}
+          <div className="flex items-center gap-3 text-[0.7rem] text-white/30">
+            <span className="h-px flex-1 bg-white/10" />
+            또는
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
           {needsToken && guest.turnstileSiteKey && (
             <TurnstileWidget key={widgetKey} siteKey={guest.turnstileSiteKey} onToken={setToken} />
           )}
@@ -176,7 +177,7 @@ export function Landing({ worldCount, guest, siwc, onGuestStart }: Props) {
             className="group inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-6 text-[0.95rem] font-semibold text-white/90 transition hover:border-white/35 hover:bg-white/[0.08] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span className="text-earth transition group-hover:rotate-90">✦</span>
-            {starting ? "입장하는 중…" : needsToken && !token ? "자동 입력 방지 확인 중…" : siwc ? "로그인 없이 바로 시작" : "바로 시작하기"}
+            {starting ? "입장하는 중…" : needsToken && !token ? "자동 입력 방지 확인 중…" : "로그인 없이 바로 시작"}
           </button>
           <p className="text-[0.72rem] leading-relaxed text-white/40">
             {guest.available
