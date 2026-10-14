@@ -80,7 +80,8 @@ while (progressed && pending.length > 0) {
       stats.badName += 1;
       continue;
     }
-    if (name === a + b || name === b + a || /의 /.test(name)) {
+    // "불의 나무"-style glue of both ingredients is rejected; real compound words (김밥, 꿀물, 보물지도) are fine.
+    if (/의 /.test(name) && name.includes(a) && name.includes(b)) {
       stats.mechanical += 1;
       continue;
     }
