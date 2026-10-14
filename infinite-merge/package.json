@@ -12,9 +12,13 @@
     "test": "vitest run",
     "db:migrate:local": "wrangler d1 migrations apply infinite-merge --local",
     "db:migrate:remote": "wrangler d1 migrations apply infinite-merge --remote",
-    "cloudflare:build": "opennextjs-cloudflare build && node scripts/scrub-build-secrets.mjs && node scripts/verify-build-secrets.mjs",
+    "cloudflare:build": "opennextjs-cloudflare build && node scripts/promote-static-pages.mjs && node scripts/scrub-build-secrets.mjs && node scripts/verify-build-secrets.mjs",
     "preview": "npm run cloudflare:build && npm run db:migrate:local && wrangler dev --local --ip 127.0.0.1 --port 8787",
-    "deploy": "npm run cloudflare:build && opennextjs-cloudflare deploy"
+    "deploy": "npm run cloudflare:build && opennextjs-cloudflare deploy",
+    "lab:d1": "node learn/d1/lab.mjs",
+    "lab:size": "node learn/d1/size-estimate.mjs",
+    "lab:hammer": "node learn/defense/hammer.mjs",
+    "lab:clone-remote": "node learn/d1/clone-remote-to-local.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
