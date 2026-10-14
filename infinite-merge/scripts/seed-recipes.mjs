@@ -2,8 +2,14 @@
 /**
  * Validate pre-generated recipes (JSON Lines) and turn them into one SQL file for D1.
  *
- *   node scripts/seed-recipes.mjs [--remote] --out .wrangler/seed.sql <file.jsonl>...
+ *   node scripts/seed-recipes.mjs [--remote] --out .wrangler/seed.sql [--split 40000] [--world-out dir] <file.jsonl>...
  *   npx wrangler d1 execute infinite-merge --remote --file .wrangler/seed.sql
+ *
+ * --split N writes seed-01.sql, seed-02.sql, … with at most N inserted rows each. D1 Free allows 100k rows
+ * written per UTC day and each insert costs about 2 (the TEXT primary key index), so apply one file per day.
+ * Rows are emitted in acceptance order (each element next to the recipe that makes it), so every file
+ * only references elements from itself or earlier files: apply them in order.
+ * --world-out dir writes names.txt and pairs.txt (the world after this input) for the next generation round.
  *
  * Each line: {"a":"불","b":"물","name":"증기","emoji":"♨️","desc":"…"}
  * - a and b must already exist (in the DB, or as an accepted name earlier in the input). Lines whose
@@ -21,7 +27,10 @@ const args = process.argv.slice(2);
 const remote = args.includes("--remote");
 const outIndex = args.indexOf("--out");
 const out = outIndex === -1 ? ".wrangler/seed.sql" : args[outIndex + 1];
-const files = args.filter((a, i) => !a.startsWith("--") && args[i - 1] !== "--out");
+const valueOf = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : null);
+const split = Number(valueOf("--split")) || Infinity;
+const worldOut = valueOf("--world-out");
+const files = args.filter((a, i) => !a.startsWith("--") && !["--out", "--split", "--world-out"].includes(args[i - 1]));
 if (files.length === 0) {
   console.error("usage: node scripts/seed-recipes.mjs [--remote] [--out seed.sql] <file.jsonl>...");
   process.exit(1);
@@ -63,6 +72,7 @@ for (const file of files) {
 
 const newElements = new Map();
 const recipes = [];
+const accepted = []; // { element?, recipe } in acceptance order
 let progressed = true;
 while (progressed && pending.length > 0) {
   progressed = false;
@@ -97,13 +107,17 @@ while (progressed && pending.length > 0) {
     }
     let desc = normalize(r.desc).replace(/[.。]+$/, "");
     if (graphemes(desc).length > 40) desc = graphemes(desc).slice(0, 40).join("");
+    let element;
     if (!known.has(name)) {
       known.add(name);
-      newElements.set(name, { name, emoji, desc });
+      element = { name, emoji, desc };
+      newElements.set(name, element);
     }
     const [x, y] = [a, b].sort();
     pairs.add(key);
-    recipes.push({ key, a: x, b: y, result: name });
+    const recipe = { key, a: x, b: y, result: name };
+    recipes.push(recipe);
+    accepted.push({ element, recipe });
     progressed = true;
   }
   pending = later;
@@ -112,24 +126,36 @@ stats.unplaced = pending.length;
 
 const q = (v) => (v === null || v === undefined || v === "" ? "NULL" : `'${String(v).replaceAll("'", "''")}'`);
 const base = Date.now();
-const chunks = (list, n) => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n));
-const sql = [];
 let t = 0;
-for (const group of chunks([...newElements.values()], 200)) {
-  sql.push(
-    "INSERT OR IGNORE INTO im_elements (name, emoji, desc, created_at, first_by_sub) VALUES\n" +
-      group.map((e) => `(${q(e.name)}, ${q(e.emoji)}, ${q(e.desc)}, ${base + t++}, 'seed')`).join(",\n") +
-      ";",
-  );
-}
-for (const group of chunks(recipes, 200)) {
-  sql.push(
+const outputs = [];
+let current = null;
+for (let i = 0; i < accepted.length; i += 200) {
+  const group = accepted.slice(i, i + 200);
+  const elements = group.map((g) => g.element).filter(Boolean);
+  const inserts = group.length + elements.length;
+  if (!current || current.inserts + inserts > split) outputs.push((current = { sql: [], inserts: 0 }));
+  current.inserts += inserts;
+  // Elements first: a recipe whose result row is missing would miss the JOIN in recipeFor and cost a model call.
+  if (elements.length > 0) {
+    current.sql.push(
+      "INSERT OR IGNORE INTO im_elements (name, emoji, desc, created_at, first_by_sub) VALUES\n" +
+        elements.map((e) => `(${q(e.name)}, ${q(e.emoji)}, ${q(e.desc)}, ${base + t++}, 'seed')`).join(",\n") +
+        ";",
+    );
+  }
+  current.sql.push(
     "INSERT OR IGNORE INTO im_recipes (pair_key, a, b, result_name, model, created_at, created_by_sub) VALUES\n" +
-      group.map((r) => `(${q(r.key)}, ${q(r.a)}, ${q(r.b)}, ${q(r.result)}, 'seed', ${base + t++}, 'seed')`).join(",\n") +
+      group.map(({ recipe: r }) => `(${q(r.key)}, ${q(r.a)}, ${q(r.b)}, ${q(r.result)}, 'seed', ${base + t++}, 'seed')`).join(",\n") +
       ";",
   );
 }
-fs.writeFileSync(out, sql.join("\n") + "\n");
+const paths = outputs.map((o, i) => (outputs.length === 1 ? out : out.replace(/(\.sql)?$/, `-${String(i + 1).padStart(2, "0")}.sql`)));
+outputs.forEach((o, i) => fs.writeFileSync(paths[i], o.sql.join("\n") + "\n"));
+if (worldOut) {
+  fs.mkdirSync(worldOut, { recursive: true });
+  fs.writeFileSync(`${worldOut}/names.txt`, [...known].join("\n") + "\n");
+  fs.writeFileSync(`${worldOut}/pairs.txt`, [...pairs].join("\n") + "\n");
+}
 
 console.log(JSON.stringify({ ...stats, existingElements: existingCount, newElements: newElements.size, newRecipes: recipes.length }, null, 2));
-console.log(`SQL → ${out} (${(fs.statSync(out).size / 1024).toFixed(0)} KB)`);
+outputs.forEach((o, i) => console.log(`SQL → ${paths[i]} (${o.inserts} inserts, ${(fs.statSync(paths[i]).size / 1024).toFixed(0)} KB)`));

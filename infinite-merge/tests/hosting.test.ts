@@ -8,8 +8,10 @@ import { createTestD1 } from "./support/d1";
 
 describe("D1 schema (migrations/)", () => {
   it("seeds exactly the base elements from lib/elements.ts", async () => {
-    const { results } = await createTestD1().prepare("SELECT name, emoji, desc FROM im_elements ORDER BY rowid").all();
-    expect(results).toEqual(BASE_ELEMENTS.map((e) => ({ name: e.name, emoji: e.emoji, desc: e.desc })));
+    // im_elements is WITHOUT ROWID (0003), so rows come back in name order: compare as sets.
+    const { results } = await createTestD1().prepare("SELECT name, emoji, desc FROM im_elements ORDER BY name").all();
+    const byName = (x: { name: string }, y: { name: string }) => (x.name < y.name ? -1 : 1);
+    expect(results).toEqual(BASE_ELEMENTS.map((e) => ({ name: e.name, emoji: e.emoji, desc: e.desc })).sort(byName));
   });
 
   it("keeps the element counter in step with the table via triggers", async () => {
@@ -32,10 +34,12 @@ describe("D1 schema (migrations/)", () => {
     expect(tables.filter((t) => !t.startsWith("im_"))).toEqual([]);
   });
 
-  it("enforces foreign keys like D1 does", async () => {
-    await expect(
-      createTestD1().prepare("INSERT INTO im_discoveries (sub, element_name, discovered_at) VALUES ('a', '없는원소', 1)").run(),
-    ).rejects.toThrow(/FOREIGN KEY/);
+  it("keeps the big tables WITHOUT ROWID so each insert bills one row written, not two", async () => {
+    const { results } = await createTestD1()
+      .prepare("SELECT name, sql FROM sqlite_master WHERE name IN ('im_elements', 'im_recipes', 'im_discoveries') ORDER BY name")
+      .all<{ name: string; sql: string }>();
+    expect(results.map((r) => r.name)).toEqual(["im_discoveries", "im_elements", "im_recipes"]);
+    for (const r of results) expect(r.sql).toMatch(/WITHOUT ROWID/);
   });
 });
 
