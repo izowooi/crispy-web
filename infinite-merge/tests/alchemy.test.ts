@@ -146,4 +146,25 @@ describe("combine (mock provider, isolated DB)", () => {
     expect(await listUserElements("alice")).toEqual([]);
     expect((await listUserElements("bob")).map((e) => e.name)).toEqual(["증기"]);
   });
+  it("lets the first player claim a pre-seeded element as a world-first, without calling the model", async () => {
+    const { getDb } = await import("@/lib/server/db");
+    const { worldCount } = await import("@/lib/server/alchemy/combine");
+    const db = getDb();
+    await db.batch([
+      db.prepare("INSERT INTO im_elements (name, emoji, desc, created_at, first_by_sub) VALUES ('호수', '🏞️', '물이 모인 곳', 1, 'seed')"),
+      db.prepare("INSERT INTO im_recipes (pair_key, a, b, result_name, model, created_at, created_by_sub) VALUES ('물+물', '물', '물', '호수', 'seed', 1, 'seed')"),
+    ]);
+    expect(await worldCount()).toBe(5); // unclaimed seeds don't count yet
+
+    const alice = await combine("alice", "물", "물");
+    expect(alice).toMatchObject({ cached: true, isFirstDiscovery: true, isNew: true });
+    expect(alice.result.firstDiscovery).toBe(true);
+    expect(mockSpy).not.toHaveBeenCalled();
+    expect(await worldCount()).toBe(6);
+
+    const bob = await combine("bob", "물", "물");
+    expect(bob).toMatchObject({ cached: true, isFirstDiscovery: false, isNew: true });
+    expect(bob.result.firstDiscovery).toBe(false);
+    expect(await worldCount()).toBe(6);
+  });
 });

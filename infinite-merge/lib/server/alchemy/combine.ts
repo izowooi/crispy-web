@@ -170,20 +170,27 @@ export async function combine(sub: string, rawA: string, rawB: string, ctx: Call
   }
 
   const isBase = BASE_NAMES.has(resultName);
-  const statements = [db.prepare("SELECT name, emoji, desc, first_by_sub FROM im_elements WHERE name = ?").bind(resultName)];
+  const statements = [
+    // A pre-seeded element (first_by_sub = 'seed') is still unclaimed: whoever makes it first owns the world-first.
+    db.prepare("UPDATE im_elements SET first_by_sub = ? WHERE name = ? AND first_by_sub = 'seed' RETURNING name").bind(sub, resultName),
+    db.prepare("SELECT name, emoji, desc, first_by_sub FROM im_elements WHERE name = ?").bind(resultName),
+  ];
   if (!isBase) {
     statements.push(
       db
         .prepare(
-          "INSERT OR IGNORE INTO im_discoveries (sub, element_name, discovered_at, first_discovery) VALUES (?, ?, ?, ?) RETURNING sub",
+          `INSERT OR IGNORE INTO im_discoveries (sub, element_name, discovered_at, first_discovery)
+           VALUES (?, ?, ?, COALESCE((SELECT first_by_sub = ? FROM im_elements WHERE name = ?), 0)) RETURNING sub`,
         )
-        .bind(sub, resultName, now, isFirstDiscovery ? 1 : 0),
+        // Runs after the claim above in the same batch, so "is the world-first mine?" is answered by the row itself.
+        .bind(sub, resultName, now, sub, resultName),
       db.prepare("SELECT discovered_at, first_discovery FROM im_discoveries WHERE sub = ? AND element_name = ?").bind(sub, resultName),
     );
   }
-  const [elementRead, discoveryWrite, discoveryRead] = await db.batch(statements);
+  const [claim, elementRead, discoveryWrite, discoveryRead] = await db.batch(statements);
   const element = elementRead.results[0] as ElementRow | undefined;
   if (!element) throw new AppError("internal", { detail: `element ${resultName} missing after combine` });
+  if (claim.results.length === 1 && !isBase) isFirstDiscovery = true;
 
   let isNew = false;
   let discoveredAt = 0;
