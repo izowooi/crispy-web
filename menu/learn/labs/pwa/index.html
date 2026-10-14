@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>서비스 워커 캐시 전략 실습</title>
+    <style>
+      body { font-family: system-ui, "Apple SD Gothic Neo", sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+      button { font: inherit; padding: 0.5rem 0.9rem; margin: 0.2rem 0.2rem 0.2rem 0; cursor: pointer; }
+      pre { background: #f2f2ea; padding: 1rem; border-radius: 8px; min-height: 8rem; white-space: pre-wrap; }
+      code { background: #eee; padding: 0 0.25rem; }
+    </style>
+  </head>
+  <body>
+    <h1>서비스 워커 캐시 전략 실습</h1>
+    <p id="status">서비스 워커 등록 중…</p>
+    <p>
+      같은 <code>/api/time</code>을 세 가지 전략으로 여러 번 불러 보세요. 서버는 매번 <b>지금 시각</b>을 돌려줍니다.
+      응답 시각이 오래된 값이면 캐시에서 온 것입니다.
+    </p>
+    <div>
+      <button data-s="network-first">network-first</button>
+      <button data-s="cache-first">cache-first</button>
+      <button data-s="stale-while-revalidate">stale-while-revalidate</button>
+      <button id="clear">캐시 비우기</button>
+    </div>
+    <pre id="log"></pre>
+    <script>
+      const log = document.getElementById("log");
+      const status = document.getElementById("status");
+
+      navigator.serviceWorker.register("/sw.js").then(() => navigator.serviceWorker.ready).then(() => {
+        status.textContent = "서비스 워커가 켜졌어요. (DevTools → Application → Service Workers에서도 보여요)";
+      });
+
+      document.querySelectorAll("button[data-s]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const strategy = button.dataset.s;
+          const { serverNow } = await (await fetch(`/api/time?s=${strategy}`)).json();
+          const age = Math.round((Date.now() - new Date(serverNow).getTime()) / 1000);
+          log.textContent += `${strategy.padEnd(24)} 서버시각 ${serverNow.slice(11, 19)}  → ${age}초 전 값\n`;
+        });
+      });
+
+      document.getElementById("clear").addEventListener("click", async () => {
+        await caches.delete("lab-pwa-v1");
+        log.textContent += "-- 캐시를 비웠어요 --\n";
+      });
+    </script>
+  </body>
+</html>

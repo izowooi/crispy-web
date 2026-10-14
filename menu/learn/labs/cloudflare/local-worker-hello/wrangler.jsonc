@@ -1,0 +1,12 @@
+{
+  // 연습용 Worker. 절대 배포하지 않는다(이 폴더에서는 `wrangler dev` 만 쓴다).
+  // 이름이 baby-menu 와 다르므로, 실수로 deploy 해도 운영 앱을 덮어쓰지 않는다.
+  "name": "baby-menu-lab-hello",
+  "main": "src/index.mjs",
+  "compatibility_date": "2026-07-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "GREETING": "안녕, Workers!"
+  },
+  "observability": { "enabled": true }
+}
