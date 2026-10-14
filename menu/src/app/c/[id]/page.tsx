@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MenuViewer } from "@/components/menu-viewer";
 import { isIsoDate, todayKST } from "@/lib/dates";
-import { appleWebApp } from "@/lib/pwa";
+import { appleWebApp, LEGACY_IOS_WEB_APP_META } from "@/lib/pwa";
 import { getDaycare, listMonths } from "@/lib/server/db";
 import { getEnv } from "@/lib/server/env";
 import { canEdit } from "@/lib/server/session";
@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // 홈 화면에 추가하면 이 어린이집이 바로 열리도록 어린이집별 manifest를 쓴다.
     manifest: `/c/${daycare.id}/manifest.webmanifest`,
     appleWebApp: appleWebApp(`${daycare.name} 식단`.slice(0, 12)),
+    other: LEGACY_IOS_WEB_APP_META,
   };
 }
 

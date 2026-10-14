@@ -128,7 +128,7 @@ sequenceDiagram
 ```mermaid
 flowchart TD
   S["GET /"] --> Q{"쿠키 bm_last 가 있고<br/>그 어린이집이 DB에 있나?"}
-  Q -- "예 (그리고 ?pick, ?q 없음)" --> R["302 redirect → /c/&lt;id&gt;<br/>= 오늘 식단"]
+  Q -- "예 (그리고 ?pick, ?q 없음)" --> R["307 redirect → /c/&lt;id&gt;<br/>= 오늘 식단"]
   Q -- "아니오" --> L["랜딩 화면<br/>(검색 · 새 어린이집 만들기)"]
   R --> V["흐름 A 로 이어짐"]
 ```

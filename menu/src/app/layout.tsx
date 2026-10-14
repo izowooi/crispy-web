@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { PwaRegister } from "@/components/pwa-register";
-import { appleWebApp } from "@/lib/pwa";
+import { appleWebApp, LEGACY_IOS_WEB_APP_META } from "@/lib/pwa";
 import "./globals.css";
 
 const themeScript = `
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   applicationName: "우리 아기 식단",
   manifest: "/manifest.webmanifest",
   appleWebApp: appleWebApp("아기 식단"),
+  other: LEGACY_IOS_WEB_APP_META,
 };
 
 export const viewport: Viewport = {

@@ -76,3 +76,6 @@ export function appleWebApp(title: string) {
     })),
   };
 }
+
+/** Next.js는 mobile-web-app-capable만 내보낸다. iOS 16 이하 Safari는 apple- 접두어 태그만 읽는다. */
+export const LEGACY_IOS_WEB_APP_META = { "apple-mobile-web-app-capable": "yes" };
