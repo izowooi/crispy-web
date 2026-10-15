@@ -47,7 +47,7 @@ export function ManageClient({ daycare, months: initialMonths, today, editYm }: 
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
       <UploadPanel daycareId={daycare.id} today={today} onDraft={setDraft} />
       <section className="rounded-3xl border border-line bg-panel p-5 sm:p-6">
         <h2 className="text-lg font-extrabold">저장된 식단</h2>
