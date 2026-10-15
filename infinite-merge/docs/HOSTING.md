@@ -15,6 +15,7 @@
 | secrets | `ANTHROPIC_API_KEY`, `IM_IP_SALT`, `TURNSTILE_SECRET_KEY` |
 | 방어 | same-origin, Rate Limiting binding 2종, Turnstile(managed), D1 일일 쿼터 4종(게스트별 칸은 5분마다 충전) |
 | 로컬 개발 | `npm run dev`는 원격 D1 공유, `dev:local`·`preview`는 로컬 사본 |
+| 제품 분석 | PostHog(US). 브라우저 `posthog-js`가 직접 전송, 키는 vars `INFINITE_MERGE_POSTHOG_KEY`([교재 5장](learn/05-posthog.md)) |
 
 ## 결정 기록
 
@@ -30,6 +31,8 @@
 | 빌드 산출물 **secret scrub/verify** | OpenNext가 `.env.local` 값을 `next-env.mjs`에 적는다. 실제로 키가 들어간 것을 확인했다 |
 | 원소 수는 **trigger 카운터** | `/api/state`마다 `COUNT(*)`를 하면 원소 수만큼 행을 읽는다(D1 Free는 하루 읽기 500만 행) |
 | Turnstile은 **게스트 입장 때만** | 연성마다 확인하면 UX가 나빠진다. 입장 뒤는 Rate Limiting과 D1 쿼터가 맡는다 |
+| PostHog는 **브라우저에서만** 전송 | Worker에서 보내면 요청마다 subrequest와 CPU가 든다. SDK는 키가 있을 때만 지연 로드(gzip 약 97 KB). 광고 차단기 사용자는 빠지지만, 프록시를 두면 이벤트마다 Worker 요청이 되어 Free 한도를 쓴다 |
+| PostHog에 **해시한 id만** | 원래 계정 id·이름·이메일은 보내지 않는다. 프로젝트 설정에서 IP 저장도 껐다(국가 통계 없음). 개발 이벤트는 `environment` 속성과 내부 사용자 필터로 지표에서 뺀다 |
 | 게스트 횟수 **충전은 지연 계산** | 타이머나 cron 없이, 연성할 때 같은 upsert 안에서 `refilled_at` 이후 지난 시간만큼 먼저 돌려준다. 쓰기 행이 늘지 않는다. 게스트별 칸만 충전되고 IP·전체 한도는 하루 상한 그대로다 |
 
 ## 게스트 한도 설정

@@ -10,8 +10,9 @@
 | 2 | [Workers와 이 앱의 Cloudflare 스택](02-workers-stack.md) | Worker의 실행 모델, `wrangler.jsonc` 한 줄씩, OpenNext 빌드, 로컬 실행 3가지, 배포·로그·롤백 | `learn/workers/hello-d1` 미니 Worker |
 | 3 | [vars와 secret](03-secrets.md) | `.env.local` · `.dev.vars` · vars · secret의 차이, `wrangler secret put`, 번들에 키가 새는 함정 | 미니 Worker의 `/secret` |
 | 4 | [Cloudflare로 막기](04-defense.md) | 같은 출처 검사, Rate Limiting binding, Turnstile, D1 일일 쿼터, WAF 규칙, kill switch | `npm run lab:hammer` |
+| 5 | [PostHog로 지표 보기](05-posthog.md) | 이벤트·속성·identify, 이 앱의 이벤트 목록, 퍼널·p95·리텐션 읽기, CLI로 SQL·insight | `npm run dev:mock`, `posthog-cli api` |
 
-처음이라면 1 → 2 → 3 → 4 순서를 권합니다. 각 장은 "개념 → 실습 → 함정 → 체크리스트"로 되어 있습니다.
+처음이라면 1 → 2 → 3 → 4 순서를 권합니다. 5장은 따로 읽어도 됩니다. 각 장은 "개념 → 실습 → 함정 → 체크리스트"로 되어 있습니다.
 
 ## 시작 전에
 
