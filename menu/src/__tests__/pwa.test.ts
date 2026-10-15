@@ -85,7 +85,10 @@ describe("service worker", () => {
 
   function fetchEvent(url: string, init: { method?: string; mode?: string; headers?: Record<string, string> } = {}) {
     const headers = init.headers ?? {};
-    const respondWith = vi.fn();
+    // 브라우저는 respondWith 에 넘긴 Promise 의 거부를 네트워크 오류로 처리한다. 모의 객체도 그 거부를 삼켜야 unhandled rejection 이 안 난다.
+    const respondWith = vi.fn((response: Promise<unknown>) => {
+      response.catch(() => {});
+    });
     return {
       respondWith,
       request: {
