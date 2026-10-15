@@ -13,7 +13,7 @@
 | 플랜 | Workers **Free** |
 | placement | `aws:ap-northeast-2` (HKG에서 Anthropic 403 회피) |
 | secrets | `ANTHROPIC_API_KEY`, `IM_IP_SALT`, `TURNSTILE_SECRET_KEY` |
-| 방어 | same-origin, Rate Limiting binding 2종, Turnstile(managed), D1 일일 쿼터 4종 |
+| 방어 | same-origin, Rate Limiting binding 2종, Turnstile(managed), D1 일일 쿼터 4종(게스트별 칸은 5분마다 충전) |
 | 로컬 개발 | `npm run dev`는 원격 D1 공유, `dev:local`·`preview`는 로컬 사본 |
 
 ## 결정 기록
@@ -30,6 +30,22 @@
 | 빌드 산출물 **secret scrub/verify** | OpenNext가 `.env.local` 값을 `next-env.mjs`에 적는다. 실제로 키가 들어간 것을 확인했다 |
 | 원소 수는 **trigger 카운터** | `/api/state`마다 `COUNT(*)`를 하면 원소 수만큼 행을 읽는다(D1 Free는 하루 읽기 500만 행) |
 | Turnstile은 **게스트 입장 때만** | 연성마다 확인하면 UX가 나빠진다. 입장 뒤는 Rate Limiting과 D1 쿼터가 맡는다 |
+| 게스트 횟수 **충전은 지연 계산** | 타이머나 cron 없이, 연성할 때 같은 upsert 안에서 `refilled_at` 이후 지난 시간만큼 먼저 돌려준다. 쓰기 행이 늘지 않는다. 게스트별 칸만 충전되고 IP·전체 한도는 하루 상한 그대로다 |
+
+## 게스트 한도 설정
+
+대시보드(Workers → infinite-merge → Settings → Variables)에서 바로 바꿀 수 있습니다. 단, `npm run deploy`가 `wrangler.jsonc`의 `vars`로 덮어쓰므로 **대시보드에서 바꾼 값은 `wrangler.jsonc`에도 옮겨 적습니다.**
+
+| 변수 | 현재 값 | 뜻 |
+|---|---|---|
+| `INFINITE_MERGE_GUEST_DAILY` | 600 | 게스트 한 명이 가질 수 있는 최대 횟수(충전 상한) |
+| `INFINITE_MERGE_GUEST_REFILL_MINUTES` | 5 | 충전 간격(분). `0`이면 충전 끔 |
+| `INFINITE_MERGE_GUEST_REFILL_AMOUNT` | 30 | 간격마다 돌려주는 횟수. `0`이면 충전 끔 |
+| `INFINITE_MERGE_GUEST_IP_DAILY` | 1,500 | IP 하나의 하루 모델 호출 상한(충전 없음) |
+| `INFINITE_MERGE_GUEST_GLOBAL_DAILY` | 15,000 | 모든 게스트 합계의 하루 상한. 운영자 크레딧의 최종 상한(충전 없음) |
+| `INFINITE_MERGE_GUEST_JOIN_IP_DAILY` | 200 | IP 하나가 하루에 새로 만들 수 있는 게스트 수 |
+
+모든 하루 한도는 00:00 KST에 초기화됩니다. 2026-10-15에 대시보드에서 앞의 4개 한도를 10배로 올렸고, 같은 날 충전을 추가했습니다(`migrations/0004_guest_refill.sql`).
 
 ## 미리 채운 레시피 (seed)
 

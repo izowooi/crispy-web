@@ -3,7 +3,7 @@ import { BASE_ELEMENTS } from "@/lib/elements";
 import { listUserElements, worldCount } from "@/lib/server/alchemy/combine";
 import { aiProvider, GUEST_MODEL, guestConfig, modelOverride, turnstileConfig } from "@/lib/server/config";
 import { errorResponse } from "@/lib/server/errors";
-import { globalBudgetLeft, guestRemaining } from "@/lib/server/guest/quota";
+import { globalBudgetLeft, guestRefillView, guestRemaining } from "@/lib/server/guest/quota";
 import { siwcAvailable } from "@/lib/server/http";
 import { getCurrentAccount, isGuest } from "@/lib/server/session";
 import { readCredentials } from "@/lib/server/siwc/credentials";
@@ -25,6 +25,7 @@ export async function GET(request: Request) {
       available: enabled && budgetLeft > 0,
       model: GUEST_MODEL,
       dailyLimit: limits.perGuest,
+      refill: guestRefillView(limits),
       turnstileSiteKey: turnstileConfig()?.siteKey ?? null,
     };
 
@@ -39,7 +40,9 @@ export async function GET(request: Request) {
     if (aiProvider() === "mock") {
       plan = { provider: "mock", sharing: true, model: "mock" };
     } else if (isGuest(account.sub)) {
-      plan = { provider: "claude", sharing: enabled, model: GUEST_MODEL, remaining: await guestRemaining(account.sub, limits) };
+      plan = { provider: "claude", sharing: enabled, model: GUEST_MODEL, remaining: await guestRemaining(account.sub, limits),
+        refill: guest.refill,
+      };
     } else {
       const record = account.client_id ? readCredentials(account.client_id) : null;
       const hasTokens = Boolean(record?.access_token || record?.refresh_token);

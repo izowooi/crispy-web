@@ -32,12 +32,16 @@
   ],
 
   // Plain settings (visible in the dashboard). Credentials go in secrets: wrangler secret put <NAME>.
+  // `wrangler deploy` replaces dashboard edits with these values: copy any dashboard change here too.
   "vars": {
     "INFINITE_MERGE_SIWC": "off",
-    "INFINITE_MERGE_GUEST_DAILY": "60",
-    "INFINITE_MERGE_GUEST_GLOBAL_DAILY": "1500",
-    "INFINITE_MERGE_GUEST_IP_DAILY": "150",
-    "INFINITE_MERGE_GUEST_JOIN_IP_DAILY": "20",
+    "INFINITE_MERGE_GUEST_DAILY": "600",
+    "INFINITE_MERGE_GUEST_GLOBAL_DAILY": "15000",
+    "INFINITE_MERGE_GUEST_IP_DAILY": "1500",
+    "INFINITE_MERGE_GUEST_JOIN_IP_DAILY": "200",
+    // Per-guest refill: every N minutes a guest gets M spent calls back (up to GUEST_DAILY). "0" turns it off.
+    "INFINITE_MERGE_GUEST_REFILL_MINUTES": "5",
+    "INFINITE_MERGE_GUEST_REFILL_AMOUNT": "30",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFWmlebc_Pmt77c4"
   },
 

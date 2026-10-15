@@ -136,7 +136,7 @@ function PlanChip({ plan }: { plan: PlanView }) {
   );
 }
 
-/** Guest mode runs on the operator's credits, so the chip shows today's remaining calls instead of Manage usage. */
+/** Guest mode runs on the operator's credits, so the chip shows the remaining calls instead of Manage usage. */
 function GuestChip({ plan }: { plan: PlanView }) {
   const left = plan.remaining ?? 0;
   return (
@@ -146,7 +146,7 @@ function GuestChip({ plan }: { plan: PlanView }) {
         <p className="hidden text-xs font-bold sm:block">Claude Haiku · 게스트</p>
         <p className="whitespace-nowrap text-[0.7rem] font-bold sm:hidden">게스트</p>
         <p className="whitespace-nowrap text-[0.68rem] text-white/45">
-          오늘 남은 연성 <span className={`font-bold tabular-nums ${left > 5 ? "text-white/80" : "text-fire"}`}>{left}</span>회
+          남은 연성 <span className={`font-bold tabular-nums ${left > 5 ? "text-white/80" : "text-fire"}`}>{left}</span>회
         </p>
       </div>
     </div>
@@ -278,7 +278,8 @@ function AccountMenu({ user, plan, siwc, onLogout, onReset, onClearBoard, onMode
               <div className="mx-1 rounded-xl bg-white/[0.04] p-3">
                 <p className="text-xs font-bold">게스트 모드 · Claude Haiku 5.5</p>
                 <p className="mt-0.5 text-[0.7rem] leading-snug text-white/50">
-                  운영자 크레딧으로 제공되는 체험이에요. 오늘 남은 연성 {plan.remaining ?? 0}회. 이미 누군가 발견한 조합은 횟수에
+                  운영자 크레딧으로 제공되는 체험이에요. 남은 연성 {plan.remaining ?? 0}회
+                  {plan.refill ? ` (${plan.refill.minutes}분마다 +${plan.refill.amount}회)` : ""}. 이미 누군가 발견한 조합은 횟수에
                   포함되지 않아요.
                 </p>
                 <div className="mt-2.5">

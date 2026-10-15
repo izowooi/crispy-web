@@ -181,7 +181,7 @@ export function Landing({ worldCount, guest, siwc, onGuestStart }: Props) {
           </button>
           <p className="text-[0.72rem] leading-relaxed text-white/40">
             {guest.available
-              ? `Claude Haiku 게스트 · 하루 ${guest.dailyLimit}회 · 운영자 크레딧으로 제공돼 예고 없이 종료될 수 있어요`
+              ? `Claude Haiku 게스트 · ${guest.dailyLimit}회${guest.refill ? ` · ${guest.refill.minutes}분마다 +${guest.refill.amount}회` : ""} · 운영자 크레딧으로 제공돼 예고 없이 종료될 수 있어요`
               : siwc
                 ? "게스트 모드는 지금 쉬는 중이에요. ChatGPT로 계속해 주세요."
                 : "오늘의 체험 연성이 모두 소진됐어요. 한국 시간 자정에 다시 열려요."}
@@ -203,7 +203,10 @@ export function Landing({ worldCount, guest, siwc, onGuestStart }: Props) {
           ) : (
             <>
               <Note icon="🌍">모든 플레이어가 하나의 레시피 책을 공유해요. 누군가 이미 발견한 조합은 바로 나와요.</Note>
-              <Note icon="🎟️">로그인 없이 하루 {guest.dailyLimit}회 새 조합을 연성할 수 있어요. 이미 발견된 조합은 횟수에 들어가지 않아요.</Note>
+              <Note icon="🎟️">
+                로그인 없이 {guest.dailyLimit}회 새 조합을 연성할 수 있어요.
+                {guest.refill && ` 쓴 횟수는 ${guest.refill.minutes}분마다 ${guest.refill.amount}회씩 다시 차요.`} 이미 발견된 조합은 횟수에 들어가지 않아요.
+              </Note>
               <Note icon="🖥️">
                 내 ChatGPT 플랜으로 마음껏 하려면{" "}
                 <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="font-semibold text-water hover:underline">

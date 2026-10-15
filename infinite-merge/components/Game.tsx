@@ -557,7 +557,7 @@ export function Game() {
     pushToast({
       kind: "info",
       title: "게스트로 입장했어요",
-      body: `Claude Haiku로 하루 ${state?.guest.dailyLimit ?? ""}회 연성할 수 있어요. 이미 발견된 조합은 횟수에 포함되지 않아요.`,
+      body: `Claude Haiku로 ${state?.guest.dailyLimit ?? ""}회 연성할 수 있어요.${refillNote(state?.guest.refill)} 이미 발견된 조합은 횟수에 포함되지 않아요.`,
     });
     return true;
   };
@@ -772,4 +772,8 @@ function boardBounds() {
 function clampToBoard<T extends { x: number; y: number }>(t: T): T {
   const { right, bottom } = boardBounds();
   return { ...t, x: Math.min(Math.max(t.x, 56), right - 56), y: Math.min(Math.max(t.y, 88), bottom - 24) };
+}
+
+function refillNote(refill: { minutes: number; amount: number } | null | undefined): string {
+  return refill ? ` 쓴 횟수는 ${refill.minutes}분마다 ${refill.amount}회씩 다시 차요.` : "";
 }

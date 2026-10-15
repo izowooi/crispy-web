@@ -30,6 +30,8 @@ export type PlanView = {
   model: string | null;
   /** Guest mode only: model calls left today for this guest. */
   remaining?: number | null;
+  /** Guest mode only: refill schedule, as in GuestInfo.refill. */
+  refill?: { minutes: number; amount: number } | null;
 };
 
 export type GuestInfo = {
@@ -37,6 +39,8 @@ export type GuestInfo = {
   available: boolean;
   model: string;
   dailyLimit: number;
+  /** Spent calls come back: +amount every `minutes`, up to dailyLimit. Null when refill is off. */
+  refill: { minutes: number; amount: number } | null;
   /** Cloudflare Turnstile site key when bot checks are on; the guest start must then carry a token. */
   turnstileSiteKey: string | null;
 };

@@ -46,6 +46,12 @@ export type GuestLimits = {
   perIp: number;
   /** New guest sessions per hashed client IP per KST day. */
   joinsPerIp: number;
+  /**
+   * Every `refillMinutes`, a guest gets `refillAmount` spent calls back (never above perGuest). 0 turns it off.
+   * Only the per-guest bucket refills: the per-IP and global caps stay hard daily ceilings on operator spend.
+   */
+  refillMinutes?: number;
+  refillAmount?: number;
 };
 
 function intEnv(name: string, fallback: number): number {
@@ -68,6 +74,8 @@ export function guestConfig(): { enabled: boolean; apiKey: string | null; limits
       global: intEnv("INFINITE_MERGE_GUEST_GLOBAL_DAILY", 1500),
       perIp: intEnv("INFINITE_MERGE_GUEST_IP_DAILY", 150),
       joinsPerIp: intEnv("INFINITE_MERGE_GUEST_JOIN_IP_DAILY", 20),
+      refillMinutes: intEnv("INFINITE_MERGE_GUEST_REFILL_MINUTES", 5),
+      refillAmount: intEnv("INFINITE_MERGE_GUEST_REFILL_AMOUNT", 30),
     },
   };
 }

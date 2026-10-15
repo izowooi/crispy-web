@@ -61,6 +61,34 @@ describe("guest quota", () => {
     await expect(consumeGuestJoin("iphash", limits, NOW + 86_400_000)).resolves.toBeUndefined();
   });
 
+  it("refills a guest lazily: +amount per interval, never above the limit, partial progress kept", async () => {
+    const refilling = { ...limits, perGuest: 4, global: 100, refillMinutes: 5, refillAmount: 2 };
+    const min = 60_000;
+    for (let i = 0; i < 4; i++) await consumeGuestCall("guest:a", null, refilling, NOW);
+    await expect(consumeGuestCall("guest:a", null, refilling, NOW + 4 * min)).rejects.toMatchObject({
+      code: "guest_limit",
+      message: expect.stringContaining("5분마다 2회씩"),
+    });
+    expect(await guestRemaining("guest:a", refilling, NOW + 5 * min)).toBe(2);
+    expect(await guestRemaining("guest:a", refilling, NOW + 60 * min)).toBe(4);
+    // At 7 min: one interval earned (+2), spend one. The 2 minutes toward the next interval are kept.
+    await expect(consumeGuestCall("guest:a", null, refilling, NOW + 7 * min)).resolves.toBe(1);
+    expect(await guestRemaining("guest:a", refilling, NOW + 9 * min)).toBe(1);
+    expect(await guestRemaining("guest:a", refilling, NOW + 10 * min)).toBe(3);
+    // The per-IP and global caps never refill.
+    expect(await usage("*")).toBe(5);
+  });
+
+  it("restarts the refill clock once a guest is back to empty, and turns off at 0", async () => {
+    const refilling = { ...limits, perGuest: 4, global: 100, refillMinutes: 5, refillAmount: 2 };
+    const min = 60_000;
+    await consumeGuestCall("guest:a", null, refilling, NOW);
+    // After an hour idle the bucket is full; the next call starts a fresh interval at that moment.
+    await consumeGuestCall("guest:a", null, refilling, NOW + 60 * min);
+    expect(await guestRemaining("guest:a", refilling, NOW + 64 * min)).toBe(3);
+    expect(await guestRemaining("guest:a", { ...refilling, refillMinutes: 0 }, NOW + 600 * min)).toBe(3);
+  });
+
   it("resets at midnight KST", async () => {
     const before = Date.UTC(2026, 9, 13, 14, 59); // 23:59 KST
     const after = Date.UTC(2026, 9, 13, 15, 1); // 00:01 KST next day
