@@ -34,6 +34,7 @@ let client: AnalyticsClient | null = null;
 let starting = false;
 let off = false;
 let identifiedAs: string | null = null;
+let latestId: string | null = null;
 let queue: Array<() => void> = [];
 
 export function analyticsEnvironment(hostname: string): "production" | "development" {
@@ -55,6 +56,7 @@ export async function syncAnalytics(info: AnalyticsInfo | null, hostname: string
     return;
   }
   off = false;
+  latestId = info.distinctId;
   if (!client && !starting) {
     starting = true;
     try {
@@ -83,7 +85,10 @@ export async function syncAnalytics(info: AnalyticsInfo | null, hostname: string
       starting = false;
     }
   }
-  setIdentity(info.distinctId);
+  // A call that arrives while another is still loading the SDK leaves the queue to that one, which then
+  // identifies with the newest id.
+  if (!client) return;
+  setIdentity(latestId);
   const pending = queue;
   queue = [];
   pending.forEach((run) => run());
@@ -118,5 +123,6 @@ export function resetAnalyticsForTests(): void {
   starting = false;
   off = false;
   identifiedAs = null;
+  latestId = null;
   queue = [];
 }

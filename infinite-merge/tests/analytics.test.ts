@@ -64,6 +64,26 @@ describe("analytics", () => {
     expect(f.calls).toContainEqual(["register", { provider: "claude" }]);
   });
 
+  it("keeps queued events when a second sync arrives while the SDK is still loading", async () => {
+    const f = fake();
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const slow = vi.fn(async () => {
+      await gate;
+      return f.load();
+    });
+    const first = syncAnalytics(info(null), "127.0.0.1", slow);
+    track("landing_viewed");
+    const second = syncAnalytics(info("abc"), "127.0.0.1", slow);
+    track("game_started");
+    release();
+    await Promise.all([first, second]);
+    const captures = f.calls.filter((c) => c[0] === "capture").map((c) => c[1]);
+    expect(captures).toEqual(["landing_viewed", "game_started"]);
+    expect(f.calls).toContainEqual(["identify", "abc"]);
+    expect(slow).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps playing without analytics when the SDK is blocked", async () => {
     const load = vi.fn(async (): Promise<AnalyticsClient> => {
       throw new Error("blocked");
