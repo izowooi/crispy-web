@@ -6,7 +6,7 @@
  *   npx wrangler d1 execute infinite-merge --remote --file .wrangler/seed.sql
  *
  * --split N writes seed-01.sql, seed-02.sql, … with at most N inserted rows each. D1 Free allows 100k rows
- * written per UTC day and each insert costs about 2 (the TEXT primary key index), so apply one file per day.
+ * written per UTC day and each insert costs 1 since migration 0003 (WITHOUT ROWID; before it, 2), so apply one file per day.
  * Rows are emitted in acceptance order (each element next to the recipe that makes it), so every file
  * only references elements from itself or earlier files: apply them in order.
  * --world-out dir writes names.txt and pairs.txt (the world after this input) for the next generation round.
@@ -91,7 +91,12 @@ while (progressed && pending.length > 0) {
       continue;
     }
     // "불의 나무"-style glue of both ingredients is rejected; real compound words (김밥, 꿀물, 보물지도) are fine.
-    if (/의 /.test(name) && name.includes(a) && name.includes(b)) {
+    // "구아라나 아이스" (구아라나+얼음): a spaced name that reuses an ingredient word is the same glue.
+    const words = name.split(" ");
+    const reusesIngredient = words.length > 1 && words.some((w) => a.includes(w) || b.includes(w));
+    // "물나무"/"카멜레온버스": the two ingredient names stuck together, which the live prompt forbids too.
+    const glued = [a + b, b + a].includes(name.replaceAll(" ", ""));
+    if ((/의 /.test(name) && name.includes(a) && name.includes(b)) || reusesIngredient || glued) {
       stats.mechanical += 1;
       continue;
     }
