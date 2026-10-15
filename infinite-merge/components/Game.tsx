@@ -12,6 +12,7 @@ import { BoardTileView, type BoardTile } from "./BoardTile";
 import { Burst, makeSparks, type BurstSpec } from "./Burst";
 import { DiscoveryBanner } from "./DiscoveryBanner";
 import { crossedMilestone, MilestoneBadge, type Milestone } from "./MilestoneBadge";
+import { setPlayerContext, syncAnalytics, track } from "@/lib/analytics";
 import { FusionNode, type FusionSpec } from "./FusionNode";
 import { Inventory } from "./Inventory";
 import { Landing } from "./Landing";
@@ -90,6 +91,8 @@ export function Game() {
       const next = (await res.json()) as StateResponse;
       setState(next);
       setLoadError(null);
+      void syncAnalytics(next.analytics, window.location.hostname);
+      setPlayerContext(next.plan?.provider ?? null);
       // The board is per-browser but collections are per-account: drop tiles this account doesn't own.
       const owned = new Set(next.elements.map((e) => e.name));
       setTiles((prev) => prev.filter((t) => t.fusing || owned.has(t.name)));
@@ -125,6 +128,8 @@ export function Game() {
       const owned = new Set(next?.elements.map((e) => e.name));
       setTiles(board.filter((t) => owned.has(t.name)).map(clampToBoard));
       boardLoaded.current = true;
+      if (next?.user) track("game_started", { entry: params.has("signed_in") ? "signed_in" : "returning", ...collectionProps(next) });
+      else if (next) track("landing_viewed", { world_count: next.worldCount, guest_available: next.guest.available });
       if (params.has("signed_in")) {
         if (params.get("plan") === "off") setPlanOff(true);
         else if (!safeGet(WELCOME_KEY)) setShowWelcome(true);
@@ -242,8 +247,11 @@ export function Game() {
 
       setFusions((prev) => prev.filter((f) => f.id !== fusionId));
 
+      const roundTripMs = Math.round(performance.now() - started);
       if (!outcome.ok) {
         const { err } = outcome;
+        track("combine_failed", { code: err.code, action: err.action, round_trip_ms: roundTripMs });
+        if (err.code === "guest_limit") track("guest_limit_reached", { message: err.message });
         setTiles((prev) =>
           prev.map((t) => {
             if (t.id === dragTile.id) return { ...t, fusing: undefined, x: mid.x - 70, y: mid.y + 10, shake: Date.now() };
@@ -274,6 +282,16 @@ export function Game() {
 
       const { data } = outcome;
       const result = data.result;
+      track("combine_completed", {
+        cached: data.cached,
+        is_new: data.isNew,
+        is_first_discovery: data.isFirstDiscovery,
+        elapsed_ms: data.elapsedMs,
+        round_trip_ms: roundTripMs,
+        model: data.model,
+        remaining: data.remaining,
+        result_name: result.name,
+      });
       if (data.model) setModelShown(data.model);
       if (typeof data.remaining === "number") {
         const remaining = data.remaining;
@@ -528,6 +546,7 @@ export function Game() {
   const clearBoard = () => setTiles((prev) => prev.filter((t) => t.fusing));
 
   const logout = async () => {
+    track("logged_out");
     try {
       const res = await fetch("/auth/logout", { method: "POST" });
       const body = (await res.json().catch(() => null)) as { revoked?: boolean } | null;
@@ -549,11 +568,14 @@ export function Game() {
     });
     if (!res.ok) {
       const body = (await res.json().catch(() => null)) as ErrorResponse | null;
+      track("guest_start_failed", { code: body?.error.code ?? `http_${res.status}`, with_turnstile: Boolean(turnstileToken) });
       pushToast({ kind: "error", title: body?.error.message ?? "게스트로 입장하지 못했어요" });
       await loadState();
       return false;
     }
-    await loadState();
+    const next = await loadState();
+    track("guest_session_started");
+    if (next?.user) track("game_started", { entry: "new_guest", ...collectionProps(next) });
     pushToast({
       kind: "info",
       title: "게스트로 입장했어요",
@@ -565,6 +587,7 @@ export function Game() {
   const resetProgress = async () => {
     const res = await fetch("/api/progress", { method: "DELETE" });
     if (res.ok) {
+      track("progress_reset", { discovered_count: discoveredCount });
       setTiles([]);
       await loadState();
       pushToast({ kind: "info", title: "연성 기록을 초기화했어요" });
@@ -589,7 +612,10 @@ export function Game() {
     lastCount.current = discoveredCount;
     if (before === null) return;
     const crossed = crossedMilestone(before, discoveredCount);
-    if (crossed) setPendingMilestone(crossed);
+    if (crossed) {
+      track("milestone_reached", { count: crossed.count, title: crossed.title, discovered_count: discoveredCount });
+      setPendingMilestone(crossed);
+    }
   }, [discoveredCount, state?.user]);
   // Let a world-first banner finish before the badge takes the stage.
   useEffect(() => {
@@ -776,4 +802,13 @@ function clampToBoard<T extends { x: number; y: number }>(t: T): T {
 
 function refillNote(refill: { minutes: number; amount: number } | null | undefined): string {
   return refill ? ` 쓴 횟수는 ${refill.minutes}분마다 ${refill.amount}회씩 다시 차요.` : "";
+}
+
+function collectionProps(state: StateResponse) {
+  const discovered = state.elements.filter((e) => !e.base);
+  return {
+    discovered_count: discovered.length,
+    first_discovery_count: discovered.filter((e) => e.firstDiscovery).length,
+    world_count: state.worldCount,
+  };
 }

@@ -45,6 +45,14 @@ export type GuestInfo = {
   turnstileSiteKey: string | null;
 };
 
+/** PostHog settings for the browser SDK; see lib/analytics.ts. */
+export type AnalyticsInfo = {
+  key: string;
+  host: string;
+  /** Salted hash of the account id, so PostHog never sees the raw guest or ChatGPT id. Null when signed out. */
+  distinctId: string | null;
+};
+
 /** GET /api/state */
 export type StateResponse = {
   user: UserView | null;
@@ -55,6 +63,8 @@ export type StateResponse = {
   guest: GuestInfo;
   /** Sign in with ChatGPT is offered only on a local loopback run (http://127.0.0.1), never when hosted. */
   siwc: boolean;
+  /** Null when analytics is off (no INFINITE_MERGE_POSTHOG_KEY). */
+  analytics: AnalyticsInfo | null;
 };
 
 /** POST /auth/guest body */

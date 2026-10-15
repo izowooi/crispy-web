@@ -16,6 +16,11 @@ export function clientIp(request: Request): string {
 }
 
 /** Salted SHA-256 so quotas can key on an IP without storing the address itself. */
+/** Stable PostHog distinct id for an account: salted like ipKey, so the raw id never leaves the server. */
+export async function analyticsId(sub: string): Promise<string> {
+  return ipKey(`analytics:${sub}`);
+}
+
 export async function ipKey(ip: string): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${ipSalt()}:${ip}`));
   return [...new Uint8Array(bytes)]

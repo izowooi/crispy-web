@@ -1,5 +1,6 @@
 import "server-only";
 import path from "node:path";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { AiProvider } from "@/lib/types";
 
 // Overridable only so the full OAuth + streaming path can be exercised against a local fake server.
@@ -90,6 +91,28 @@ export function turnstileConfig(): { siteKey: string; secretKey: string } | null
   const siteKey = process.env.TURNSTILE_SITE_KEY?.trim();
   const secretKey = process.env.TURNSTILE_SECRET_KEY?.trim();
   return siteKey && secretKey ? { siteKey, secretKey } : null;
+}
+
+/**
+ * PostHog product analytics. The project key is public (it only allows sending events), so it is a plain
+ * var, delivered to the browser through /api/state: an empty key turns analytics off without a rebuild.
+ */
+export function analyticsConfig(): { key: string; host: string } | null {
+  const key = workerVar("INFINITE_MERGE_POSTHOG_KEY");
+  if (!key) return null;
+  return { key, host: workerVar("INFINITE_MERGE_POSTHOG_HOST") || "https://us.i.posthog.com" };
+}
+
+/** The deployed Worker copies vars into process.env; `next dev` exposes them only on the Cloudflare env. */
+function workerVar(name: string): string | undefined {
+  const fromProcess = process.env[name]?.trim();
+  if (fromProcess !== undefined) return fromProcess;
+  try {
+    const value = (getCloudflareContext().env as unknown as Record<string, unknown>)[name];
+    return typeof value === "string" ? value.trim() : undefined;
+  } catch {
+    return undefined; // vitest and scripts run without a Cloudflare context
+  }
 }
 
 /** Salt for hashing client IPs so raw addresses never reach the database. Set as a Worker secret. */

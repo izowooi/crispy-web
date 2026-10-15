@@ -1,8 +1,9 @@
 import { connection } from "next/server";
 import { BASE_ELEMENTS } from "@/lib/elements";
 import { listUserElements, worldCount } from "@/lib/server/alchemy/combine";
-import { aiProvider, GUEST_MODEL, guestConfig, modelOverride, turnstileConfig } from "@/lib/server/config";
+import { aiProvider, analyticsConfig, GUEST_MODEL, guestConfig, modelOverride, turnstileConfig } from "@/lib/server/config";
 import { errorResponse } from "@/lib/server/errors";
+import { analyticsId } from "@/lib/server/guard";
 import { globalBudgetLeft, guestRefillView, guestRemaining } from "@/lib/server/guest/quota";
 import { siwcAvailable } from "@/lib/server/http";
 import { getCurrentAccount, isGuest } from "@/lib/server/session";
@@ -29,9 +30,11 @@ export async function GET(request: Request) {
       turnstileSiteKey: turnstileConfig()?.siteKey ?? null,
     };
 
+    const posthog = analyticsConfig();
     if (!account) {
+      const analytics = posthog && { ...posthog, distinctId: null };
       return Response.json(
-        { user: null, plan: null, elements: BASE_ELEMENTS, worldCount: world, guest, siwc } satisfies StateResponse,
+        { user: null, plan: null, elements: BASE_ELEMENTS, worldCount: world, guest, siwc, analytics } satisfies StateResponse,
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -60,6 +63,7 @@ export async function GET(request: Request) {
       worldCount: world,
       guest,
       siwc,
+      analytics: posthog && { ...posthog, distinctId: await analyticsId(account.sub) },
     };
     return Response.json(body, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {

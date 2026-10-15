@@ -42,7 +42,10 @@
     // Per-guest refill: every N minutes a guest gets M spent calls back (up to GUEST_DAILY). "0" turns it off.
     "INFINITE_MERGE_GUEST_REFILL_MINUTES": "5",
     "INFINITE_MERGE_GUEST_REFILL_AMOUNT": "30",
-    "TURNSTILE_SITE_KEY": "0x4AAAAAAFWmlebc_Pmt77c4"
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFWmlebc_Pmt77c4",
+    // PostHog project key (public: it can only send events). "" turns analytics off. docs/learn/05-posthog.md
+    "INFINITE_MERGE_POSTHOG_KEY": "phc_kJekYePNRsNj2Wndsdux4ovuhYupdEPikg5s4sYvbsjt",
+    "INFINITE_MERGE_POSTHOG_HOST": "https://us.i.posthog.com"
   },
 
   "observability": { "enabled": true }
