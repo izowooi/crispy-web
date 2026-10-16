@@ -1,0 +1,34 @@
+{
+  "name": "dream-girl-world-cup",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "node --test tests/*.test.js",
+    "deploy": "npm run build && cf deploy",
+    "upload:images": "bash scripts/upload-images-r2.sh",
+    "db:migrate": "cf d1 migrations apply c1927a68-2d2c-4fb4-8c42-0c29c2a16258"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.3",
+    "framer-motion": "^12.4.7",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^2.0.0-beta.sha-91c870c02",
+    "@tailwindcss/vite": "^4.0.9",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^6.1.2",
+    "cf": "^1.0.0-beta.13",
+    "tailwindcss": "^4.0.9",
+    "typescript": "~5.7.2",
+    "vite": "^8.3.4"
+  }
+}
