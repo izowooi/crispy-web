@@ -1,0 +1,32 @@
+# Never commit the original game (KOEI copyright) or anything derived from it.
+game/
+*.exe
+*.dll
+*.s5
+*.S5
+*.wav
+*.mp3
+*.MP3
+*.avi
+*.AVI
+*.bin
+*.zip
+mac-bundle/web/private/
+
+# Build output: launcher copy + generated SAM5PACK
+deploy/dist/
+deploy/build/
+
+# Local tool state and secrets
+node_modules/
+.wrangler/
+.cloudflare/
+.dev.vars*
+.env*
+!.env.example
+*.key
+*.pem
+deploy/test-results/
+deploy/.auth/
+.playwright-mcp/
+.DS_Store

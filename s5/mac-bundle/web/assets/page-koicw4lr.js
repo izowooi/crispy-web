@@ -1,0 +1,1 @@
+import{t as e}from"./import-Cb2IRDct.js";var t=e(document.querySelector(`main`));window.addEventListener(`pagehide`,()=>t.dispose(),{once:!0}),window.addEventListener(`pageshow`,e=>{e.persisted&&location.reload()});

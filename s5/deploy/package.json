@@ -1,0 +1,16 @@
+{
+  "name": "sam5-personal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "serve:local": "node scripts/serve-local.mjs",
+    "upload-pack": "sh scripts/upload-pack.sh",
+    "deploy": "npm run build && npm test && sh scripts/upload-pack.sh && wrangler deploy",
+    "deploy:worker": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.0"
+  }
+}

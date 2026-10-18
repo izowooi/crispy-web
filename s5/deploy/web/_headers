@@ -1,0 +1,12 @@
+# SharedArrayBuffer needs cross-origin isolation; with these headers the shipped
+# coi-serviceworker never registers. Access cookies make every response user-specific.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Resource-Policy: same-origin
+  X-Content-Type-Options: nosniff
+  Cache-Control: private, no-cache
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: private, max-age=31536000, immutable

@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./page-koicw4lr.js","./import-Cb2IRDct.js","./store-sbAeLsA1.js"])))=>i.map(i=>d[i]);
+import{t as e}from"./register-9omJbVhg.js";import{t}from"./preload-helper-CRzLMJPS.js";e().then(async e=>{e&&await t(()=>import(`./page-koicw4lr.js`),__vite__mapDeps([0,1,2]),import.meta.url)}).catch(e=>{let t=document.createElement(`p`);t.textContent=String(e),t.dataset.error=`true`,document.querySelector(`main`).append(t),console.error(e)});

@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sam5-personal",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  // Replace every <PLACEHOLDER> before `wrangler deploy`. Keep the hostname behind Cloudflare Access:
+  // the default *.workers.dev and preview URLs would bypass Access, so they stay off.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "<GAME_HOSTNAME>", "custom_domain": true }],
+  "assets": {
+    // Built by `npm run build` from the launcher and your own game folder (see README.md); not in Git.
+    "directory": "dist",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": ["/gamepacks/*"]
+  },
+  // The full SAM5PACK (~36 MB) exceeds the 25 MiB per-file Static Assets limit, so it lives in private R2.
+  "r2_buckets": [{ "binding": "GAMEPACKS", "bucket_name": "sam5-personal-gamepacks" }],
+  "vars": {
+    "ALLOWED_HOST": "<GAME_HOSTNAME>",
+    "ACCESS_TEAM_DOMAIN": "<TEAM>.cloudflareaccess.com",
+    // Audience (AUD) tag of your Access application.
+    "ACCESS_AUD": "<ACCESS_AUD>",
+    // Optional. Must match an Access Bypass policy (no JWT is forwarded for those requests). Leave "" to disable.
+    "ALLOWED_IPS": "",
+    "ALLOWED_EMAILS": "<YOU@EXAMPLE.COM>"
+  },
+  "observability": { "enabled": true }
+}
