@@ -14,6 +14,15 @@
   - 사내 구성원 전체가 쓰려면 **In production**(External)으로 게시해야 합니다. CLI로는 확인할 수 없습니다.
 - [ ] **회사 Google Workspace 정책.** wemadeplay Workspace 관리자가 서드파티 앱 접근(App access control)을 제한하고 있으면 "차단된 앱"으로 막힐 수 있습니다. 첫 로그인 때 확인하세요.
 - [ ] **VOTER_SECRET 백업 이동.** 이 Mac의 키체인(서비스 `poll.zowoo.uk-VOTER_SECRET`, 계정 `poll`)에만 있습니다. 비밀번호 관리자로 옮기세요. 잃어버리면 중복 투표 방지가 깨집니다(README 참고).
+- [ ] **익명성의 전제.** 아래를 모두 가진 사람은 `voter_hash`를 다시 계산해 누가 무엇을 골랐는지 알아낼 수 있습니다.
+  - `VOTER_SECRET`
+  - D1 읽기 권한
+  - 사내 이메일 목록
+  - 즉 secret 백업은 사실상 "익명 해제 키"입니다. 보관자를 최소화하세요. 화면의 "아무도 볼 수 없습니다" 문구는 앱 기능 기준입니다.
+- [ ] **저장소 공개 여부.** `izowooi/crispy-web`은 **PUBLIC** 저장소입니다. 이번 로컬 커밋에는 다음이 들어 있습니다.
+  - `wrangler.jsonc`: 관리자 이메일 2개, Access AUD, D1 id, 도메인
+  - `attention.md`: 키체인 항목 이름, OAuth client id 끝부분
+  - 비밀값은 없지만 push 전에 공개해도 되는지 판단하세요. 필요하면 값들을 placeholder로 바꾼 뒤 push하세요.
 - [ ] **이번 작업에서 쓰지 않은 Google OAuth 클라이언트 정리**
   - 대상: GCP 프로젝트 `crispy-web`에 새로 만든 OAuth 클라이언트(`…q41.apps.googleusercontent.com`, redirect `/api/auth/callback/google`)
   - 이 앱은 로그인을 Cloudflare Access가 담당하므로 이 클라이언트를 쓰지 않습니다. Access의 콜백은 `https://izowooi.cloudflareaccess.com/cdn-cgi/access/callback`입니다.

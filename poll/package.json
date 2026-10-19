@@ -6,9 +6,9 @@
     "dev": "CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler dev --port 8799 --local-upstream localhost:8799 --var DEV_EMAIL:dev@wemadeplay.com --var VOTER_SECRET:local-dev-only-secret",
     "test": "vitest run",
     "check:deploy": "node scripts/check-deploy.mjs",
-    "db:migrate:local": "wrangler d1 migrations apply poll-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply poll-db --remote",
-    "deploy": "npm test && npm run check:deploy && npm run db:migrate:remote && wrangler deploy"
+    "db:migrate:local": "CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler d1 migrations apply poll-db --local",
+    "db:migrate:remote": "CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler d1 migrations apply poll-db --remote",
+    "deploy": "npm test && npm run check:deploy && npm run db:migrate:remote && CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler deploy"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.4.4",

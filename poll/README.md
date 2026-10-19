@@ -60,7 +60,7 @@ flowchart LR
 
 ```bash
 cd poll
-npm install
+npm ci              # npm 10 에서 `npm install` 은 edgesOut 오류가 날 수 있어 lockfile 기반 ci 사용
 npm run db:migrate:local
 npm run dev          # http://localhost:8799 (DEV_EMAIL=dev@wemadeplay.com 로 로그인한 것처럼 동작)
 npm test
