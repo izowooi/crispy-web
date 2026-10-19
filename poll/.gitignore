@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+.dev.vars*
+.env*
+!.env.example
+client_secret*.json
+*.pem
+*.key
+.cloudflare/
+.playwright-mcp/

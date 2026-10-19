@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>사내 투표</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Applies the saved theme before first paint (external file: the CSP forbids inline scripts). -->
+    <script src="/theme-init.js"></script>
+    <link rel="preload" href="/fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-row">
+        <a class="brand" href="#/">
+          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5.5 12 3l8 2.5v13L12 21l-8-2.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            <path d="M8.5 12.2 11 14.6l4.6-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>사내 투표</span>
+        </a>
+        <div class="top-actions">
+          <a class="btn btn-primary btn-pill desktop-only" href="#/new">+ 새 질문</a>
+          <button type="button" class="icon-btn" id="theme-toggle" aria-label="다크 모드 전환">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+      </div>
+      <nav class="navtabs" id="navtabs" aria-label="질문 목록">
+        <a class="navtab" data-status="open" href="#/?status=open">진행 중</a>
+        <a class="navtab" data-status="closed" href="#/?status=closed">마감</a>
+        <span class="navtab-indicator" aria-hidden="true"></span>
+      </nav>
+    </header>
+    <main id="app" class="container" aria-live="polite"></main>
+    <a class="fab mobile-only" id="fab" href="#/new">+ 새 질문</a>
+    <footer class="container footer">
+      <span>익명 투표 · 누가 무엇을 골랐는지는 아무도 볼 수 없습니다</span>
+      <span class="footer-user"><span id="whoami"></span> · <a href="/cdn-cgi/access/logout">로그아웃</a></span>
+    </footer>
+  </body>
+</html>
