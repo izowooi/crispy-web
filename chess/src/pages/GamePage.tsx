@@ -90,13 +90,17 @@ export function GamePage({ id }: { id: string }) {
     }
   }, [snap, you]);
 
-  // Both players land in the rematch automatically.
+  // Both players land in the rematch automatically, but only when it starts while this page is open,
+  // so finished games stay viewable from the history.
   const nextId = snap?.rematch?.nextId;
+  const initialNextId = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    if (!nextId || !you) return;
+    if (!snap) return;
+    if (initialNextId.current === undefined) initialNextId.current = nextId ?? null;
+    if (!nextId || !you || initialNextId.current === nextId) return;
     rememberGame(nextId);
     navigate(`/game/${nextId}`);
-  }, [nextId, you]);
+  }, [snap, nextId, you]);
 
   useEffect(() => {
     if (pending && snap && snap.moves.length > pending.ply) setPending(null);
@@ -200,12 +204,13 @@ export function GamePage({ id }: { id: string }) {
       return;
     }
     try {
+      const aiColor: Color = snap.white.kind === "ai" ? "w" : "b";
       const g =
         snap.mode === "ai"
           ? await api.create({
               mode: "ai",
-              opponent: you === "w" ? snap.black : snap.white,
-              color: you === "w" ? "b" : "w",
+              opponent: aiColor === "w" ? snap.white : snap.black,
+              color: aiColor,
               initialMs: snap.initialMs,
               incrementMs: snap.incrementMs,
             })

@@ -40,7 +40,9 @@ function token(c: Context<App>): string | undefined {
 }
 
 function clientIp(c: Context<App>): string {
-  return c.req.header("CF-Connecting-IP") ?? "local";
+  const ip = c.req.header("CF-Connecting-IP") ?? "local";
+  // Mobile carriers rotate IPv6 privacy addresses; one subscriber keeps the same /64 prefix.
+  return ip.includes(":") ? ip.split(":").slice(0, 4).join(":") : ip;
 }
 
 async function limited(c: Context<App>): Promise<boolean> {
