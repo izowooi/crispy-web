@@ -15,6 +15,7 @@ export default defineConfig(async () => {
             TEST_MIGRATIONS: migrations,
             ACCESS_AUD: 'test-aud',
             VOTER_SECRET: 'test-voter-secret',
+            ADMIN_EMAILS: 'admin@example.com,boss@example.org',
           },
         },
       }),

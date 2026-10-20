@@ -11,6 +11,7 @@ const problems = [];
 if (/DEV_EMAIL/.test(out)) problems.push('DEV_EMAIL appears in deploy bindings');
 if (!/"workers_dev":\s*false/.test(config)) problems.push('workers_dev must be false');
 if (!/"preview_urls":\s*false/.test(config)) problems.push('preview_urls must be false');
+if (/@/.test(config.replace(/\/\/.*$/gm, ''))) problems.push('wrangler.jsonc must not contain email addresses (use wrangler secret put ADMIN_EMAILS)');
 if (!/"ALLOWED_SERVICE_TOKENS":\s*""/.test(config)) problems.push('ALLOWED_SERVICE_TOKENS must be empty');
 if (problems.length) {
   console.error(problems.join('\n'));

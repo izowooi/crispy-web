@@ -82,12 +82,19 @@ describe('identity rules', () => {
   });
 
   it('allows ADMIN_EMAILS outside the domain', () => {
-    expect(identityFromClaims({ email: 'izowooi85@gmail.com' }, domainEnv)).toBe('izowooi85@gmail.com');
+    expect(identityFromClaims({ email: 'boss@example.org' }, domainEnv)).toBe('boss@example.org');
   });
 
   it('rejects service tokens unless explicitly allowlisted', () => {
     expect(() => identityFromClaims({ common_name: 'abc.access' }, env)).toThrow(AuthError);
     expect(identityFromClaims({ common_name: 'abc.access' }, { ...env, ALLOWED_SERVICE_TOKENS: 'abc.access' })).toBe('service-token:abc.access');
+  });
+});
+
+describe('public repo hygiene', () => {
+  it('keeps admin emails out of wrangler.jsonc (they are a secret)', () => {
+    expect(wranglerConfig.replace(/\/\/.*$/gm, '')).not.toMatch(/@/);
+    expect(wranglerConfig).not.toMatch(/"ADMIN_EMAILS"\s*:/);
   });
 });
 
@@ -103,7 +110,7 @@ describe('API authentication', () => {
 
   it('ignores identity sent by the client', async () => {
     const res = await api('kim@gmail.com', 'GET', '/api/me', undefined, {
-      headers: { 'Cf-Access-Authenticated-User-Email': 'izowooi85@gmail.com', 'X-User-Email': 'izowooi85@gmail.com' },
+      headers: { 'Cf-Access-Authenticated-User-Email': 'boss@example.org', 'X-User-Email': 'boss@example.org' },
     });
     expect(res.data).toEqual({ email: 'kim@gmail.com', is_admin: false });
   });
@@ -111,7 +118,7 @@ describe('API authentication', () => {
   it('reports the verified identity', async () => {
     const res = await api('kim@wemadeplay.com', 'GET', '/api/me');
     expect(res).toMatchObject({ status: 200, data: { email: 'kim@wemadeplay.com', is_admin: false } });
-    expect((await api('izowooi85@gmail.com', 'GET', '/api/me')).data.is_admin).toBe(true);
+    expect((await api('boss@example.org', 'GET', '/api/me')).data.is_admin).toBe(true);
   });
 });
 

@@ -29,11 +29,10 @@
     "ACCESS_AUD": "9126657547c12a8dfc1f75ba83053fbff3698aa3a21f58af3d452d9e2fe2a222",
     "ALLOWED_HOST": "poll.zowoo.uk",
     "ALLOWED_DOMAIN": "*",
-    "ADMIN_EMAILS": "jongwoo.park@wemadeplay.com,izowooi85@gmail.com",
     // Access service-token client ids allowed to call the API (temporary smoke tests only). Keep empty.
     "ALLOWED_SERVICE_TOKENS": ""
   },
-  // VOTER_SECRET is a secret (`wrangler secret put VOTER_SECRET`). DEV_EMAIL lives only in .dev.vars.
+  // Secrets (`wrangler secret put`): VOTER_SECRET, ADMIN_EMAILS (comma-separated; kept out of this public repo). DEV_EMAIL lives only in .dev.vars.
   // Invocation logs would record request headers, which carry the user's email (Access adds it), so they stay off.
   "observability": { "enabled": true, "logs": { "invocation_logs": false } }
 }

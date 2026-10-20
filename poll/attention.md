@@ -21,9 +21,9 @@
   - 투표자 이메일 후보 목록
   - 즉 secret 백업은 사실상 "익명 해제 키"입니다. 보관자를 최소화하세요. 화면의 "아무도 볼 수 없습니다" 문구는 앱 기능 기준입니다.
 - [ ] **저장소 공개 여부.** `izowooi/crispy-web`은 **PUBLIC** 저장소입니다. 2026-10-20에 push했습니다. 다음 값이 공개되어 있습니다.
-  - `wrangler.jsonc`: 관리자 이메일 2개, Access AUD, D1 id, 도메인
+  - `wrangler.jsonc`: Access AUD, D1 id, 도메인 (관리자 이메일은 2026-10-20에 secret으로 옮겼습니다. 그 전 커밋 이력에는 남아 있습니다.)
   - `attention.md`: 키체인 항목 이름, OAuth client id 끝부분
-  - 비밀값은 없습니다. 개인 Gmail 노출이 싫으면 `ADMIN_EMAILS`를 dashboard var로 옮기세요. 이미 올라간 이력에는 남습니다.
+  - 비밀값은 없습니다.
 - [ ] **이번 작업에서 쓰지 않은 Google OAuth 클라이언트 정리**
   - 대상: GCP 프로젝트 `crispy-web`에 새로 만든 OAuth 클라이언트(`…q41.apps.googleusercontent.com`, redirect `/api/auth/callback/google`)
   - 이 앱은 로그인을 Cloudflare Access가 담당하므로 이 클라이언트를 쓰지 않습니다. Access의 콜백은 `https://izowooi.cloudflareaccess.com/cdn-cgi/access/callback`입니다.

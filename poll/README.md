@@ -11,7 +11,7 @@ Google 계정이 있는 누구나 Cloudflare Access로 로그인해서 주제를
 
 ```text
 poll/
-├── wrangler.jsonc          # Worker·D1·Access·관리자 설정 (vars)
+├── wrangler.jsonc          # Worker·D1·Access 설정 (vars). 관리자 목록은 secret
 ├── migrations/             # D1 스키마 (0001 테이블, 0002 쓰기 레이트 리밋)
 ├── src/
 │   ├── index.js            # 진입점: /api/* 라우팅, 인증, CSRF, 레이트 리밋
@@ -86,6 +86,7 @@ npm run deploy
 - `workers_dev: false`, `preview_urls: false`이므로 `*.workers.dev`로는 접근할 수 없습니다(1042).
 - `check:deploy`는 다음 경우 배포를 막습니다.
   - 배포 바인딩에 `DEV_EMAIL`이 있음
+  - `wrangler.jsonc`에 이메일 주소가 있음
   - workers.dev 또는 preview가 켜져 있음
   - `ALLOWED_SERVICE_TOKENS`가 비어 있지 않음
 - 스키마를 바꾸면 `migrations/000N_*.sql`을 추가하고 `npm run db:migrate:remote`를 실행합니다.
@@ -117,9 +118,16 @@ npm run deploy
 
 ## 관리자 변경
 
-`wrangler.jsonc`의 `vars.ADMIN_EMAILS`(쉼표 구분)를 고친 뒤 `npm run deploy`를 실행합니다.
-Access 정책이 Everyone이라 관리자를 위해 정책을 따로 고칠 필요는 없습니다.
-관리자는 모든 질문을 수정·삭제할 수 있지만 개별 투표 내용은 볼 수 없습니다. 볼 수 있는 API가 없습니다.
+`ADMIN_EMAILS`(쉼표 구분)는 공개 저장소에 두지 않으려고 Worker secret으로 둡니다.
+
+```bash
+npx wrangler secret put ADMIN_EMAILS   # 프롬프트에 a@x.com,b@y.com 입력, 즉시 반영(재배포 불필요)
+npx wrangler secret list               # 이름만 보임
+```
+
+- secret은 다시 읽을 수 없으니 현재 목록은 따로 기록해 두세요.
+- `wrangler deploy`는 secret을 지우지 않습니다. 대시보드의 일반 변수(Text)는 다음 배포 때 지워지므로 쓰지 않습니다.
+- 관리자는 모든 질문을 수정·삭제할 수 있지만 개별 투표 내용은 볼 수 없습니다. 볼 수 있는 API가 없습니다.
 
 ## 공개 운영 시 알아둘 것
 

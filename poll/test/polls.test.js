@@ -6,7 +6,7 @@ import { DAY, HOUR, NOW, api, createPoll, freshJwks, pollBody } from './helpers.
 
 const ALICE = 'alice@wemadeplay.com';
 const BOB = 'bob@wemadeplay.com';
-const ADMIN = 'jongwoo.park@wemadeplay.com';
+const ADMIN = 'admin@example.com';
 
 beforeEach(async () => {
   freshJwks();
@@ -204,7 +204,7 @@ describe('editing and deleting', () => {
       expect(row.n, table).toBe(0);
     }
     const other = await createPoll(BOB);
-    expect((await api('izowooi85@gmail.com', 'DELETE', `/api/polls/${other.id}`, {})).status).toBe(200);
+    expect((await api('boss@example.org', 'DELETE', `/api/polls/${other.id}`, {})).status).toBe(200);
   });
 
   it('lets only the creator or an admin edit', async () => {
