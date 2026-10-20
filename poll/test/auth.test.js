@@ -55,18 +55,34 @@ describe('Access JWT verification', () => {
 });
 
 describe('identity rules', () => {
-  it('allows the company domain (case-insensitive)', () => {
-    expect(identityFromClaims({ email: 'Kim@WemadePlay.com' }, env)).toBe('kim@wemadeplay.com');
+  const domainEnv = { ...env, ALLOWED_DOMAIN: 'wemadeplay.com' };
+
+  it('admits any verified email when ALLOWED_DOMAIN is "*" (production config)', () => {
+    expect(env.ALLOWED_DOMAIN).toBe('*');
+    expect(identityFromClaims({ email: 'Kim@Gmail.com' }, env)).toBe('kim@gmail.com');
   });
 
-  it('rejects other domains and look-alike domains', () => {
+  it('still requires an email (or an allowlisted service token)', () => {
+    expect(() => identityFromClaims({}, env)).toThrow(AuthError);
+    expect(() => identityFromClaims({ email: '  ' }, env)).toThrow(AuthError);
+  });
+
+  it('allows the configured domain (case-insensitive)', () => {
+    expect(identityFromClaims({ email: 'Kim@WemadePlay.com' }, domainEnv)).toBe('kim@wemadeplay.com');
+  });
+
+  it('rejects other domains and look-alike domains when a domain is set', () => {
     for (const email of ['kim@gmail.com', 'kim@notwemadeplay.com', 'kim@wemadeplay.com.evil.io', 'wemadeplay.com']) {
-      expect(() => identityFromClaims({ email }, env)).toThrow(AuthError);
+      expect(() => identityFromClaims({ email }, domainEnv)).toThrow(AuthError);
     }
   });
 
+  it('treats an empty ALLOWED_DOMAIN as admins only, not as open', () => {
+    expect(() => identityFromClaims({ email: 'kim@gmail.com' }, { ...env, ALLOWED_DOMAIN: '' })).toThrow(AuthError);
+  });
+
   it('allows ADMIN_EMAILS outside the domain', () => {
-    expect(identityFromClaims({ email: 'izowooi85@gmail.com' }, env)).toBe('izowooi85@gmail.com');
+    expect(identityFromClaims({ email: 'izowooi85@gmail.com' }, domainEnv)).toBe('izowooi85@gmail.com');
   });
 
   it('rejects service tokens unless explicitly allowlisted', () => {
@@ -81,15 +97,15 @@ describe('API authentication', () => {
     expect(res.status).toBe(403);
   });
 
-  it('returns 403 for an outside email even with a valid JWT', async () => {
-    expect((await api('kim@gmail.com', 'GET', '/api/polls')).status).toBe(403);
+  it('accepts any Google account with a valid JWT', async () => {
+    expect((await api('kim@gmail.com', 'GET', '/api/polls')).status).toBe(200);
   });
 
   it('ignores identity sent by the client', async () => {
     const res = await api('kim@gmail.com', 'GET', '/api/me', undefined, {
-      headers: { 'Cf-Access-Authenticated-User-Email': 'boss@wemadeplay.com', 'X-User-Email': 'boss@wemadeplay.com' },
+      headers: { 'Cf-Access-Authenticated-User-Email': 'izowooi85@gmail.com', 'X-User-Email': 'izowooi85@gmail.com' },
     });
-    expect(res.status).toBe(403);
+    expect(res.data).toEqual({ email: 'kim@gmail.com', is_admin: false });
   });
 
   it('reports the verified identity', async () => {

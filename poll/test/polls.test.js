@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:test';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { voterHash } from '../src/crypto.js';
-import { WRITE_LIMIT_PER_MINUTE } from '../src/ratelimit.js';
+import { CREATE_LIMIT_PER_DAY, WRITE_LIMIT_PER_MINUTE } from '../src/ratelimit.js';
 import { DAY, HOUR, NOW, api, createPoll, freshJwks, pollBody } from './helpers.js';
 
 const ALICE = 'alice@wemadeplay.com';
@@ -175,7 +175,7 @@ describe('listing', () => {
   it('splits open and closed polls, newest first, 20 per page', async () => {
     const ids = [];
     for (let i = 0; i < 21; i++) {
-      const res = await api(ALICE, 'POST', '/api/polls', pollBody({ title: `p${i}` }), { now: NOW + i });
+      const res = await api(`author${i}@gmail.com`, 'POST', '/api/polls', pollBody({ title: `p${i}` }), { now: NOW + i });
       ids.push(res.data.id);
     }
     const closed = await createPoll(ALICE, { closes_at: NOW + 1000 });
@@ -259,17 +259,29 @@ describe('privacy at rest', () => {
 
 describe('rate limiting', () => {
   it('caps state changes per user per minute without storing the email', async () => {
-    const user = 'burst@wemadeplay.com';
+    const user = 'burst@gmail.com';
     const at = { now: NOW + 30 * DAY };
+    const poll = await createPoll(ALICE, { closes_at: at.now + DAY });
+    const vote = (who, opts = at) => api(who, 'POST', `/api/polls/${poll.id}/ballot`, { option_ids: [poll.options[0]] }, opts);
     const statuses = [];
-    for (let i = 0; i < WRITE_LIMIT_PER_MINUTE + 2; i++) {
-      statuses.push((await api(user, 'POST', '/api/polls', pollBody({ closes_at: at.now + DAY }), at)).status);
-    }
-    expect(statuses.slice(0, WRITE_LIMIT_PER_MINUTE).every((s) => s === 201)).toBe(true);
+    for (let i = 0; i < WRITE_LIMIT_PER_MINUTE + 2; i++) statuses.push((await vote(user)).status);
+    expect(statuses.slice(0, WRITE_LIMIT_PER_MINUTE).every((s) => s === 200)).toBe(true);
     expect(statuses.slice(WRITE_LIMIT_PER_MINUTE)).toEqual([429, 429]);
-    expect((await api('other@wemadeplay.com', 'POST', '/api/polls', pollBody({ closes_at: at.now + DAY }), at)).status).toBe(201);
-    expect((await api(user, 'POST', '/api/polls', pollBody({ closes_at: at.now + DAY }), { now: at.now + 60_000 })).status).toBe(201);
+    expect((await vote('other@gmail.com')).status).toBe(200);
+    expect((await vote(user, { now: at.now + 60_000 })).status).toBe(200);
     const { results } = await env.DB.prepare('SELECT * FROM rate_limits').all();
     expect(JSON.stringify(results)).not.toMatch(/@/);
+  });
+
+  it('caps question creation per user per day, except for admins', async () => {
+    const at = (min) => ({ now: NOW + 40 * DAY + min * 60_000 });
+    const create = (who, min) => api(who, 'POST', '/api/polls', pollBody({ closes_at: NOW + 45 * DAY }), at(min));
+    expect((await api(BOB, 'POST', '/api/polls', pollBody({ title: '' }), at(0))).status).toBe(400); // not counted
+    const statuses = [];
+    for (let i = 0; i <= CREATE_LIMIT_PER_DAY; i++) statuses.push((await create(BOB, i)).status);
+    expect(statuses.slice(0, CREATE_LIMIT_PER_DAY).every((s) => s === 201)).toBe(true);
+    expect(statuses[CREATE_LIMIT_PER_DAY]).toBe(429);
+    expect((await create(ADMIN, 1)).status).toBe(201);
+    expect((await create(BOB, 24 * 60)).status).toBe(201);
   });
 });

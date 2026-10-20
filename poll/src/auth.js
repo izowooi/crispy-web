@@ -69,8 +69,9 @@ export const isAdmin = (email, env) => emailList(env.ADMIN_EMAILS).includes(emai
 export function identityFromClaims(claims, env) {
   const email = String(claims.email ?? '').trim().toLowerCase();
   if (email) {
+    // "*" admits any account Access let through (any Google login); a domain narrows it again.
     const domain = String(env.ALLOWED_DOMAIN ?? '').trim().toLowerCase();
-    if ((domain && email.endsWith(`@${domain}`)) || isAdmin(email, env)) return email;
+    if (domain === '*' || (domain && email.endsWith(`@${domain}`)) || isAdmin(email, env)) return email;
     throw new AuthError('Identity not allowed');
   }
   // Service-token JWTs carry no email, only the token's client id. Only used for temporary

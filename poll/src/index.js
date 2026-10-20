@@ -1,6 +1,6 @@
 import { AuthError, authenticate, isAdmin } from './auth.js';
 import { rateLimitKey } from './crypto.js';
-import { allowWrite } from './ratelimit.js';
+import { CREATE_LIMIT_PER_DAY, allowWrite, canCreate, countCreate } from './ratelimit.js';
 import { HttpError, castBallot, createPoll, deletePoll, getPoll, listPolls, updatePoll } from './polls.js';
 import { ValidationError } from './validate.js';
 
@@ -72,6 +72,10 @@ export async function handleApi(request, env, { fetchImpl = fetch, now = Date.no
     return error(known ? 405 : 404, known ? '허용되지 않은 메서드입니다.' : '찾을 수 없습니다.');
   }
   const [method, re, handler] = route;
+  const quotaApplies = handler === createPoll && !user.admin;
+  if (quotaApplies && !(await canCreate(env.DB, limitKey, now))) {
+    return error(429, `질문은 하루에 ${CREATE_LIMIT_PER_DAY}개까지 만들 수 있습니다.`);
+  }
   try {
     let body;
     if (method !== 'GET') {
@@ -79,7 +83,9 @@ export async function handleApi(request, env, { fetchImpl = fetch, now = Date.no
       body = await readJson(request);
     }
     const params = url.pathname.match(re).groups ?? {};
-    return json(method === 'POST' && !params.id ? 201 : 200, await handler({ env, user, now, url, params, body }));
+    const result = await handler({ env, user, now, url, params, body });
+    if (quotaApplies) await countCreate(env.DB, limitKey, now);
+    return json(method === 'POST' && !params.id ? 201 : 200, result);
   } catch (e) {
     if (e instanceof HttpError) return error(e.status, e.message);
     if (e instanceof ValidationError) return error(400, e.message);

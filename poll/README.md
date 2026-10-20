@@ -1,6 +1,6 @@
-# poll — 사내 익명 투표
+# poll — 모두의 투표
 
-사내 구성원이 Google 계정(Cloudflare Access)으로 들어와 질문을 만들고 익명으로 투표하는 웹앱입니다.
+Google 계정이 있는 누구나 Cloudflare Access로 로그인해서 주제를 만들고 익명으로 투표하는 웹앱입니다.
 운영 주소: `https://poll.zowoo.uk`
 
 - 로그인: Cloudflare Access + Google IdP가 담당합니다. 앱에는 로그인 화면이 없습니다.
@@ -36,11 +36,14 @@ flowchart LR
 ### 요청 흐름 (`/api/*`)
 
 1. Access가 로그인하지 않은 요청을 Google 로그인으로 302 리다이렉트합니다.
-2. Worker가 `Cf-Access-Jwt-Assertion`을 직접 검증합니다. 서명은 팀 도메인 JWKS(`/cdn-cgi/access/certs`)로 확인하고, `iss`·`aud`·`exp`를 검사합니다. email은 `@wemadeplay.com`이거나 `ADMIN_EMAILS`에 있어야 하며, 아니면 403입니다.
+2. Worker가 `Cf-Access-Jwt-Assertion`을 직접 검증합니다. 서명은 팀 도메인 JWKS(`/cdn-cgi/access/certs`)로 확인하고, `iss`·`aud`·`exp`를 검사합니다. email claim이 있어야 합니다(없으면 403).
+   - `ALLOWED_DOMAIN`이 `*`이면 모든 계정을 받습니다. 현재 운영 설정입니다.
+   - 도메인을 넣으면 그 도메인과 `ADMIN_EMAILS`만 받습니다.
 3. 상태 변경(POST/PUT/DELETE)은 `Content-Type: application/json`과 `Origin: https://poll.zowoo.uk`일 때만 받습니다(CSRF 방지).
 4. 레이트 리밋은 두 단계입니다.
    - 모든 요청에 `RATE_LIMITER` 바인딩(120회/분, 위치별 근사치)을 적용합니다.
    - 쓰기 요청은 D1 카운터로 사용자당 분당 30회까지 정확히 제한합니다.
+   - 질문 만들기는 사용자당 하루(UTC 기준) 10개까지입니다. 관리자는 예외이고, 검증에 실패한 요청은 세지 않습니다.
    - 키는 이메일의 HMAC 값입니다.
 5. 투표 저장·수정은 `DB.batch` 하나로 원자적으로 처리합니다. 기존 선택을 지우고 새로 넣으며, 각 문장이 마감 여부를 다시 확인합니다.
 
@@ -62,7 +65,7 @@ flowchart LR
 cd poll
 npm ci              # npm 10 에서 `npm install` 은 edgesOut 오류가 날 수 있어 lockfile 기반 ci 사용
 npm run db:migrate:local
-npm run dev          # http://localhost:8799 (DEV_EMAIL=dev@wemadeplay.com 로 로그인한 것처럼 동작)
+npm run dev          # http://localhost:8799 (DEV_EMAIL 계정으로 로그인한 것처럼 동작)
 npm test
 ```
 
@@ -91,7 +94,7 @@ npm run deploy
 
 1. D1: `wrangler d1 create poll-db` → `wrangler.jsonc`의 `database_id`
 2. Access 앱 `poll.zowoo.uk` (Self-hosted)
-   - 정책: Allow — Emails ending in `@wemadeplay.com` + `ADMIN_EMAILS`
+   - 정책: Allow — Everyone. 로그인 수단은 Google IdP 하나뿐이라 결과적으로 "Google 계정 누구나"입니다.
    - IdP: Google (`70f7d8de-…`)
    - 세션 24h
    - 생성 후 AUD를 `wrangler.jsonc`의 `ACCESS_AUD`에 넣습니다.
@@ -115,30 +118,25 @@ npm run deploy
 ## 관리자 변경
 
 `wrangler.jsonc`의 `vars.ADMIN_EMAILS`(쉼표 구분)를 고친 뒤 `npm run deploy`를 실행합니다.
-`@wemadeplay.com`이 아닌 관리자 주소는 Access 정책에도 추가해야 로그인할 수 있습니다(`cf zero-trust access applications update`).
+Access 정책이 Everyone이라 관리자를 위해 정책을 따로 고칠 필요는 없습니다.
 관리자는 모든 질문을 수정·삭제할 수 있지만 개별 투표 내용은 볼 수 없습니다. 볼 수 있는 API가 없습니다.
 
-## 사내 이전 시 해야 할 일
+## 공개 운영 시 알아둘 것
 
-1. **Cloudflare 계정**: 회사 계정에서 Worker, D1, Access 앱을 다시 만듭니다. 개인 계정의 리소스는 이전 후 삭제합니다.
-2. **도메인**: 회사 도메인으로 바꿉니다.
-   - `routes`, `ALLOWED_HOST`(CSRF Origin 검사에도 쓰임), Access 앱 도메인을 같이 바꿉니다.
-3. **IdP**: 회사 Google Workspace(또는 사내 IdP)로 Access IdP를 새로 만듭니다.
-   - `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`를 갱신합니다.
-   - Workspace 내부 앱이면 OAuth 동의 화면을 Internal로 둘 수 있습니다.
-4. **데이터 이전**
-   - 진행 중인 투표를 유지하려면 다음을 함께 옮깁니다.
-     - `wrangler d1 export poll-db --remote --output=dump.sql`로 받은 덤프 → 새 DB에 import
-     - **기존 `VOTER_SECRET` 값을 그대로** 새 Worker에 설정
-   - 새로 시작한다면 새 secret을 만들어도 됩니다.
-5. **관리자**: 개인 Gmail(`ADMIN_EMAILS`, Access 정책)을 빼고 회사 담당자로 바꿉니다.
-6. **보안 검토**
-   - 로그 설정: `invocation_logs: false` 유지 — 요청 헤더에 이메일이 들어 있습니다.
-   - 레이트 리밋 값, 데이터 보존 기간(마감된 질문 정리 정책)을 회사 기준에 맞춥니다.
-7. **검증**: `npm test`, `npm run check:deploy`, 배포 후 다음을 확인합니다.
-   - 로그인 없이 302
-   - workers.dev 비활성
-   - DB에 `@` 없음(`SELECT`)
+- **Zero Trust 좌석 한도.** Access로 로그인한 사람마다 계정의 Zero Trust 좌석(seat)을 하나씩 씁니다.
+  - Free 플랜은 50명까지입니다. 다른 Access 앱 사용자도 같은 한도를 나눠 씁니다.
+  - 한도를 넘으면 새 사용자는 로그인할 수 없습니다.
+  - 확인: `cf zero-trust access users list`
+  - 정리: `cf zero-trust seats edit`로 오래 안 쓴 좌석을 회수합니다.
+  - 50명보다 크게 열려면 유료 플랜을 쓰거나, Access 대신 Worker가 Google OAuth를 직접 처리하도록 바꿔야 합니다.
+- **Google OAuth 동의 화면.** Access IdP가 쓰는 OAuth 클라이언트의 앱이 *Testing* 상태이면 등록한 테스트 사용자만 로그인됩니다. *In production*으로 게시해야 합니다.
+- **스팸·부적절한 주제.** 질문 만들기는 하루 10개로 제한됩니다. 관리자(`ADMIN_EMAILS`)는 어떤 질문이든 수정·삭제할 수 있습니다.
+- **익명성의 한계.** 앱 화면과 API로는 누가 무엇을 골랐는지 볼 수 없습니다. 다만 `VOTER_SECRET`과 DB를 함께 가진 운영자는 이메일 후보를 대입해 투표자를 확인할 수 있습니다.
+- **로그 설정.** `invocation_logs: false`를 유지합니다. 요청 헤더에 이메일이 들어 있기 때문입니다.
+- **배포 후 확인.**
+  - 로그인 없이 접속하면 302
+  - workers.dev 비활성
+  - DB에 `@` 없음(`SELECT`)
 
 ## 디자인
 
