@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "five-in-row",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Korean traffic lands in HKG, where Anthropic/OpenAI reject requests; run (and create rooms) near Seoul.
+  "placement": { "mode": "targeted", "region": "aws:ap-northeast-2" },
+  "routes": [{ "pattern": "five.zowoo.uk", "custom_domain": true }],
+  "workers_dev": false,
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": { "bindings": [{ "name": "ROOM", "class_name": "GameRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
+  "d1_databases": [{ "binding": "DB", "database_name": "five-in-row", "database_id": "d74530fe-1298-40b3-916d-fa3a42db0e76", "migrations_dir": "migrations" }],
+  "ratelimits": [{ "name": "LIMITER", "namespace_id": "4201", "simple": { "limit": 60, "period": 60 } }],
+  "vars": {
+    // AI games per visitor per KST day, and a global backstop for the API bill.
+    "AI_DAILY_LIMIT": "10",
+    "AI_GLOBAL_DAILY_LIMIT": "600"
+  }
+}
