@@ -200,3 +200,62 @@ test("four images use realtime requests for all twelve outputs, never batch endp
     globalThis.fetch = original;
   }
 });
+
+test("enhancement defaults on, requests larger OpenAI output and restores detail for all models", async () => {
+  const { DB } = database(),
+    original = globalThis.fetch;
+  const bodies: { url: string; body: any }[] = [];
+  globalThis.fetch = async (input: any, init: any) => {
+    const url = String(input);
+    bodies.push({ url, body: JSON.parse(init.body) });
+    return Response.json(
+      url.includes("googleapis")
+        ? {
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    { inlineData: { mimeType: "image/png", data: "fake" } },
+                  ],
+                },
+              },
+            ],
+          }
+        : { data: [{ b64_json: "fake" }] },
+    );
+  };
+  try {
+    for (const enabled of [undefined, false]) {
+      bodies.length = 0;
+      const response = await call(env(DB), {
+        images: [image],
+        models: ["flare", "sunburst", "banana"],
+        ...(enabled === undefined ? {} : { enhanceSmall: enabled }),
+      });
+      assert.equal(response.status, 200);
+      assert.equal(bodies.length, 3);
+      for (const { url, body } of bodies) {
+        const prompt = url.includes("googleapis")
+          ? body.contents[0].parts[0].text
+          : body.prompt;
+        assert.equal(prompt.includes("Reconstruct crisp"), enabled !== false);
+        if (!url.includes("googleapis")) {
+          assert.equal(body.size, enabled === false ? "816x816" : "1024x1024");
+          assert.equal(body.images[0].image_url, image.src);
+        }
+      }
+    }
+    assert.equal(
+      (
+        await call(env(DB), {
+          images: [image],
+          models: ["flare"],
+          enhanceSmall: "yes",
+        })
+      ).status,
+      400,
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+});

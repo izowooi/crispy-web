@@ -1,6 +1,7 @@
 import {
   MODELS,
-  PROMPT,
+  generationPrompt,
+  outputSize,
   providerSize,
   type ModelId,
 } from "../../src/lib/images.ts";
@@ -67,18 +68,19 @@ async function api(url: string, key: string, body?: unknown, method = "POST") {
     );
   return data;
 }
-function openaiBody(image: InputImage, model: ModelId) {
+function openaiBody(image: InputImage, model: ModelId, enhanceSmall = true) {
+  const size = outputSize(image.width, image.height, enhanceSmall);
   return {
     model: MODELS.find((m) => m.id === model)!.api,
     images: [{ image_url: image.src }],
-    prompt: PROMPT,
-    size: providerSize(image.width, image.height),
+    prompt: generationPrompt(image.width, image.height, enhanceSmall),
+    size: providerSize(size.width, size.height),
     quality: "medium",
     output_format: "png",
     n: 1,
   };
 }
-function googleBody(image: InputImage) {
+function googleBody(image: InputImage, enhanceSmall = true) {
   const ratios = [
     "1:1",
     "1:4",
@@ -117,7 +119,7 @@ function googleBody(image: InputImage) {
       {
         role: "user",
         parts: [
-          { text: PROMPT },
+          { text: generationPrompt(image.width, image.height, enhanceSmall) },
           {
             inlineData: {
               mimeType: "image/png",
@@ -371,11 +373,17 @@ export const onRequest: PagesFunction<Env> = async ({
     if (route === "generate" && request.method === "POST") {
       if (Number(request.headers.get("Content-Length") || 0) > 26000000)
         return json({ error: "업로드 크기를 줄여주세요." }, 413);
-      const { images, models } = (await request.json()) as {
+      const {
+        images,
+        models,
+        enhanceSmall = true,
+      } = (await request.json()) as {
+        enhanceSmall?: boolean;
         images: InputImage[];
         models: ModelId[];
       };
       if (
+        typeof enhanceSmall !== "boolean" ||
         !Array.isArray(images) ||
         images.length < 1 ||
         images.length > 4 ||
@@ -471,12 +479,12 @@ export const onRequest: PagesFunction<Env> = async ({
                   ? await api(
                       `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`,
                       env.GEMINI_API_KEY,
-                      googleBody(images[index]),
+                      googleBody(images[index], enhanceSmall),
                     )
                   : await api(
                       "https://api.openai.com/v1/images/edits",
                       env.OPENAI_API_KEY,
-                      openaiBody(images[index], model),
+                      openaiBody(images[index], model, enhanceSmall),
                     );
               const src =
                 model === "banana"

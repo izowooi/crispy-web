@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MODELS, targetSize, type ModelId } from "../lib/images";
+import { MODELS, targetSize, outputSize, type ModelId } from "../lib/images";
 import { createZip } from "../lib/zip";
 type Picture = {
   id: string;
@@ -35,6 +35,7 @@ export default function Home() {
     [sources, setSources] = useState<Picture[]>([]),
     [results, setResults] = useState<Result[]>([]),
     [models, setModels] = useState<ModelId[]>(["flare", "sunburst", "banana"]);
+  const [enhanceSmall, setEnhanceSmall] = useState(true);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [left, setLeft] = useState(""),
@@ -121,7 +122,11 @@ export default function Home() {
           const response = await fetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ images: [original], models: [model] }),
+            body: JSON.stringify({
+              images: [original],
+              models: [model],
+              enhanceSmall,
+            }),
           });
           const data = (await response.json()) as {
             error?: string;
@@ -132,12 +137,18 @@ export default function Home() {
           const item = data.results?.[0];
           if (!item || item.error)
             throw Error(item?.error || "이미지를 받지 못했습니다.");
+          const size = outputSize(
+            original.width,
+            original.height,
+            enhanceSmall,
+          );
           const result: Result = {
             ...original,
+            ...size,
             id: crypto.randomUUID(),
             model,
             sourceId: original.id,
-            src: await resize(item.src, original.width, original.height),
+            src: await resize(item.src, size.width, size.height),
           };
           setSources((p) =>
             p.some((x) => x.id === original.id) ? p : [...p, original],
@@ -202,7 +213,12 @@ export default function Home() {
       >
         <img src={p.src} alt={label(p)} />
         <div className="card-content">
-          <strong>{label(p)}</strong>
+          <strong>
+            {label(p)}{" "}
+            <small className="image-dimensions">
+              {p.width} × {p.height}
+            </small>
+          </strong>
           <div className="placement">
             <button
               aria-label={`${label(p)} 왼쪽에 놓기`}
@@ -265,6 +281,9 @@ export default function Home() {
                     </button>
                     <small>
                       {p.width} × {p.height}
+                      {Math.max(p.width, p.height) < 1024 && enhanceSmall
+                        ? ` → ${outputSize(p.width, p.height).width} × ${outputSize(p.width, p.height).height}`
+                        : ""}
                     </small>
                   </div>
                 ))}
@@ -293,6 +312,21 @@ export default function Home() {
                 />
               </label>
             )}
+            <label className="enhancement-option">
+              <input
+                type="checkbox"
+                checked={enhanceSmall}
+                disabled={busy}
+                onChange={(e) => setEnhanceSmall(e.target.checked)}
+              />
+              <span>
+                <strong>작은 이미지 화질 개선</strong>
+                <small>
+                  긴 변이 1024px 미만이면 비율을 유지해 1K로 개선해요. 끄면 원본
+                  크기를 유지해요.
+                </small>
+              </span>
+            </label>
             <div className="actions">
               <details>
                 <summary>모델 선택 · {models.length}개 사용</summary>
@@ -362,9 +396,13 @@ export default function Home() {
         <details className="usage">
           <summary>이미지 처리 · 개인정보 · 이용 한도</summary>
           <p>
-            원본 크기를 유지합니다. 긴 변이 2K를 넘으면 2048px로 줄이며, 파일당
-            30MB까지 올릴 수 있습니다. 여러 장도 배치 대기 없이 즉시 생성합니다.
-            배치 할인은 적용되지 않으며 일반 API 요금으로 처리됩니다.
+            ‘작은 이미지 화질 개선’은 기본으로 켜져 있습니다. 긴 변이 1024px
+            미만이면 비율을 유지해 생성 결과를 1K로 개선하며, 1024px 이상이면
+            크기를 유지합니다. 옵션을 끄면 작은 이미지도 원본 크기를 유지합니다.
+            원본은 비교용으로 그대로 남습니다. 긴 변이 2K를 넘으면 2048px로
+            줄이며, 파일당 30MB까지 올릴 수 있습니다. 여러 장도 배치 대기 없이
+            즉시 생성합니다. 배치 할인은 적용되지 않으며 일반 API 요금으로
+            처리됩니다.
           </p>
           <p>
             이미지를 앱 서버나 갤러리에 보관하지 않습니다. 생성에 필요한

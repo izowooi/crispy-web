@@ -616,3 +616,35 @@ footer {
     transition: none !important;
   }
 }
+.enhancement-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.enhancement-option input {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.enhancement-option strong {
+  font-weight: 500;
+  display: block;
+}
+.enhancement-option small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-top: 5px;
+  font-size: 11px;
+}
+.card-content .image-dimensions {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 4px;
+}

@@ -18,6 +18,28 @@ export function targetSize(width: number, height: number) {
     height: Math.max(1, Math.round(height * scale)),
   };
 }
+export function outputSize(width: number, height: number, enhanceSmall = true) {
+  const bounded = targetSize(width, height);
+  const scale = enhanceSmall
+    ? Math.max(1, 1024 / Math.max(bounded.width, bounded.height))
+    : 1;
+  return {
+    width: Math.max(1, Math.round(bounded.width * scale)),
+    height: Math.max(1, Math.round(bounded.height * scale)),
+  };
+}
+export function generationPrompt(
+  width: number,
+  height: number,
+  enhanceSmall = true,
+) {
+  return (
+    PROMPT +
+    (enhanceSmall && Math.max(width, height) < 1024
+      ? " The source is low resolution. Reconstruct crisp, plausible fine detail, natural skin and material textures at the requested resolution. Correct compression artifacts, blur and pixelation instead of reproducing them. Preserve the original framing and aspect ratio."
+      : "")
+  );
+}
 export function providerSize(width: number, height: number) {
   const ratio = Math.max(1 / 3, Math.min(3, width / height));
   const pixels = Math.max(655360, Math.min(4194304, width * height));
