@@ -113,8 +113,25 @@ test("signed browser cookie enforces the 500-request daily limit", async () => {
       }),
     );
   try {
-    const first = await call(env(DB), { images: [image], models: ["flare"] });
+    const first = (await onRequest({
+      request: new Request("https://test.local/api/health"),
+      env: env(DB),
+      params: { path: "health" },
+    } as any)) as Response;
     const cookie = first.headers.get("Set-Cookie")!.split(";")[0];
+    const repeat = (await onRequest({
+      request: new Request("https://test.local/api/health", {
+        headers: { Cookie: cookie },
+      }),
+      env: env(DB),
+      params: { path: "health" },
+    } as any)) as Response;
+    assert.equal(repeat.headers.get("Set-Cookie"), null);
+    assert.equal(
+      (await call(env(DB), { images: [image], models: ["flare"] }, cookie))
+        .status,
+      200,
+    );
     const row = sqlite.prepare("SELECT * FROM ledger LIMIT 1").get() as any;
     const stmt = sqlite.prepare("INSERT INTO ledger VALUES (?,?,?,?,0,0,0)");
     for (let i = 1; i < 500; i++)
@@ -129,157 +146,52 @@ test("signed browser cookie enforces the 500-request daily limit", async () => {
   }
 });
 
-test("four images submit independent model batches and return all twelve mapped results", async () => {
-  const { DB } = database();
-  const original = globalThis.fetch;
-  const requests: { url: string; body: any }[] = [];
-  let file = 0;
-  globalThis.fetch = async (input: any, init: any) => {
+test("four images use realtime requests for all twelve outputs, never batch endpoints", async () => {
+  const { DB } = database(),
+    original = globalThis.fetch;
+  const requests: string[] = [];
+  globalThis.fetch = async (input: any) => {
     const url = String(input);
-    let body: any;
-    if (init?.body instanceof FormData) {
-      body = JSON.parse(
-        (await (init.body.get("file") as Blob).text()).split("\n")[0],
-      );
-    } else if (init?.body) body = JSON.parse(init.body);
-    requests.push({ url, body });
-    if (url.endsWith("/files") && init?.method === "POST")
-      return Response.json({ id: `file-${++file}` });
-    if (url.endsWith("/batches") && init?.method === "POST")
-      return Response.json({ id: `batch-${file}` });
-    if (url.includes("batchGenerateContent"))
-      return Response.json({ name: "batches/google" });
-    if (url.endsWith("/batches/google"))
-      return Response.json({
-        done: true,
-        response: {
-          inlinedResponses: Array.from({ length: 4 }, (_, index) => ({
-            metadata: { key: String(index) },
-            response: {
-              candidates: [
-                {
-                  content: {
-                    parts: [
-                      { inlineData: { mimeType: "image/png", data: "fake" } },
-                    ],
-                  },
+    requests.push(url);
+    return Response.json(
+      url.includes("googleapis")
+        ? {
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    { inlineData: { mimeType: "image/png", data: "fake" } },
+                  ],
                 },
-              ],
-              usageMetadata: {
-                promptTokenCount: 10,
-                candidatesTokenCount: 1680,
               },
-            },
-          })),
-        },
-      });
-    if (url.includes("/v1/batches/batch-"))
-      return Response.json({
-        status: "completed",
-        output_file_id: `out-${url.split("-").pop()}`,
-      });
-    if (url.endsWith("/content"))
-      return new Response(
-        Array.from({ length: 4 }, (_, index) =>
-          JSON.stringify({
-            custom_id: String(index),
-            response: {
-              body: {
-                data: [{ b64_json: "fake" }],
-                usage: { input_tokens: 10, output_tokens: 100 },
-              },
-            },
-          }),
-        ).join("\n"),
-      );
-    if (init?.method === "DELETE") return Response.json({ deleted: true });
-    throw Error("Unexpected endpoint " + url);
+            ],
+            usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 1680 },
+          }
+        : {
+            data: [{ b64_json: "fake" }],
+            usage: { input_tokens: 10, output_tokens: 100 },
+          },
+    );
   };
   try {
     const response = await call(env(DB), {
       images: Array(4).fill(image),
       models: ["flare", "sunburst", "banana"],
     });
-    const submitted = (await response.json()) as any;
+    const data = (await response.json()) as any;
     assert.equal(response.status, 200);
-    assert.equal(submitted.results.length, 0);
-    assert.ok(submitted.jobs);
-    assert.equal(
-      requests.filter((r) => r.url.includes("batchGenerateContent")).length,
-      1,
+    assert.equal(data.jobs, undefined);
+    assert.equal(data.results.length, 12);
+    assert.equal(requests.length, 12);
+    assert.ok(
+      requests.every(
+        (url) =>
+          url.endsWith("/images/edits") || url.endsWith(":generateContent"),
+      ),
     );
-    assert.equal(
-      requests.find((r) => r.url.includes("batchGenerateContent"))!.body.batch
-        .input_config.requests.requests.length,
-      4,
-    );
-    assert.equal(requests.filter((r) => r.url.endsWith("/files")).length, 2);
-    for (const r of requests.filter((r) => r.url.endsWith("/files")))
-      assert.equal(r.body.body.images.length, 1);
-    const finished: { results: any[] } = { results: [] };
-    let jobs = submitted.jobs;
-    const cleanups: string[] = [];
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const status = (await onRequest({
-        request: new Request("https://test.local/api/status", {
-          method: "POST",
-          body: JSON.stringify({ token: jobs }),
-        }),
-        env: env(DB),
-        params: { path: "status" },
-      } as any)) as Response;
-      const part = (await status.json()) as any;
-      assert.equal(part.results.length, 4);
-      finished.results.push(...part.results);
-      jobs = part.jobs;
-      if (part.cleanup) cleanups.push(part.cleanup);
-    }
-    assert.equal(jobs, undefined);
-    assert.equal(
-      requests.filter(
-        (r) =>
-          r.body === undefined &&
-          r.url.includes("/files/") &&
-          !r.url.endsWith("/content"),
-      ).length,
-      0,
-    );
-    assert.equal(cleanups.length, 2);
-    const invalidReceipt = (await onRequest({
-      request: new Request("https://test.local/api/acknowledge", {
-        method: "POST",
-        body: JSON.stringify({ token: submitted.jobs }),
-      }),
-      env: env(DB),
-      params: { path: "acknowledge" },
-    } as any)) as Response;
-    assert.equal(invalidReceipt.status, 400);
-
-    for (const receipt of cleanups) {
-      const acknowledged = (await onRequest({
-        request: new Request("https://test.local/api/acknowledge", {
-          method: "POST",
-          body: JSON.stringify({ token: receipt }),
-        }),
-        env: env(DB),
-        params: { path: "acknowledge" },
-      } as any)) as Response;
-      assert.equal(acknowledged.status, 200);
-    }
-    assert.equal(
-      requests.filter(
-        (r) =>
-          r.body === undefined &&
-          r.url.includes("/files/") &&
-          !r.url.endsWith("/content"),
-      ).length,
-      4,
-    );
-    assert.equal(finished.results.length, 12);
-    assert.equal(finished.results.filter((r: any) => r.error).length, 0);
     for (const model of ["flare", "sunburst", "banana"])
       assert.deepEqual(
-        finished.results
+        data.results
           .filter((r: any) => r.model === model)
           .map((r: any) => r.index),
         [0, 1, 2, 3],

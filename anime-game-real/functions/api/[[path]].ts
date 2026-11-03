@@ -184,8 +184,25 @@ export const onRequest: PagesFunction<Env> = async ({
     )
       return json({ error: "허용되지 않은 요청입니다." }, 403);
     const route = String(params.path || "");
-    if (route === "health")
-      return json({ ready: !!env.OPENAI_API_KEY && !!env.GEMINI_API_KEY });
+    if (route === "health") {
+      const response = json({
+        ready: !!env.OPENAI_API_KEY && !!env.GEMINI_API_KEY,
+      });
+      const cookie = request.headers
+        .get("Cookie")
+        ?.match(/(?:^|; )a2r=([^;]+)/)?.[1];
+      let valid = false;
+      if (cookie)
+        try {
+          valid = !!(await verify(cookie, env)).browser;
+        } catch {}
+      if (!valid)
+        response.headers.set(
+          "Set-Cookie",
+          `a2r=${await token({ browser: crypto.randomUUID() }, env)}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=31536000${new URL(request.url).hostname.endsWith(".zowoo.uk") ? "; Domain=zowoo.uk" : ""}`,
+        );
+      return response;
+    }
     if (route === "acknowledge" && request.method === "POST") {
       const { token: receipt } = (await request.json()) as { token: string };
       const cleanup = await verify(receipt, env);
@@ -442,24 +459,24 @@ export const onRequest: PagesFunction<Env> = async ({
           },
           429,
         );
-      const results: any[] = [],
-        jobs: any[] = [];
+      const results: any[] = [];
       await Promise.all(
         models.map(async (model) => {
-          try {
-            const modelName = MODELS.find((m) => m.id === model)!.api;
-            if (images.length === 1) {
+          let amount = 0;
+          for (let index = 0; index < images.length; index++) {
+            try {
+              const modelName = MODELS.find((m) => m.id === model)!.api;
               const data =
                 model === "banana"
                   ? await api(
                       `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`,
                       env.GEMINI_API_KEY,
-                      googleBody(images[0]),
+                      googleBody(images[index]),
                     )
                   : await api(
                       "https://api.openai.com/v1/images/edits",
                       env.OPENAI_API_KEY,
-                      openaiBody(images[0], model),
+                      openaiBody(images[index], model),
                     );
               const src =
                 model === "banana"
@@ -467,77 +484,17 @@ export const onRequest: PagesFunction<Env> = async ({
                   : `data:image/png;base64,${data.data?.[0]?.b64_json}`;
               if (src.endsWith("undefined"))
                 throw Error("이미지가 반환되지 않았습니다.");
-              await settle(env, id, model, cost(data, model));
-              results.push({ index: 0, model, src });
-            } else if (model === "banana") {
-              const data = await api(
-                `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:batchGenerateContent`,
-                env.GEMINI_API_KEY,
-                {
-                  batch: {
-                    display_name: "a2r",
-                    input_config: {
-                      requests: {
-                        requests: images.map((img, index) => ({
-                          request: googleBody(img),
-                          metadata: { key: String(index) },
-                        })),
-                      },
-                    },
-                  },
-                },
-              );
-              jobs.push({ model, name: data.name });
-            } else {
-              const content = images
-                .map((img, index) =>
-                  JSON.stringify({
-                    custom_id: String(index),
-                    method: "POST",
-                    url: "/v1/images/edits",
-                    body: openaiBody(img, model),
-                  }),
-                )
-                .join("\n");
-              const form = new FormData();
-              form.set("purpose", "batch");
-              form.set(
-                "file",
-                new Blob([content], { type: "application/jsonl" }),
-                "batch.jsonl",
-              );
-              const uploaded = await fetch("https://api.openai.com/v1/files", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
-                body: form,
-              });
-              const file: any = await uploaded.json();
-              if (!uploaded.ok) throw Error("배치 파일 전송에 실패했습니다.");
-              const data = await api(
-                "https://api.openai.com/v1/batches",
-                env.OPENAI_API_KEY,
-                {
-                  input_file_id: file.id,
-                  endpoint: "/v1/images/edits",
-                  completion_window: "24h",
-                },
-              );
-              jobs.push({ model, name: data.id, file: file.id });
+              amount += cost(data, model);
+              results.push({ index, model, src });
+            } catch (e) {
+              amount += 1;
+              results.push({ index, model, error: (e as Error).message });
             }
-          } catch (e) {
-            results.push({ index: 0, model, error: (e as Error).message });
           }
+          await settle(env, id, model, amount);
         }),
       );
-      const response = json({
-        results,
-        jobs: jobs.length
-          ? await token(
-              { jobs, id, browser, expires: Date.now() + 48 * 3600000 },
-              env,
-            )
-          : undefined,
-      });
+      const response = json({ results });
       response.headers.set(
         "Set-Cookie",
         `a2r=${await token({ browser }, env)}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=31536000${new URL(request.url).hostname.endsWith(".zowoo.uk") ? "; Domain=zowoo.uk" : ""}`,
