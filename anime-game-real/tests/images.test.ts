@@ -58,3 +58,19 @@ test("enhancement preserves good sources and disabling preserves small dimension
   assert.doesNotMatch(generationPrompt(320, 240, false), /Reconstruct crisp/);
   assert.doesNotMatch(generationPrompt(1024, 768), /Reconstruct crisp/);
 });
+
+test("three resolution modes use a minimum long edge without changing good sources", () => {
+  assert.deepEqual(outputSize(320, 240, "original"), {
+    width: 320,
+    height: 240,
+  });
+  assert.deepEqual(outputSize(320, 240, "1k"), { width: 1024, height: 768 });
+  assert.deepEqual(outputSize(320, 240, "2k"), { width: 2048, height: 1536 });
+  assert.deepEqual(outputSize(1500, 1000, "1k"), { width: 1500, height: 1000 });
+  assert.deepEqual(outputSize(1500, 1000, "2k"), { width: 2048, height: 1365 });
+  for (const mode of ["original", "1k", "2k"] as const)
+    assert.deepEqual(outputSize(4096, 3072, mode), {
+      width: 2048,
+      height: 1536,
+    });
+});

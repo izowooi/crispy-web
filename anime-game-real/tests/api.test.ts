@@ -259,3 +259,68 @@ test("enhancement defaults on, requests larger OpenAI output and restores detail
     globalThis.fetch = original;
   }
 });
+
+test("three resolution choices reach all provider APIs and reject unrecognized settings", async () => {
+  const { DB } = database(),
+    original = globalThis.fetch;
+  const bodies: any[] = [];
+  globalThis.fetch = async (input: any, init: any) => {
+    const url = String(input);
+    bodies.push({ url, body: JSON.parse(init.body) });
+    return Response.json(
+      url.includes("googleapis")
+        ? {
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    { inlineData: { mimeType: "image/png", data: "fake" } },
+                  ],
+                },
+              },
+            ],
+          }
+        : { data: [{ b64_json: "fake" }] },
+    );
+  };
+  try {
+    for (const resolution of ["original", "1k", "2k"]) {
+      bodies.length = 0;
+      const response = await call(env(DB), {
+        images: [image],
+        models: ["flare", "sunburst", "banana"],
+        resolution,
+      });
+      assert.equal(response.status, 200);
+      for (const { url, body } of bodies) {
+        if (url.includes("googleapis"))
+          assert.equal(
+            body.generationConfig.imageConfig.imageSize,
+            resolution === "2k" ? "2K" : "1K",
+          );
+        else
+          assert.equal(
+            body.size,
+            resolution === "2k"
+              ? "2048x2048"
+              : resolution === "1k"
+                ? "1024x1024"
+                : "816x816",
+          );
+      }
+    }
+    for (const resolution of ["4k", null, 2048])
+      assert.equal(
+        (
+          await call(env(DB), {
+            images: [image],
+            models: ["flare"],
+            resolution,
+          })
+        ).status,
+        400,
+      );
+  } finally {
+    globalThis.fetch = original;
+  }
+});

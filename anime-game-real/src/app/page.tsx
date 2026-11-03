@@ -1,6 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MODELS, targetSize, outputSize, type ModelId } from "../lib/images";
+import {
+  MODELS,
+  targetSize,
+  outputSize,
+  type ResolutionMode,
+  type ModelId,
+} from "../lib/images";
+import { estimateOutput } from "../lib/pricing";
 import { createZip } from "../lib/zip";
 type Picture = {
   id: string;
@@ -35,7 +42,7 @@ export default function Home() {
     [sources, setSources] = useState<Picture[]>([]),
     [results, setResults] = useState<Result[]>([]),
     [models, setModels] = useState<ModelId[]>(["flare", "sunburst", "banana"]);
-  const [enhanceSmall, setEnhanceSmall] = useState(true);
+  const [resolution, setResolution] = useState<ResolutionMode>("1k");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [left, setLeft] = useState(""),
@@ -46,6 +53,18 @@ export default function Home() {
     [completed, setCompleted] = useState(0),
     [total, setTotal] = useState(0),
     [zipping, setZipping] = useState(false);
+  const costRows = models.map((model) => {
+    const estimates = (
+      images.length ? images : [{ width: 1024, height: 1024 }]
+    ).map((image) =>
+      estimateOutput(image.width, image.height, model, resolution),
+    );
+    return {
+      model,
+      tokens: estimates.reduce((sum, e) => sum + e.tokens, 0),
+      usd: estimates.reduce((sum, e) => sum + e.usd, 0),
+    };
+  });
   const input = useRef<HTMLInputElement>(null),
     comparison = useRef<HTMLElement>(null);
   const originals = [
@@ -125,7 +144,7 @@ export default function Home() {
             body: JSON.stringify({
               images: [original],
               models: [model],
-              enhanceSmall,
+              resolution,
             }),
           });
           const data = (await response.json()) as {
@@ -137,11 +156,7 @@ export default function Home() {
           const item = data.results?.[0];
           if (!item || item.error)
             throw Error(item?.error || "이미지를 받지 못했습니다.");
-          const size = outputSize(
-            original.width,
-            original.height,
-            enhanceSmall,
-          );
+          const size = outputSize(original.width, original.height, resolution);
           const result: Result = {
             ...original,
             ...size,
@@ -281,8 +296,11 @@ export default function Home() {
                     </button>
                     <small>
                       {p.width} × {p.height}
-                      {Math.max(p.width, p.height) < 1024 && enhanceSmall
-                        ? ` → ${outputSize(p.width, p.height).width} × ${outputSize(p.width, p.height).height}`
+                      {outputSize(p.width, p.height, resolution).width !==
+                        p.width ||
+                      outputSize(p.width, p.height, resolution).height !==
+                        p.height
+                        ? ` → ${outputSize(p.width, p.height, resolution).width} × ${outputSize(p.width, p.height, resolution).height}`
                         : ""}
                     </small>
                   </div>
@@ -312,21 +330,79 @@ export default function Home() {
                 />
               </label>
             )}
-            <label className="enhancement-option">
-              <input
-                type="checkbox"
-                checked={enhanceSmall}
-                disabled={busy}
-                onChange={(e) => setEnhanceSmall(e.target.checked)}
-              />
-              <span>
-                <strong>작은 이미지 화질 개선</strong>
-                <small>
-                  긴 변이 1024px 미만이면 비율을 유지해 1K로 개선해요. 끄면 원본
-                  크기를 유지해요.
-                </small>
-              </span>
-            </label>
+            <fieldset className="resolution-options" disabled={busy}>
+              <legend>작은 이미지 화질 개선</legend>
+              <div className="resolution-segments">
+                {(
+                  [
+                    { id: "original", label: "원본 크기" },
+                    { id: "1k", label: "최소 1K · 기본" },
+                    { id: "2k", label: "최소 2K" },
+                  ] as const
+                ).map((mode) => (
+                  <label
+                    key={mode.id}
+                    className={resolution === mode.id ? "active" : ""}
+                  >
+                    <input
+                      type="radio"
+                      name="resolution"
+                      value={mode.id}
+                      checked={resolution === mode.id}
+                      onChange={() => setResolution(mode.id)}
+                    />
+                    {mode.label}
+                  </label>
+                ))}
+              </div>
+              <small>
+                선택한 기준보다 작으면 비율을 유지해 개선해요. 이미 충분히 크면
+                그대로 유지해요.
+              </small>
+            </fieldset>
+            <details className="cost-estimate">
+              <summary>
+                {images.length ? "선택한 이미지" : "정사각형 1장 예시"} · 예상
+                출력 비용 $
+                {costRows.reduce((sum, row) => sum + row.usd, 0).toFixed(3)}
+              </summary>
+              <div className="cost-rows">
+                {costRows.map((row) => (
+                  <div key={row.model}>
+                    <span>{modelLabel(row.model)}</span>
+                    <span>
+                      약 {row.tokens.toLocaleString()} 출력 토큰 · $
+                      {row.usd.toFixed(5)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p>
+                일반 API 이미지 출력 비용의 추정치입니다. OpenAI는 medium 품질
+                기준이며 실제 요청 크기로 계산합니다. 입력
+                이미지·프롬프트·추론·재시도 비용 및 세금은 별도이며, 비율과 실제
+                사용량에 따라 달라집니다. 원본 크기를 선택해도 모델의 최소 생성
+                크기에 따른 비용은 발생합니다.
+              </p>
+              <p>
+                이미지 출력 100만 토큰당 $30 · 2026-11-03 요금 기준 ·{" "}
+                <a
+                  href="https://developers.openai.com/api/docs/guides/image-generation"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  OpenAI 요금 근거
+                </a>{" "}
+                ·{" "}
+                <a
+                  href="https://aistudio.google.com/docs/pricing#gemini-nano-banana-2.1"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Google 요금 근거
+                </a>
+              </p>
+            </details>
             <div className="actions">
               <details>
                 <summary>모델 선택 · {models.length}개 사용</summary>
@@ -396,13 +472,12 @@ export default function Home() {
         <details className="usage">
           <summary>이미지 처리 · 개인정보 · 이용 한도</summary>
           <p>
-            ‘작은 이미지 화질 개선’은 기본으로 켜져 있습니다. 긴 변이 1024px
-            미만이면 비율을 유지해 생성 결과를 1K로 개선하며, 1024px 이상이면
-            크기를 유지합니다. 옵션을 끄면 작은 이미지도 원본 크기를 유지합니다.
-            원본은 비교용으로 그대로 남습니다. 긴 변이 2K를 넘으면 2048px로
-            줄이며, 파일당 30MB까지 올릴 수 있습니다. 여러 장도 배치 대기 없이
-            즉시 생성합니다. 배치 할인은 적용되지 않으며 일반 API 요금으로
-            처리됩니다.
+            ‘작은 이미지 화질 개선’은 원본 크기 / 최소 1K(기본) / 최소 2K 중에서
+            선택합니다. 선택한 기준보다 긴 변이 작을 때만 비율을 유지해
+            개선합니다. 원본 크기를 선택하면 확대하지 않습니다. 긴 변이 2K를
+            넘는 입력은 2048px로 줄이며, 원본은 비교용으로 그대로 남습니다.
+            파일당 30MB까지 올릴 수 있으며 모든 요청은 배치 대기 없이 일반 API
+            요금으로 즉시 처리됩니다.
           </p>
           <p>
             이미지를 앱 서버나 갤러리에 보관하지 않습니다. 생성에 필요한

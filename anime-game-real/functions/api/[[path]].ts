@@ -2,6 +2,8 @@ import {
   MODELS,
   generationPrompt,
   outputSize,
+  googleImageSize,
+  type ResolutionMode,
   providerSize,
   type ModelId,
 } from "../../src/lib/images.ts";
@@ -68,19 +70,23 @@ async function api(url: string, key: string, body?: unknown, method = "POST") {
     );
   return data;
 }
-function openaiBody(image: InputImage, model: ModelId, enhanceSmall = true) {
-  const size = outputSize(image.width, image.height, enhanceSmall);
+function openaiBody(
+  image: InputImage,
+  model: ModelId,
+  resolution: ResolutionMode = "1k",
+) {
+  const size = outputSize(image.width, image.height, resolution);
   return {
     model: MODELS.find((m) => m.id === model)!.api,
     images: [{ image_url: image.src }],
-    prompt: generationPrompt(image.width, image.height, enhanceSmall),
+    prompt: generationPrompt(image.width, image.height, resolution),
     size: providerSize(size.width, size.height),
     quality: "medium",
     output_format: "png",
     n: 1,
   };
 }
-function googleBody(image: InputImage, enhanceSmall = true) {
+function googleBody(image: InputImage, resolution: ResolutionMode = "1k") {
   const ratios = [
     "1:1",
     "1:4",
@@ -119,7 +125,7 @@ function googleBody(image: InputImage, enhanceSmall = true) {
       {
         role: "user",
         parts: [
-          { text: generationPrompt(image.width, image.height, enhanceSmall) },
+          { text: generationPrompt(image.width, image.height, resolution) },
           {
             inlineData: {
               mimeType: "image/png",
@@ -133,7 +139,10 @@ function googleBody(image: InputImage, enhanceSmall = true) {
       maxOutputTokens: 8192,
       thinkingConfig: { thinkingLevel: "minimal" },
       responseModalities: ["IMAGE"],
-      imageConfig: { imageSize: "2K", aspectRatio: ratio },
+      imageConfig: {
+        imageSize: googleImageSize(image.width, image.height, resolution),
+        aspectRatio: ratio,
+      },
     },
   };
 }
@@ -376,14 +385,23 @@ export const onRequest: PagesFunction<Env> = async ({
       const {
         images,
         models,
-        enhanceSmall = true,
+        enhanceSmall,
+        resolution: requestedResolution,
       } = (await request.json()) as {
         enhanceSmall?: boolean;
+        resolution?: ResolutionMode;
         images: InputImage[];
         models: ModelId[];
       };
+      const resolution =
+        requestedResolution === undefined
+          ? enhanceSmall === false
+            ? "original"
+            : "1k"
+          : requestedResolution;
       if (
-        typeof enhanceSmall !== "boolean" ||
+        !["original", "1k", "2k"].includes(resolution) ||
+        (enhanceSmall !== undefined && typeof enhanceSmall !== "boolean") ||
         !Array.isArray(images) ||
         images.length < 1 ||
         images.length > 4 ||
@@ -479,12 +497,12 @@ export const onRequest: PagesFunction<Env> = async ({
                   ? await api(
                       `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`,
                       env.GEMINI_API_KEY,
-                      googleBody(images[index], enhanceSmall),
+                      googleBody(images[index], resolution),
                     )
                   : await api(
                       "https://api.openai.com/v1/images/edits",
                       env.OPENAI_API_KEY,
-                      openaiBody(images[index], model, enhanceSmall),
+                      openaiBody(images[index], model, resolution),
                     );
               const src =
                 model === "banana"

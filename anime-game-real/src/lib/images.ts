@@ -18,25 +18,44 @@ export function targetSize(width: number, height: number) {
     height: Math.max(1, Math.round(height * scale)),
   };
 }
-export function outputSize(width: number, height: number, enhanceSmall = true) {
+export type ResolutionMode = "original" | "1k" | "2k";
+type ResolutionSetting = ResolutionMode | boolean;
+export function outputSize(
+  width: number,
+  height: number,
+  resolution: ResolutionSetting = "1k",
+) {
   const bounded = targetSize(width, height);
-  const scale = enhanceSmall
-    ? Math.max(1, 1024 / Math.max(bounded.width, bounded.height))
-    : 1;
+  const minimum =
+    resolution === "2k"
+      ? 2048
+      : resolution === "original" || resolution === false
+        ? 0
+        : 1024;
+  const scale = Math.max(1, minimum / Math.max(bounded.width, bounded.height));
   return {
     width: Math.max(1, Math.round(bounded.width * scale)),
     height: Math.max(1, Math.round(bounded.height * scale)),
   };
 }
+export function googleImageSize(
+  width: number,
+  height: number,
+  resolution: ResolutionSetting = "1k",
+) {
+  const size = outputSize(width, height, resolution);
+  return Math.max(size.width, size.height) > 1024 ? "2K" : "1K";
+}
 export function generationPrompt(
   width: number,
   height: number,
-  enhanceSmall = true,
+  resolution: ResolutionSetting = "1k",
 ) {
+  const size = outputSize(width, height, resolution);
   return (
     PROMPT +
-    (enhanceSmall && Math.max(width, height) < 1024
-      ? " The source is low resolution. Reconstruct crisp, plausible fine detail, natural skin and material textures at the requested resolution. Correct compression artifacts, blur and pixelation instead of reproducing them. Preserve the original framing and aspect ratio."
+    (Math.max(size.width, size.height) > Math.max(width, height)
+      ? " The source is below the requested output resolution. Reconstruct crisp, plausible fine detail, natural skin and material textures at the requested resolution. Correct compression artifacts, blur and pixelation instead of reproducing them. Preserve the original framing and aspect ratio."
       : "")
   );
 }
