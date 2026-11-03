@@ -194,6 +194,11 @@ export const onRequest: PagesFunction<Env> = async ({
       const results: any[] = [],
         pending: any[] = [];
       for (const job of session.jobs) {
+        // Deliver one model at a time to keep four-image batches within edge memory limits.
+        if (results.length) {
+          pending.push(job);
+          continue;
+        }
         try {
           if (job.model === "banana") {
             const data = await api(

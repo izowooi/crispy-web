@@ -216,16 +216,23 @@ test("four images submit independent model batches and return all twelve mapped 
     assert.equal(requests.filter((r) => r.url.endsWith("/files")).length, 2);
     for (const r of requests.filter((r) => r.url.endsWith("/files")))
       assert.equal(r.body.body.images.length, 1);
-    const status = (await onRequest({
-      request: new Request("https://test.local/api/status", {
-        method: "POST",
-        body: JSON.stringify({ token: submitted.jobs }),
-      }),
-      env: env(DB),
-      params: { path: "status" },
-    } as any)) as Response;
-    const finished = (await status.json()) as any;
-    assert.equal(finished.jobs, undefined);
+    const finished: { results: any[] } = { results: [] };
+    let jobs = submitted.jobs;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const status = (await onRequest({
+        request: new Request("https://test.local/api/status", {
+          method: "POST",
+          body: JSON.stringify({ token: jobs }),
+        }),
+        env: env(DB),
+        params: { path: "status" },
+      } as any)) as Response;
+      const part = (await status.json()) as any;
+      assert.equal(part.results.length, 4);
+      finished.results.push(...part.results);
+      jobs = part.jobs;
+    }
+    assert.equal(jobs, undefined);
     assert.equal(finished.results.length, 12);
     assert.equal(finished.results.filter((r: any) => r.error).length, 0);
     for (const model of ["flare", "sunburst", "banana"])
