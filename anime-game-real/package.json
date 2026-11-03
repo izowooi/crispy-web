@@ -1,0 +1,29 @@
+{
+  "name": "anime-to-real",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "pages:build": "npm run build",
+    "deploy": "npm run build && wrangler pages deploy out --project-name anime-to-real",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0",
+    "wrangler": "^4.0.0"
+  },
+  "type": "module"
+}
