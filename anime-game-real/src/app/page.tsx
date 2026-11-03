@@ -9,6 +9,7 @@ type Picture = {
   height: number;
 };
 type GenerationResponse = {
+  cleanup?: string;
   error?: string;
   jobs?: string;
   results?: { index: number; model: string; error?: string; src: string }[];
@@ -86,9 +87,7 @@ export default function Home() {
         ? "배치 작업을 접수하고 있어요…"
         : "새로운 현실을 만들고 있어요…",
     );
-    async function accept(data: {
-      results?: { index: number; model: string; error?: string; src: string }[];
-    }) {
+    async function accept(data: GenerationResponse) {
       for (const item of data.results || []) {
         if (item.error) {
           setError((p) => `${p} ${item.model}: ${item.error}`);
@@ -110,6 +109,12 @@ export default function Home() {
         setLeft(original.id);
         setRight(result.id);
       }
+      if (data.cleanup)
+        await fetch("/api/acknowledge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: data.cleanup }),
+        }).catch(() => undefined);
     }
     try {
       let response = await fetch("/api/generate", {
@@ -125,16 +130,29 @@ export default function Home() {
           "배치 처리 중 · 이 탭을 열어두세요. 최대 24시간 걸릴 수 있습니다.",
         );
         await new Promise((resolve) => setTimeout(resolve, 15000));
-        response = await fetch("/api/status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: data.jobs }),
-        });
-        const next = (await response.json()) as GenerationResponse;
-        if (!response.ok)
+        let next: GenerationResponse;
+        try {
+          response = await fetch("/api/status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: data.jobs }),
+          });
+          next = (await response.json()) as GenerationResponse;
+        } catch {
+          setMessage(
+            "연결을 다시 확인하고 있어요. 기존 배치 작업은 계속 진행됩니다.",
+          );
+          continue;
+        }
+        if (!response.ok) {
+          if (response.status >= 500 || response.status === 429) {
+            setMessage("잠시 후 같은 배치 작업을 다시 확인합니다.");
+            continue;
+          }
           throw Error(next.error || "배치 상태 조회에 실패했습니다.");
+        }
+        await accept(next);
         data = next;
-        await accept(data);
       }
       setMessage("");
     } catch (e) {

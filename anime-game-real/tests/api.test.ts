@@ -218,6 +218,7 @@ test("four images submit independent model batches and return all twelve mapped 
       assert.equal(r.body.body.images.length, 1);
     const finished: { results: any[] } = { results: [] };
     let jobs = submitted.jobs;
+    const cleanups: string[] = [];
     for (let attempt = 0; attempt < 3; attempt++) {
       const status = (await onRequest({
         request: new Request("https://test.local/api/status", {
@@ -231,8 +232,49 @@ test("four images submit independent model batches and return all twelve mapped 
       assert.equal(part.results.length, 4);
       finished.results.push(...part.results);
       jobs = part.jobs;
+      if (part.cleanup) cleanups.push(part.cleanup);
     }
     assert.equal(jobs, undefined);
+    assert.equal(
+      requests.filter(
+        (r) =>
+          r.body === undefined &&
+          r.url.includes("/files/") &&
+          !r.url.endsWith("/content"),
+      ).length,
+      0,
+    );
+    assert.equal(cleanups.length, 2);
+    const invalidReceipt = (await onRequest({
+      request: new Request("https://test.local/api/acknowledge", {
+        method: "POST",
+        body: JSON.stringify({ token: submitted.jobs }),
+      }),
+      env: env(DB),
+      params: { path: "acknowledge" },
+    } as any)) as Response;
+    assert.equal(invalidReceipt.status, 400);
+
+    for (const receipt of cleanups) {
+      const acknowledged = (await onRequest({
+        request: new Request("https://test.local/api/acknowledge", {
+          method: "POST",
+          body: JSON.stringify({ token: receipt }),
+        }),
+        env: env(DB),
+        params: { path: "acknowledge" },
+      } as any)) as Response;
+      assert.equal(acknowledged.status, 200);
+    }
+    assert.equal(
+      requests.filter(
+        (r) =>
+          r.body === undefined &&
+          r.url.includes("/files/") &&
+          !r.url.endsWith("/content"),
+      ).length,
+      4,
+    );
     assert.equal(finished.results.length, 12);
     assert.equal(finished.results.filter((r: any) => r.error).length, 0);
     for (const model of ["flare", "sunburst", "banana"])

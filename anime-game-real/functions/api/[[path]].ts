@@ -186,13 +186,38 @@ export const onRequest: PagesFunction<Env> = async ({
     const route = String(params.path || "");
     if (route === "health")
       return json({ ready: !!env.OPENAI_API_KEY && !!env.GEMINI_API_KEY });
+    if (route === "acknowledge" && request.method === "POST") {
+      const { token: receipt } = (await request.json()) as { token: string };
+      const cleanup = await verify(receipt, env);
+      if (
+        cleanup.kind !== "cleanup" ||
+        cleanup.expires < Date.now() ||
+        !Array.isArray(cleanup.files)
+      )
+        return json({ error: "유효하지 않은 수신 확인입니다." }, 400);
+      await Promise.all(
+        cleanup.files.map(async (file: string) => {
+          const response = await fetch(
+            `https://api.openai.com/v1/files/${file}`,
+            {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+            },
+          );
+          if (!response.ok && response.status !== 404)
+            throw Error("Cleanup failed");
+        }),
+      );
+      return json({ ok: true });
+    }
     if (route === "status" && request.method === "POST") {
       const body = (await request.json()) as { token: string };
       const session = await verify(body.token, env);
       if (session.expires < Date.now())
         return json({ error: "배치 조회 기간이 만료되었습니다." }, 410);
       const results: any[] = [],
-        pending: any[] = [];
+        pending: any[] = [],
+        cleanupFiles: string[] = [];
       for (const job of session.jobs) {
         // Deliver one model at a time to keep four-image batches within edge memory limits.
         if (results.length) {
@@ -290,16 +315,11 @@ export const onRequest: PagesFunction<Env> = async ({
               }
               if (data.error_file_id) total += 1;
               await settle(env, session.id, job.model, total);
-              // Provider files contain image data. Delete them after results have been delivered.
-              for (const file of [
-                job.file,
-                data.output_file_id,
-                data.error_file_id,
-              ].filter(Boolean))
-                await fetch(`https://api.openai.com/v1/files/${file}`, {
-                  method: "DELETE",
-                  headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
-                });
+              cleanupFiles.push(
+                ...[job.file, data.output_file_id, data.error_file_id].filter(
+                  Boolean,
+                ),
+              );
             } else if (["failed", "expired", "cancelled"].includes(data.status))
               throw Error("배치 작업이 종료되었습니다.");
             else pending.push(job);
@@ -316,6 +336,16 @@ export const onRequest: PagesFunction<Env> = async ({
       }
       return json({
         results,
+        cleanup: cleanupFiles.length
+          ? await token(
+              {
+                kind: "cleanup",
+                files: cleanupFiles,
+                expires: Date.now() + 48 * 3600000,
+              },
+              env,
+            )
+          : undefined,
         jobs: pending.length
           ? await token({ ...session, jobs: pending }, env)
           : undefined,
