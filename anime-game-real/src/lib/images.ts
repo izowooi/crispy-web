@@ -1,6 +1,6 @@
 export const MODELS = [
-  { id: "flare", label: "Flare", api: "gpt-image-2.5-flare" },
-  { id: "sunburst", label: "Sunburst", api: "gpt-image-2.5-sunburst" },
+  { id: "flare", label: "Flare", api: "gpt-image-2.6-flare" },
+  { id: "sunburst", label: "Sunburst", api: "gpt-image-2.6-sunburst" },
   { id: "banana", label: "Nano Banana 2.1", api: "gemini-nano-banana-2.1" },
 ] as const;
 export type ModelId = (typeof MODELS)[number]["id"];

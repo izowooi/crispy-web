@@ -385,7 +385,7 @@ export default function Home() {
                 크기에 따른 비용은 발생합니다.
               </p>
               <p>
-                이미지 출력 100만 토큰당 $30 · 2026-11-03 요금 기준 ·{" "}
+                이미지 출력 100만 토큰당 $30 · 2026-11-06 요금 기준 ·{" "}
                 <a
                   href="https://developers.openai.com/api/docs/guides/image-generation"
                   target="_blank"

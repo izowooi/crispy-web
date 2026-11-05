@@ -5,7 +5,8 @@ import {
   type ModelId,
   type ResolutionMode,
 } from "./images.ts";
-// Official GPT Image 2.5 calculator, medium quality (24-patch long edge).
+// GPT Image 2.6 publishes no token table. Measured usage (medium, default complexity)
+// equals the official GPT Image 2.5 calculator (24-patch long edge) × 3.3, rounded up.
 // https://developers.openai.com/api/docs/guides/image-generation
 export function openaiOutputTokens(width: number, height: number) {
   const ratio = Math.max(width, height) / Math.min(width, height),
@@ -13,9 +14,12 @@ export function openaiOutputTokens(width: number, height: number) {
     floor = Math.floor(short);
   const rounded =
     short - floor === 0.5 ? floor + (floor % 2) : Math.round(short);
-  return Math.ceil((24 * rounded * (2_000_000 + width * height)) / 4_000_000);
+  const base = Math.ceil(
+    (24 * rounded * (2_000_000 + width * height)) / 4_000_000,
+  );
+  return Math.ceil((base * 33) / 10);
 }
-/** Image output only. Input tokens, thinking, retries and taxes are excluded. Rates checked 2026-11-03. */
+/** Image output only. Input tokens, thinking, retries and taxes are excluded. Rates checked 2026-11-06. */
 export function estimateOutput(
   width: number,
   height: number,
