@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://clipplay.pages.dev'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://clipplay.zowoo.uk'),
   title: "ClipPlay - 가족 동영상 공유",
   description: "가족과 함께하는 순간을 공유하세요",
   manifest: "/manifest.json",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ClipPlay - 가족 동영상 공유",
     description: "가족과 함께하는 순간을 공유하세요",
-    url: "https://clipplay.pages.dev",
+    url: "https://clipplay.zowoo.uk",
     siteName: "ClipPlay",
     images: [
       {

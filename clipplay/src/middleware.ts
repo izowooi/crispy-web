@@ -23,7 +23,8 @@ export function middleware(request: NextRequest) {
 
     // Redirect to login if no session
     if (!sessionCookie) {
-      const loginUrl = new URL('/admin/login', request.url);
+      // Behind the tunnel request.url is the local bind address, not the public host.
+      const loginUrl = new URL('/admin/login', process.env.NEXT_PUBLIC_BASE_URL || request.url);
       return NextResponse.redirect(loginUrl);
     }
   }

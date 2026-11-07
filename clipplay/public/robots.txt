@@ -16,4 +16,4 @@ Disallow: /admin/
 Disallow: /test/
 
 # Sitemap location
-Sitemap: https://clipplay.pages.dev/sitemap.xml
+Sitemap: https://clipplay.zowoo.uk/sitemap.xml
