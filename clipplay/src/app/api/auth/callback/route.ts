@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   exchangeCodeForTokens,
   getGoogleUserInfo,
-  isAllowedUploader,
+  isAdminEmail,
   createSessionToken,
   SESSION_COOKIE,
 } from '@/lib/auth/google';
 
-export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
     const userInfo = await getGoogleUserInfo(tokens.access_token);
 
     // Check if user is allowed uploader
-    const isAdmin = await isAllowedUploader(userInfo.email);
+    const isAdmin = userInfo.email_verified !== false && isAdminEmail(userInfo.email);
 
     // Create session token
     const sessionToken = await createSessionToken({

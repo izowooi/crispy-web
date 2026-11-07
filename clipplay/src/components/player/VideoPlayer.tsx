@@ -2,9 +2,8 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Clip } from '@/types';
-import { getVideoUrl, formatDuration } from '@/lib/r2/client';
+import { getVideoUrl, formatDuration } from '@/lib/clips/catalog';
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
 
 interface VideoPlayerProps {
   clip: Clip;
@@ -25,7 +24,7 @@ export function VideoPlayer({ clip, className = '', autoPlay = false }: VideoPla
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState(0);
 
-  const videoUrl = getVideoUrl(R2_PUBLIC_URL, clip.fileKey);
+  const videoUrl = getVideoUrl(clip);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;

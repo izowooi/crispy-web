@@ -2,16 +2,14 @@
 
 import Link from 'next/link';
 import { Clip } from '@/types';
+import { getThumbnailUrl } from '@/lib/clips/catalog';
 
 interface GridCardProps {
   clip: Clip & { thumbnailKey?: string };
 }
 
 export function GridCard({ clip }: GridCardProps) {
-  const r2Url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
-  const thumbnailUrl = clip.thumbnailKey && r2Url
-    ? `${r2Url}/${clip.thumbnailKey}`
-    : null;
+  const thumbnailUrl = getThumbnailUrl(clip);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -31,6 +29,7 @@ export function GridCard({ clip }: GridCardProps) {
           alt={clip.title}
           className="w-full h-full object-cover"
           loading="lazy"
+          decoding="async"
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-card-bg to-card-border/30">

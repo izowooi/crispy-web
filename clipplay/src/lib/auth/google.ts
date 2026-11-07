@@ -10,9 +10,14 @@ const GOOGLE_REDIRECT_URI = process.env.NEXT_PUBLIC_BASE_URL
 export const SESSION_COOKIE = 'clipplay_session';
 
 // JWT secret for session tokens
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'clipplay-secret-key-change-in-production'
-);
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.length < 32) {
+    // A guessable fallback would make admin sessions forgeable.
+    throw new Error('JWT_SECRET must be set (32+ chars)');
+  }
+  return new TextEncoder().encode(secret);
+}
 
 interface GoogleTokenResponse {
   access_token: string;
@@ -100,21 +105,18 @@ export async function getGoogleUserInfo(accessToken: string): Promise<GoogleUser
 }
 
 /**
- * Check if user is in allowed uploaders list
+ * Admin (upload/edit/delete) allowlist, from ADMIN_EMAILS (comma separated).
  */
-export async function isAllowedUploader(email: string): Promise<boolean> {
-  const r2Url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
-  if (!r2Url) return false;
+export function getAdminEmails(): string[] {
+  return (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
 
-  try {
-    const response = await fetch(`${r2Url}/metadata.json`);
-    if (!response.ok) return false;
-
-    const metadata = await response.json();
-    return metadata.allowedUploaders?.includes(email) || false;
-  } catch {
-    return false;
-  }
+export function isAdminEmail(email: string | undefined | null): boolean {
+  if (!email) return false;
+  return getAdminEmails().includes(email.trim().toLowerCase());
 }
 
 /**
@@ -130,7 +132,7 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 
   return token;
 }
@@ -140,13 +142,13 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
  */
 export async function verifySessionToken(token: string): Promise<SessionUser | null> {
   try {
-    const { payload } = await jose.jwtVerify(token, JWT_SECRET);
+    const { payload } = await jose.jwtVerify(token, getJwtSecret());
 
     return {
       email: payload.email as string,
       name: payload.name as string,
       picture: payload.picture as string,
-      isAdmin: payload.isAdmin as boolean,
+      isAdmin: isAdminEmail(payload.email as string),
     };
   } catch {
     return null;
@@ -163,4 +165,14 @@ export async function getSessionFromCookies(
   if (!sessionCookie) return null;
 
   return verifySessionToken(sessionCookie.value);
+}
+
+/**
+ * Session user when they are currently an admin, otherwise null.
+ */
+export async function getAdminFromCookies(
+  cookies: { get: (name: string) => { value: string } | undefined }
+): Promise<SessionUser | null> {
+  const user = await getSessionFromCookies(cookies);
+  return user && user.isAdmin ? user : null;
 }

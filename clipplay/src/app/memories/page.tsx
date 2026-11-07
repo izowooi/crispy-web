@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useClips } from '@/hooks/useClips';
+import { getThumbnailUrl } from '@/lib/clips/catalog';
 import { useRouter } from 'next/navigation';
 import { BottomTabNav } from '@/components/ui/BottomTabNav';
 import {
@@ -288,9 +289,11 @@ export default function MemoriesPage() {
                   >
                     {clip.thumbnailKey ? (
                       <img
-                        src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${clip.thumbnailKey}`}
+                        src={getThumbnailUrl(clip) ?? undefined}
                         alt={clip.title}
                         className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl">

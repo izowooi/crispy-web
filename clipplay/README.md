@@ -2,11 +2,11 @@
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-clipplay.pages.dev-gray?style=for-the-badge)](https://clipplay.pages.dev/)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-clipplay.zowoo.uk-gray?style=for-the-badge)](https://clipplay.zowoo.uk/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-R2_&_Pages-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com/)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Tunnel-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com/)
 
 **가족의 소중한 순간을 TikTok 스타일로 감상하세요!** ✨
 
@@ -28,7 +28,7 @@ ClipPlay는 **가족 동영상을 위한 프라이빗 비디오 스트리밍 플
 - 🖼️ **그리드 뷰** - 썸네일로 영상 목록을 한눈에 확인
 - 💕 **추억 모음** - 특정 날짜/월/연도별로 영상 필터링
 - 🔐 **Google OAuth 관리자** - 허용된 사용자만 업로드 가능
-- 📤 **대용량 업로드** - 200MB까지 직접 R2 업로드 (진행률 표시)
+- 📤 **대용량 업로드** - 32MB 청크 업로드로 대용량 영상 업로드 (진행률 표시)
 - 🎨 **다크/라이트 테마** - 눈이 편한 테마 선택
 - 📲 **PWA 지원** - 홈 화면에 앱처럼 설치 가능
 - 🔄 **실시간 새로고침** - 캐시 우회 강제 새로고침
@@ -97,8 +97,8 @@ graph TD
 | **언어** | TypeScript 5 |
 | **스타일링** | Tailwind CSS 4.0 |
 | **인증** | Google OAuth 2.0 + JWT (jose) |
-| **스토리지** | Cloudflare R2 (S3 호환) |
-| **배포** | Cloudflare Pages (Edge Runtime) |
+| **스토리지** | 맥미니 로컬 디스크 (`CLIPPLAY_DATA_DIR`) |
+| **배포** | `next start` + pm2 on Mac mini, Cloudflare Tunnel (`clipplay.zowoo.uk`) |
 | **테스트** | Vitest + Testing Library |
 
 </div>
@@ -106,42 +106,16 @@ graph TD
 ### 🎨 아키텍처
 
 ```mermaid
-graph TB
-    subgraph Client["🖥️ 클라이언트"]
-        A[React App] --> B[VideoPlayer]
-        A --> C[SwipeFeed]
-        A --> D[GridView]
-        A --> E[Memories]
-    end
-
-    subgraph Edge["⚡ Edge Runtime"]
-        F[Next.js API Routes]
-        G[Middleware<br/>인증 체크]
-    end
-
-    subgraph Storage["☁️ Cloudflare R2"]
-        H[(videos/)]
-        I[(thumbnails/)]
-        J[(metadata.json)]
-    end
-
-    subgraph Auth["🔐 인증"]
-        K[Google OAuth]
-        L[JWT Session]
-    end
-
-    A -->|fetch| F
-    F -->|CRUD| J
-    A -->|직접 스트리밍| H
-    A -->|썸네일 로드| I
-    F <-->|인증| K
-    G -->|검증| L
-
-    style Client fill:#e1f5fe
-    style Edge fill:#fff3e0
-    style Storage fill:#f3e5f5
-    style Auth fill:#e8f5e9
+graph LR
+    B[🖥️ 브라우저] -->|https| CF[☁️ Cloudflare Edge<br/>미디어 캐시]
+    CF -->|Tunnel| N[⚡ Next.js on Mac mini<br/>127.0.0.1:5110]
+    N --> D[(CLIPPLAY_DATA_DIR<br/>metadata.json · videos/ · thumbnails/)]
+    N <-->|관리자 로그인| G[🔐 Google OAuth]
 ```
+
+- 누구나 시청 가능: `/api/clips`(공개 클립만, 업로더 목록 미노출), `/media/*`(Range 지원, `immutable` 캐시 → 반복 시청은 Cloudflare Edge가 응답).
+- 업로드·수정·삭제: `ADMIN_EMAILS`에 있는 Google 계정만. 매 요청마다 allowlist를 다시 확인한다.
+- `metadata.json`은 `/media`로 절대 노출되지 않는다.
 
 ---
 
@@ -172,7 +146,7 @@ clipplay/
 │   ├── 📂 context/                # 🌐 React Context
 │   ├── 📂 lib/                    # 🔧 유틸리티
 │   │   ├── 📂 auth/               # 인증 로직
-│   │   ├── 📂 r2/                 # R2 스토리지
+│   │   ├── 📂 storage/            # 로컬 디스크 저장소 (metadata·파일·경로 검증)
 │   │   └── 📂 clips/              # 클립 필터링
 │   └── 📂 types/                  # 📝 TypeScript 타입
 ├── 📂 public/                     # 정적 파일
@@ -189,27 +163,27 @@ clipplay/
 
 ```mermaid
 sequenceDiagram
-    participant U as 👤 관리자
     participant C as 🖥️ 클라이언트
-    participant A as ⚡ API (Edge)
-    participant R as ☁️ R2 Storage
+    participant A as ⚡ API (Mac mini)
+    participant D as 💾 로컬 디스크
 
-    U->>C: 1. 영상 파일 선택
-    C->>C: 2. 썸네일 캡처 (선택)
-    C->>A: 3. Presigned URL 요청
-    A->>C: 4. 업로드 URL 발급
-    C->>R: 5. 직접 업로드 (진행률 표시)
-    R->>C: 6. 업로드 완료
-    C->>A: 7. 메타데이터 저장
-    A->>R: 8. metadata.json 업데이트
-    A->>C: 9. 완료 응답
+    C->>A: 1. POST /api/admin/presign (clipId·업로드 URL 예약)
+    loop 32MB 청크
+        C->>A: 2. PUT /api/admin/files/videos/<id>.mp4?offset&total
+        A->>D: .part 파일에 append
+    end
+    A->>D: 3. 마지막 청크 → ffmpeg +faststart 후 원자적 rename
+    C->>A: 4. POST /api/admin/upload (메타데이터)
+    A->>D: 5. metadata.json 원자적 갱신 (.bak 보관)
 ```
+
+청크 업로드는 Cloudflare 프록시의 요청 본문 100MB 제한 때문이다.
 
 ### ✅ 업로드 제한사항
 
 | 항목 | 제한 |
 |:---:|:---:|
-| 📁 파일 크기 | 최대 200MB |
+| 📁 파일 크기 | `metadata.json`의 `settings.maxFileSizeMB` (기본 500MB) |
 | 🎥 파일 형식 | video/* (MP4 권장) |
 | 🖼️ 썸네일 | 자동 캡처 또는 직접 업로드 |
 | 📅 촬영일 | 파일 수정일 자동 감지 |
@@ -240,93 +214,36 @@ interface Clip {
 
 ## 💻 로컬에서 실행하기
 
-### 📋 사전 준비물
-
-1. **Node.js 20+** - [다운로드](https://nodejs.org/)
-2. **Cloudflare 계정** - R2 버킷 필요
-3. **Google Cloud Console** - OAuth 설정
-
-### 🔧 환경 변수 설정
-
-`.env.local` 파일 생성:
-
 ```bash
-# 🌐 공개 URL
-NEXT_PUBLIC_R2_PUBLIC_URL=https://your-bucket.r2.dev
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-
-# 🔐 Google OAuth
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-
-# 🔑 세션
-JWT_SECRET=your-super-secret-key-min-32-chars
-
-# ☁️ Cloudflare R2
-R2_ACCOUNT_ID=your-account-id
-R2_ACCESS_KEY_ID=your-access-key
-R2_SECRET_ACCESS_KEY=your-secret-key
-R2_BUCKET_NAME=your-bucket-name
-```
-
-### 🚀 실행 방법
-
-```bash
-# 1️⃣ 프로젝트 클론
-git clone <repository-url>
-cd clipplay
-
-# 2️⃣ 의존성 설치
+cp .env.example .env.local   # 값 채우기 (CLIPPLAY_DATA_DIR, JWT_SECRET, ADMIN_EMAILS, Google OAuth)
 npm install
-
-# 3️⃣ 개발 서버 실행
 npm run dev
 ```
 
-브라우저에서 http://localhost:3000 접속! 🎉
-
-### ⚙️ 사용 가능한 명령어
-
 | 명령어 | 설명 |
-|-------|------|
-| `npm run dev` | 🔧 개발 서버 실행 (포트 3000) |
-| `npm run build` | 📦 프로덕션 빌드 생성 |
-| `npm run start` | ▶️ 빌드된 앱 실행 |
-| `npm run lint` | 🔍 ESLint 코드 검사 |
-| `npm run test` | 🧪 Vitest 테스트 실행 |
-| `npm run test:ui` | 📊 테스트 UI 대시보드 |
+|---|---|
+| `npm run dev` | 개발 서버 |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest |
+| `npm run build` | 프로덕션 빌드 |
 
 ---
 
-## 🌍 배포하기
-
-### ☁️ Cloudflare Pages 배포
+## 🌍 배포 (Mac mini + Cloudflare Tunnel)
 
 ```bash
-# 빌드 명령어
-npx @cloudflare/next-on-pages
-
-# 출력 디렉토리
-.vercel/output/static
+# Mac mini (.173)
+cd /Volumes/sn850x/git/crispy-web && git pull
+cd clipplay && npm ci && npm run build          # NEXT_PUBLIC_* 는 빌드 시점에 고정됨
+pm2 startOrRestart ecosystem.config.cjs && pm2 save
 ```
 
-### 🔒 R2 CORS 설정
-
-Cloudflare Dashboard → R2 → 버킷 → Settings → CORS:
-
-```json
-[
-  {
-    "AllowedOrigins": [
-      "http://localhost:3000",
-      "https://clipplay.pages.dev"
-    ],
-    "AllowedMethods": ["GET", "PUT", "HEAD"],
-    "AllowedHeaders": ["Content-Type"],
-    "MaxAgeSeconds": 3600
-  }
-]
-```
+- 서버 비밀값은 `clipplay/.env.local`(미추적)에 둔다. `NEXT_PUBLIC_BASE_URL=https://clipplay.zowoo.uk`.
+- 데이터: `/Volumes/sn850x/clipplay-data` (`metadata.json`, `videos/`, `thumbnails/`).
+- 재부팅 대비: `deploy/dev.clipplay.pm2.plist`를 `~/Library/LaunchAgents/`에 설치(파일 상단 주석 참고). 외장 볼륨이 마운트되면 pm2 앱을 띄운다.
+- Tunnel: 기존 원격 관리형 tunnel에 `clipplay.zowoo.uk → http://127.0.0.1:5110` ingress, DNS는 `<tunnel-id>.cfargotunnel.com` CNAME.
+- Google OAuth 클라이언트에 `https://clipplay.zowoo.uk/api/auth/callback` 리디렉션 URI가 등록돼 있어야 한다.
+- 기존 영상의 moov atom 앞당기기(무손실): `scripts/faststart-all.sh /Volumes/sn850x/clipplay-data`.
 
 ---
 
@@ -337,7 +254,7 @@ Cloudflare Dashboard → R2 → 버킷 → Settings → CORS:
 | 🔐 **세션** | JWT (HS256, 7일 만료) |
 | 🍪 **쿠키** | HttpOnly, Secure, SameSite |
 | 👤 **권한** | 이메일 화이트리스트 |
-| 📤 **업로드** | Presigned URL (1시간 만료) |
+| 📤 **업로드** | 관리자 세션 확인 후 청크 PUT, 키 형식 검증 |
 | 🔑 **API 키** | 서버 사이드만 접근 가능 |
 
 ---
@@ -373,6 +290,6 @@ Cloudflare Dashboard → R2 → 버킷 → Settings → CORS:
 
 Made with ❤️ for Family Memories
 
-[🎬 지금 시작하기](https://clipplay.pages.dev/)
+[🎬 지금 시작하기](https://clipplay.zowoo.uk/)
 
 </div>

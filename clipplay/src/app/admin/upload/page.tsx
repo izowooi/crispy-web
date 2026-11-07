@@ -25,6 +25,9 @@ function extractFirstEmoji(str: string): string | null {
   return match ? match[0] : null;
 }
 
+// Well under the ~100MB Cloudflare request body limit.
+const UPLOAD_CHUNK_SIZE = 32 * 1024 * 1024;
+
 export default function AdminUploadPage() {
   const { isAuthenticated, isAdmin, isLoading } = useAuthContext();
   const router = useRouter();
@@ -179,38 +182,41 @@ export default function AdminUploadPage() {
     }
   };
 
-  // Upload file using XMLHttpRequest with progress tracking
-  const uploadWithProgress = (
+  // Upload in sequential chunks: the Cloudflare proxy rejects request bodies over ~100MB.
+  const uploadWithProgress = async (
     url: string,
     file: File | Blob,
     contentType: string,
     onProgress: (percent: number) => void
   ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
+    const total = file.size;
+    let offset = 0;
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percent = Math.round((e.loaded / e.total) * 100);
-          onProgress(percent);
-        }
-      };
+    while (offset < total) {
+      const chunk = file.slice(offset, Math.min(offset + UPLOAD_CHUNK_SIZE, total));
+      const chunkOffset = offset;
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error(`Upload failed: ${xhr.status}`));
-        }
-      };
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            onProgress(Math.round(((chunkOffset + e.loaded) / total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload failed: ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.ontimeout = () => reject(new Error('Upload timeout'));
+        xhr.open('PUT', `${url}?offset=${chunkOffset}&total=${total}`);
+        xhr.setRequestHeader('Content-Type', contentType);
+        xhr.send(chunk);
+      });
 
-      xhr.onerror = () => reject(new Error('Network error'));
-      xhr.ontimeout = () => reject(new Error('Upload timeout'));
-
-      xhr.open('PUT', url);
-      xhr.setRequestHeader('Content-Type', contentType);
-      xhr.send(file);
-    });
+      offset += chunk.size;
+      onProgress(Math.round((offset / total) * 100));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -234,7 +240,7 @@ export default function AdminUploadPage() {
       const fileToUpload: File | Blob = file;
       const finalFileSize = file.size;
 
-      // Step 1: Get presigned URLs
+      // Step 1: Reserve clip id and upload URLs
       const presignResponse = await fetch('/api/admin/presign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -254,7 +260,7 @@ export default function AdminUploadPage() {
       const presignData = await presignResponse.json();
       const { clipId, videoKey, videoUploadUrl, thumbnailKey, thumbnailUploadUrl } = presignData;
 
-      // Step 2: Upload video directly to R2 with progress
+      // Step 2: Upload video to the server in chunks with progress
       await uploadWithProgress(
         videoUploadUrl,
         fileToUpload,

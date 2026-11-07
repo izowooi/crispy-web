@@ -2,44 +2,56 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Clip } from '@/types';
-import { getVideoUrl, formatDuration } from '@/lib/r2/client';
+import { getVideoUrl, getThumbnailUrl, formatDuration } from '@/lib/clips/catalog';
 import Link from 'next/link';
+import { getFeedWindow, preloadFor } from './feedWindow';
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
-
-// How many clips ahead/behind to keep src loaded
-const SRC_LOAD_WINDOW = 2;
+// Clips rendered around the current one. Everything outside is unmounted so a
+// long list costs nothing in DOM nodes, decoders or bandwidth.
+const RENDER_WINDOW = 2;
+// Ignore wheel bursts (trackpads fire dozens of events per gesture).
+const WHEEL_COOLDOWN_MS = 450;
+const MAX_ERROR_RETRIES = 2;
 
 interface VerticalSwipeFeedProps {
   clips: Clip[];
   initialIndex?: number;
 }
 
+type VideoState = { index: number; readyState: number; networkState: number; paused: boolean };
+
 export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeedProps) {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [rawIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [videoStates, setVideoStates] = useState<{ hasSrc: boolean; readyState: number; networkState: number; paused: boolean }[]>([]);
+  const [videoStates, setVideoStates] = useState<VideoState[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const videoRefs = useRef(new Map<string, HTMLVideoElement>());
+  const errorRetries = useRef(new Map<string, number>());
+  const lastWheelAt = useRef(0);
   const touchStartY = useRef(0);
   const touchEndY = useRef(0);
 
-  const currentClip = clips[currentIndex];
+  // Search can shrink the list under us.
+  const currentIndex = Math.min(rawIndex, Math.max(clips.length - 1, 0));
+  const currentClipId = clips[currentIndex]?.id;
+  const getVideo = useCallback((index: number) => {
+    const id = clips[index]?.id;
+    return id ? videoRefs.current.get(id) : undefined;
+  }, [clips]);
+  const { start: windowStart, end: windowEnd } = getFeedWindow(currentIndex, clips.length, RENDER_WINDOW);
 
   const addDebugLog = useCallback((msg: string) => {
     const timestamp = new Date().toLocaleTimeString('ko-KR', { hour12: false });
     const line = `${timestamp} ${msg}`;
-    console.log(`[Feed] ${line}`);
     setDebugLogs((prev) => [line, ...prev].slice(0, 30));
   }, []);
 
-  // Handle video play/pause
   const togglePlay = useCallback(() => {
-    const video = videoRefs.current[currentIndex];
+    const video = getVideo(currentIndex);
     if (!video) return;
 
     if (video.paused) {
@@ -48,38 +60,30 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
       video.pause();
       setIsPlaying(false);
     }
-  }, [currentIndex]);
+  }, [currentIndex, getVideo]);
 
-  // Handle mute toggle
   const toggleMute = useCallback(() => {
-    const video = videoRefs.current[currentIndex];
+    const video = getVideo(currentIndex);
     if (video) {
       video.muted = !video.muted;
-      setIsMuted(!isMuted);
+      setIsMuted(video.muted);
     }
-  }, [currentIndex, isMuted]);
+  }, [currentIndex, getVideo]);
 
-  // Navigate to next/prev clip
   const goToClip = useCallback((index: number) => {
     if (index < 0 || index >= clips.length) return;
 
-    // Pause ALL videos (not just current)
-    videoRefs.current.forEach((video, i) => {
-      if (!video) return;
-      if (!video.paused) {
-        video.pause();
-      }
-      if (i !== index) {
-        video.currentTime = 0;
-      }
+    const targetId = clips[index]?.id;
+    videoRefs.current.forEach((video, id) => {
+      if (!video.paused) video.pause();
+      if (id !== targetId) video.currentTime = 0;
     });
 
     setCurrentIndex(index);
     setProgress(0);
     setIsPlaying(false);
-  }, [clips.length]);
+  }, [clips]);
 
-  // Touch handlers for swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchEndY.current = e.touches[0].clientY;
@@ -100,17 +104,14 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
     }
   };
 
-  // Wheel handler for desktop
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    if (e.deltaY > 0) {
-      goToClip(currentIndex + 1);
-    } else if (e.deltaY < 0) {
-      goToClip(currentIndex - 1);
-    }
+    const now = Date.now();
+    if (now - lastWheelAt.current < WHEEL_COOLDOWN_MS || Math.abs(e.deltaY) < 4) return;
+    lastWheelAt.current = now;
+    goToClip(currentIndex + (e.deltaY > 0 ? 1 : -1));
   }, [currentIndex, goToClip]);
 
-  // Add wheel event listener
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
@@ -119,59 +120,41 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
     }
   }, [handleWheel]);
 
-  // Snapshot video element states for the debug panel (called after src changes)
-  const snapshotVideoStates = useCallback(() => {
-    setVideoStates(
-      videoRefs.current.map((video) =>
-        video
-          ? { hasSrc: video.hasAttribute('src'), readyState: video.readyState, networkState: video.networkState, paused: video.paused }
-          : { hasSrc: false, readyState: 0, networkState: 0, paused: true }
-      )
-    );
+  const registerVideo = useCallback((clipId: string, el: HTMLVideoElement | null) => {
+    if (el) videoRefs.current.set(clipId, el);
+    else videoRefs.current.delete(clipId);
   }, []);
 
-  // [Fix] Manage src loading window — releases decoder resources for distant clips
   useEffect(() => {
-    videoRefs.current.forEach((video, i) => {
-      if (!video || !clips[i]) return;
-      const inWindow = Math.abs(i - currentIndex) <= SRC_LOAD_WINDOW;
-      const clipSrc = getVideoUrl(R2_PUBLIC_URL, clips[i].fileKey);
+    if (!showDebug) return;
+    const snapshot = () =>
+      setVideoStates(
+        clips
+          .map((clip, index) => ({ index, v: videoRefs.current.get(clip.id) }))
+          .filter((x): x is { index: number; v: HTMLVideoElement } => !!x.v)
+          .map(({ index, v }) => ({ index, readyState: v.readyState, networkState: v.networkState, paused: v.paused }))
+      );
+    snapshot();
+    const timer = setInterval(snapshot, 1000);
+    return () => clearInterval(timer);
+  }, [showDebug, currentIndex, clips]);
 
-      if (inWindow) {
-        if (!video.hasAttribute('src')) {
-          video.src = clipSrc;
-          video.load();
-          addDebugLog(`[${i}] src set & load()`);
-        }
-      } else {
-        if (video.hasAttribute('src')) {
-          video.pause();
-          video.removeAttribute('src');
-          video.load(); // Releases media decoder
-          addDebugLog(`[${i}] src released`);
-        }
-      }
-    });
-    snapshotVideoStates();
-  }, [currentIndex, clips, addDebugLog, snapshotVideoStates]);
-
-  // Auto-play current video (runs after src management effect above)
+  // Auto-play current video
   useEffect(() => {
-    const video = videoRefs.current[currentIndex];
+    const video = getVideo(currentIndex);
     if (!video) return;
     video.muted = isMuted;
     video.play().then(() => {
       setIsPlaying(true);
-      addDebugLog(`[${currentIndex}] play() ok`);
     }).catch((err) => {
       setIsPlaying(false);
       addDebugLog(`[${currentIndex}] play() blocked: ${err.message}`);
     });
-  }, [currentIndex, isMuted, addDebugLog]);
+  }, [currentIndex, currentClipId, isMuted, addDebugLog, getVideo]);
 
   // Update progress
   useEffect(() => {
-    const video = videoRefs.current[currentIndex];
+    const video = getVideo(currentIndex);
     if (!video) return;
 
     const handleTimeUpdate = () => {
@@ -191,7 +174,7 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('ended', handleEnded);
     };
-  }, [currentIndex]);
+  }, [currentIndex, currentClipId, getVideo]);
 
   if (clips.length === 0) {
     return (
@@ -226,37 +209,36 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
     >
       {/* Video container */}
       <div
-        className="h-full transition-transform duration-300 ease-out"
+        className="relative h-full transition-transform duration-300 ease-out will-change-transform"
         style={{ transform: `translateY(-${currentIndex * 100}%)` }}
       >
-        {clips.map((clip, index) => (
+        {clips.slice(windowStart, windowEnd + 1).map((clip, offset) => {
+          const index = windowStart + offset;
+          return (
           <div
             key={clip.id}
-            className="h-screen w-full flex items-center justify-center relative"
+            className="absolute left-0 h-full w-full flex items-center justify-center"
+            style={{ top: `${index * 100}%` }}
           >
-            {/* src is managed imperatively via refs — not set here to avoid React/DOM conflicts */}
-            <video
-              ref={(el) => { videoRefs.current[index] = el; }}
+            <FeedVideo
+              clipId={clip.id}
+              register={registerVideo}
+              src={getVideoUrl(clip)}
+              poster={getThumbnailUrl(clip) ?? undefined}
               className="max-h-full max-w-full object-contain"
               playsInline
               loop
               muted={isMuted}
-              preload="auto"
+              preload={preloadFor(index - currentIndex)}
               onClick={togglePlay}
               onError={() => {
-                const video = videoRefs.current[index];
-                const errCode = video?.error?.code;
-                const errMsg = video?.error?.message ?? 'unknown';
-                addDebugLog(`[${index}] error code=${errCode} ${errMsg}`);
-                // Retry: reassign src and reload
-                if (video) {
-                  const clipSrc = getVideoUrl(R2_PUBLIC_URL, clip.fileKey);
-                  video.src = clipSrc;
-                  video.load();
-                  if (index === currentIndex) {
-                    video.play().catch(() => {});
-                  }
-                }
+                const video = videoRefs.current.get(clip.id);
+                const tries = errorRetries.current.get(clip.id) ?? 0;
+                addDebugLog(`[${index}] error code=${video?.error?.code} ${video?.error?.message ?? 'unknown'}`);
+                if (!video || tries >= MAX_ERROR_RETRIES) return;
+                errorRetries.current.set(clip.id, tries + 1);
+                video.load();
+                if (index === currentIndex) video.play().catch(() => {});
               }}
             />
 
@@ -346,7 +328,8 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
               </>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Clip counter */}
@@ -379,15 +362,11 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
           </div>
           {/* Video states */}
           <div className="px-2 py-1 border-b border-white/10 shrink-0">
-            {videoStates.map((state, i) => {
-              const dist = Math.abs(i - currentIndex);
-              if (dist > SRC_LOAD_WINDOW + 1) return null;
-              return (
-                <div key={i} className={`${i === currentIndex ? 'text-yellow-300' : 'text-white/60'}`}>
-                  [{i}] src={state.hasSrc ? '✓' : '✗'} ready={state.readyState} net={state.networkState} {state.paused ? '⏸' : '▶'}
-                </div>
-              );
-            })}
+            {videoStates.map((state) => (
+              <div key={state.index} className={`${state.index === currentIndex ? 'text-yellow-300' : 'text-white/60'}`}>
+                [{state.index}] ready={state.readyState} net={state.networkState} {state.paused ? '⏸' : '▶'}
+              </div>
+            ))}
           </div>
           {/* Logs */}
           <div className="overflow-y-auto flex-1 px-2 py-1 space-y-0.5">
@@ -399,4 +378,31 @@ export function VerticalSwipeFeed({ clips, initialIndex = 0 }: VerticalSwipeFeed
       )}
     </div>
   );
+}
+
+type FeedVideoProps = Omit<React.VideoHTMLAttributes<HTMLVideoElement>, 'ref'> & {
+  clipId: string;
+  register: (clipId: string, el: HTMLVideoElement | null) => void;
+};
+
+/**
+ * On unmount, detach src so the browser stops downloading and frees the
+ * decoder immediately instead of waiting for GC.
+ */
+function FeedVideo({ clipId, register, ...props }: FeedVideoProps) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    register(clipId, el);
+    return () => {
+      el.pause();
+      el.removeAttribute('src');
+      el.load();
+      register(clipId, null);
+    };
+  }, [clipId, register]);
+
+  return <video ref={ref} {...props} />;
 }

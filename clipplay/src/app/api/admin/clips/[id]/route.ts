@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromCookies } from '@/lib/auth/google';
-import {
-  updateClipInMetadata,
-  deleteClipFromMetadata,
-  deleteFileFromR2,
-  uploadFileToR2,
-} from '@/lib/r2/upload';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import { getAdminFromCookies } from '@/lib/auth/google';
+import { updateClip, deleteClip } from '@/lib/storage/metadata';
+import { deleteMediaFile } from '@/lib/storage/files';
+import { resolveMediaPath } from '@/lib/storage/paths';
 
-export const runtime = 'edge';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -16,8 +14,7 @@ interface RouteParams {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     // Check authentication
-    const user = await getSessionFromCookies(request.cookies);
-    if (!user || !user.isAdmin) {
+    if (!(await getAdminFromCookies(request.cookies))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -37,9 +34,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
       // 썸네일 업로드
       if (thumbnail && thumbnail.size > 0) {
-        const uint8Array = new Uint8Array(await thumbnail.arrayBuffer());
         const thumbnailKey = `thumbnails/${id}.jpg`;
-        await uploadFileToR2(uint8Array, thumbnailKey, 'image/jpeg');
+        const thumbnailPath = resolveMediaPath(thumbnailKey);
+        if (!thumbnailPath) {
+          return NextResponse.json({ error: 'Invalid clip id' }, { status: 400 });
+        }
+        await fs.mkdir(path.dirname(thumbnailPath), { recursive: true });
+        const tmp = `${thumbnailPath}.tmp`;
+        await fs.writeFile(tmp, new Uint8Array(await thumbnail.arrayBuffer()));
+        await fs.rename(tmp, thumbnailPath);
         updates.thumbnailKey = thumbnailKey;
         if (thumbnailTimestamp) {
           updates.thumbnailTimestamp = parseFloat(thumbnailTimestamp);
@@ -56,7 +59,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     delete updates.fileSize;
     delete updates.createdAt;
 
-    const clip = await updateClipInMetadata(id, updates);
+    const clip = await updateClip(id, updates);
 
     if (!clip) {
       return NextResponse.json({ error: 'Clip not found' }, { status: 404 });
@@ -75,25 +78,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     // Check authentication
-    const user = await getSessionFromCookies(request.cookies);
-    if (!user || !user.isAdmin) {
+    if (!(await getAdminFromCookies(request.cookies))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
 
     // Delete from metadata
-    const clip = await deleteClipFromMetadata(id);
+    const clip = await deleteClip(id);
 
     if (!clip) {
       return NextResponse.json({ error: 'Clip not found' }, { status: 404 });
     }
 
-    // Delete video file from R2
     try {
-      await deleteFileFromR2(clip.fileKey);
+      await deleteMediaFile(clip.fileKey);
+      await deleteMediaFile(clip.thumbnailKey);
     } catch (err) {
-      console.error('Failed to delete file from R2:', err);
+      console.error('Failed to delete media files:', err);
       // Continue even if file deletion fails
     }
 

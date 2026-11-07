@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromCookies } from '@/lib/auth/google';
-import { addClipToMetadata } from '@/lib/r2/upload';
+import { promises as fs } from 'node:fs';
+import { getAdminFromCookies } from '@/lib/auth/google';
+import { addClip } from '@/lib/storage/metadata';
+import { resolveMediaPath } from '@/lib/storage/paths';
 import { Clip } from '@/types';
 
-// Edge runtime for Cloudflare Pages compatibility
-export const runtime = 'edge';
 
 interface MetadataRequest {
   clipId: string;
@@ -23,8 +23,7 @@ interface MetadataRequest {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const user = await getSessionFromCookies(request.cookies);
-    if (!user || !user.isAdmin) {
+    if (!(await getAdminFromCookies(request.cookies))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -53,6 +52,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
+    const videoPath = resolveMediaPath(videoKey);
+    const videoStat = videoPath ? await fs.stat(videoPath).catch(() => null) : null;
+    if (!videoStat || !videoKey.startsWith(`videos/${clipId}.`)) {
+      return NextResponse.json({ error: 'Uploaded video not found' }, { status: 400 });
+    }
+    const thumbnailPath = thumbnailKey ? resolveMediaPath(thumbnailKey) : null;
+    const hasThumbnail = !!thumbnailPath && !!(await fs.stat(thumbnailPath).catch(() => null));
+
     // Create clip entry
     const clip: Clip = {
       id: clipId,
@@ -60,10 +67,10 @@ export async function POST(request: NextRequest) {
       description: description.trim(),
       emoji,
       fileKey: videoKey,
-      fileSize,
+      fileSize: videoStat.size || fileSize,
       duration,
       filmingDate: filmingDate || undefined,
-      thumbnailKey: thumbnailKey || undefined,
+      thumbnailKey: hasThumbnail ? thumbnailKey : undefined,
       thumbnailTimestamp: thumbnailTimestamp || undefined,
       isPublic,
       createdAt: new Date().toISOString(),
@@ -71,7 +78,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Add to metadata
-    await addClipToMetadata(clip);
+    await addClip(clip);
 
     return NextResponse.json({
       success: true,

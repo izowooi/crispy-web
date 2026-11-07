@@ -2,9 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Clip, PlayerState, PlayerActions } from '@/types';
-import { getVideoUrl } from '@/lib/r2/client';
+import { getVideoUrl } from '@/lib/clips/catalog';
 
-const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
 
 interface UseVideoPlayerReturn {
   state: PlayerState;
@@ -48,7 +47,7 @@ export function useVideoPlayer(): UseVideoPlayerReturn {
         }));
 
         if (videoRef.current) {
-          videoRef.current.src = getVideoUrl(R2_PUBLIC_URL, clip.fileKey);
+          videoRef.current.src = getVideoUrl(clip);
           videoRef.current.load();
         }
       }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useClips } from '@/hooks/useClips';
 import { VideoPlayer } from '@/components/player';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { formatDuration, formatFileSize } from '@/lib/r2/client';
+import { formatDuration, formatFileSize } from '@/lib/clips/catalog';
 
 interface ClipClientProps {
   id: string;

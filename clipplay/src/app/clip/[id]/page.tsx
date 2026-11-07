@@ -1,6 +1,5 @@
 import { ClipClient } from './ClipClient';
 
-export const runtime = 'edge';
 
 interface PageProps {
   params: Promise<{ id: string }>;

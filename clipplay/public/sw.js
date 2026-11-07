@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clipplay-v1';
+const CACHE_NAME = 'clipplay-v2';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -38,8 +38,12 @@ self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
-  // Skip API requests - always fetch from network
-  if (event.request.url.includes('/api/')) return;
+  const { pathname } = new URL(event.request.url);
+
+  // API responses must stay fresh; media is large, range-requested and already
+  // cached by the browser/CDN — never copy it into Cache Storage.
+  if (pathname.startsWith('/api/') || pathname.startsWith('/media/')) return;
+  if (event.request.headers.has('range')) return;
 
   event.respondWith(
     fetch(event.request)

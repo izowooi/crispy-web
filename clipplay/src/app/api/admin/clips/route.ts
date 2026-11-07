@@ -1,27 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromCookies } from '@/lib/auth/google';
-import { getMetadataFromR2 } from '@/lib/r2/upload';
-
-export const runtime = 'edge';
+import { getAdminFromCookies } from '@/lib/auth/google';
+import { readMetadata } from '@/lib/storage/metadata';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const user = await getSessionFromCookies(request.cookies);
-    if (!user || !user.isAdmin) {
+    if (!(await getAdminFromCookies(request.cookies))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const metadata = await getMetadataFromR2();
-
-    return NextResponse.json({
-      clips: metadata.clips,
-    });
+    const metadata = await readMetadata();
+    return NextResponse.json({ clips: metadata.clips });
   } catch (error) {
     console.error('Get clips error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get clips' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get clips' }, { status: 500 });
   }
 }

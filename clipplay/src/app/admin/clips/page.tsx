@@ -6,7 +6,7 @@ import { useClips } from '@/hooks/useClips';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { formatDuration, formatFileSize } from '@/lib/r2/client';
+import { formatDuration, formatFileSize } from '@/lib/clips/catalog';
 
 export default function AdminClipsPage() {
   const { isAuthenticated, isAdmin, isLoading: authLoading } = useAuthContext();

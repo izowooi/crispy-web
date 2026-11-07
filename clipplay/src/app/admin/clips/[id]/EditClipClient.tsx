@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthContext } from '@/context/AuthContext';
 import { useClips } from '@/hooks/useClips';
+import { getThumbnailUrl, getVideoUrl } from '@/lib/clips/catalog';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { captureVideoFrame, blobToFile, formatTime } from '@/lib/thumbnail/capture';
@@ -422,7 +423,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
                   />
                 ) : clip.thumbnailKey ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${clip.thumbnailKey}`}
+                    src={getThumbnailUrl(clip) ?? undefined}
                     alt="현재 썸네일"
                     className="w-full h-full object-cover"
                   />
@@ -517,7 +518,7 @@ export function EditClipClient({ id }: EditClipClientProps) {
                         <div className="aspect-[9/16] max-h-[300px] bg-black rounded-lg overflow-hidden">
                           <video
                             ref={videoRef}
-                            src={`${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${clip.fileKey}`}
+                            src={getVideoUrl(clip)}
                             className="w-full h-full object-contain"
                             onLoadedMetadata={() => {
                               setVideoLoading(false);

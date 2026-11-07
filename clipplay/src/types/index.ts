@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   maxFileSizeMB: 500,
 };
 
-// R2 metadata.json schema
+// metadata.json schema (stored next to videos/ and thumbnails/ in CLIPPLAY_DATA_DIR)
 export interface Metadata {
   clips: Clip[];
   allowedUploaders: string[];

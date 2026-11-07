@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Clip } from '@/types';
-import { formatDuration } from '@/lib/r2/client';
+import { formatDuration } from '@/lib/clips/catalog';
 
 interface ClipCardProps {
   clip: Clip;
