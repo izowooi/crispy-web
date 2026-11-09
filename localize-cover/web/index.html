@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coverloc — 커버 이미지 현지화</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+<script>
+  try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 15l3-3 2 2 3-4 3 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/></svg>
+    <span>Coverloc</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="new">새 작업</button>
+    <button class="tab" data-tab="results">결과</button>
+    <button class="tab" data-tab="batches">배치 <span class="pill" id="batchCount" hidden></span></button>
+    <button class="tab" data-tab="stats">통계</button>
+    <button class="tab" data-tab="logs">로그 관리</button>
+  </nav>
+  <div class="top-right">
+    <span class="key-chip" id="keyOpenai">OpenAI</span>
+    <span class="key-chip" id="keyGemini">Gemini</span>
+    <button class="icon-btn" id="themeBtn" title="테마 전환" aria-label="테마 전환">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+<!-- ============================== NEW JOB ============================== -->
+<section class="view active" id="view-new">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-h"><h2>1. 이미지</h2><span class="muted" id="inputCount">0개</span></div>
+      <label class="drop" id="drop">
+        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+        <svg viewBox="0 0 24 24" width="28" height="28"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <strong>이미지를 끌어다 놓거나 클릭해 선택</strong>
+        <span class="muted">PNG · JPG · WEBP — 여러 장 가능</span>
+      </label>
+      <div class="path-row">
+        <input type="text" id="pathInput" placeholder="또는 로컬 경로/폴더 입력 (예: docs/ 또는 /Users/…/cover.png)">
+        <button class="btn" id="addPathBtn">추가</button>
+      </div>
+      <ul class="input-list" id="inputList"></ul>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h2>2. 설정</h2></div>
+      <div class="field">
+        <label>언어</label>
+        <div class="lang-row">
+          <select id="srcLang"></select>
+          <span class="arrow">→</span>
+          <div class="chips" id="tgtLangs"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>모델 <span class="muted">(여러 개 선택 시 비교)</span></label>
+        <div class="model-grid" id="modelGrid"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>OpenAI 품질</label>
+          <select id="quality">
+            <option value="low">low</option><option value="medium">medium</option>
+            <option value="high" selected>high</option><option value="xhigh">xhigh</option>
+            <option value="max">max</option><option value="auto">auto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>OpenAI API</label>
+          <select id="openaiMode">
+            <option value="responses" selected>Responses API (store 제어)</option>
+            <option value="images">Images API (store 파라미터 없음)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Gemini 해상도</label>
+          <select id="imageSize">
+            <option value="auto" selected>auto (원본 기준)</option><option>1K</option><option>2K</option><option>4K</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="switch-row">
+          <span>
+            <strong>요청 로그 저장 (store)</strong>
+            <span class="muted block">꺼짐 = OpenAI Responses <code>store:false</code> · Gemini <code>store:false</code>. 대시보드/로그에 남기지 않습니다.</span>
+          </span>
+          <input type="checkbox" class="switch" id="store">
+        </label>
+        <p class="hint" id="storeHint" hidden>⚠︎ Images API는 <code>store</code> 파라미터를 지원하지 않아 이 설정이 OpenAI 요청에는 적용되지 않습니다.</p>
+      </div>
+      <div class="field">
+        <label>추가 지시 <span class="muted">(선택 — 용어집, 톤 등)</span></label>
+        <textarea id="extra" rows="2" placeholder="예) 'packt'는 번역하지 말 것 / 인물 이름은 원문 유지"></textarea>
+      </div>
+      <div class="field">
+        <label>실행 방식</label>
+        <div class="seg" id="execMode">
+          <button class="active" data-v="sync">즉시 실행<small>수십 초</small></button>
+          <button data-v="batch">배치 실행<small>50% 할인 · 최대 24h</small></button>
+        </div>
+        <label class="switch-row compact" id="cleanupRow" hidden>
+          <span><strong>결과 저장 후 원격 배치 파일 삭제</strong>
+          <span class="muted block">OpenAI 배치 입력/출력 파일, Gemini 배치 작업과 파일 (이미지·프롬프트 포함)</span></span>
+          <input type="checkbox" class="switch" id="cleanupRemote" checked>
+        </label>
+      </div>
+      <div class="run-bar">
+        <div><strong id="taskCount">0</strong> 작업 <span class="muted" id="taskFormula"></span></div>
+        <button class="btn primary" id="runBtn" disabled>실행</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== RESULTS ============================== -->
+<section class="view" id="view-results">
+  <div class="results-layout">
+    <aside class="card run-list">
+      <div class="card-h"><h2>실행 기록</h2><button class="icon-btn" id="reloadRuns" title="새로고침">↻</button></div>
+      <ul id="runList"></ul>
+    </aside>
+    <div class="run-detail" id="runDetail">
+      <div class="empty">왼쪽에서 실행을 선택하세요</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== BATCHES ============================== -->
+<section class="view" id="view-batches">
+  <div class="card">
+    <div class="card-h">
+      <h2>배치 작업</h2>
+      <div class="row-gap"><span class="muted" id="batchAuto">30초마다 자동 확인</span><button class="btn" id="refreshAllBatches">모두 확인</button></div>
+    </div>
+    <div id="batchList"></div>
+  </div>
+</section>
+
+<!-- ============================== STATS ============================== -->
+<section class="view" id="view-stats">
+  <div class="card">
+    <div class="card-h"><h2>모델별 측정 결과</h2><span class="muted">모든 실행 누적 · 실제 API usage 기반 비용</span></div>
+    <div class="table-wrap"><table class="stats" id="statsTable"></table></div>
+    <div class="legend">
+      <p><b>최종 크기 일치</b> — 최종 파일이 원본과 같은 가로×세로인지 (모델 출력을 패딩 크롭/리사이즈로 맞춤).</p>
+      <p><b>모델이 요청 크기 준수</b> — 모델이 요청한 해상도 그대로 출력했는지. Gemini는 고정 해상도 표를 쓰므로 원본 크기 자체는 요청할 수 없습니다.</p>
+      <p><b>드리프트</b> — 텍스트 이외 영역 기준, 모델 출력이 원본 대비 이동/확대된 최대 픽셀 (측정만, 보정하지 않음).</p>
+      <p><b>PSNR(변경 외 영역)</b> — 모델이 바꾸지 않은 영역이 원본과 얼마나 같은지. 높을수록 동일 (30dB↑ 매우 유사).</p>
+    </div>
+  </div>
+</section>
+<!-- ============================== LOGS ============================== -->
+<section class="view" id="view-logs">
+  <div class="card info-card">
+    <h2>무엇이 어디에 남나요?</h2>
+    <div class="info-grid">
+      <div><b>OpenAI Responses API · store:true</b><span>대시보드 <b>Logs</b>에 남음 → 아래에서 조회·삭제</span></div>
+      <div><b>OpenAI Responses API · store:false</b> <span class="badge ok">기본값</span><span>Logs에 남지 않음</span></div>
+      <div><b>OpenAI Images API</b><span>저장 객체가 없어 Logs에 남지 않음 (Usage에는 집계)</span></div>
+      <div><b>OpenAI Batch</b><span>배치 기록은 API로 삭제 불가 · 입력/출력 파일(이미지 포함)은 삭제 가능</span></div>
+      <div><b>Gemini Batch</b><span>배치 작업·파일 모두 삭제 가능 (파일에도 만료일이 있으나 길 수 있음 — 목록에 표시)</span></div>
+      <div><b>Gemini store:false</b> <span class="badge ok">기본값</span><span>AI Studio Logs & datasets에 남지 않음</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>OpenAI 대시보드 Logs (Responses)</h2><span class="muted">목록 조회는 브라우저 세션 키(sess-…)만 허용됩니다</span></div>
+    <div class="sess-grid">
+      <input type="password" id="sessKey" placeholder="세션 키 sess-…" autocomplete="off">
+      <input type="text" id="sessOrg" placeholder="org-… (선택)">
+      <input type="text" id="sessProject" placeholder="proj_… (선택)">
+      <label class="btn har-btn">HAR에서 불러오기<input type="file" id="harInput" accept=".har,application/json" hidden></label>
+      <button class="btn primary slim" id="loadResp">로그 불러오기</button>
+    </div>
+    <p class="hint-muted">세션 키는 이 탭의 메모리에만 있고 저장되지 않습니다. HAR 파일은 브라우저 안에서만 읽습니다(서버로 전송되지 않음).
+      얻는 법: platform.openai.com/logs 에서 개발자도구 → Network → <code>api.openai.com/v1/responses</code> 요청의 <code>Authorization</code>, <code>openai-organization</code>, <code>openai-project</code> 헤더 (또는 HAR로 저장).</p>
+    <div class="table-actions" id="respActions" hidden>
+      <label><input type="checkbox" id="respAll"> 전체 선택</label>
+      <span class="muted" id="respInfo"></span>
+      <button class="btn small danger" id="respDelete" disabled>선택 삭제</button>
+      <button class="btn small" id="respMore" hidden>더 불러오기</button>
+    </div>
+    <div class="table-wrap"><table class="logs" id="respTable"></table></div>
+    <details class="by-id">
+      <summary>ID로 직접 삭제 (API 키 사용 · 세션 키 불필요)</summary>
+      <textarea id="respIds" rows="3" placeholder="resp_… 한 줄에 하나씩"></textarea>
+      <button class="btn small danger" id="respIdsDelete">삭제</button>
+    </details>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>이 앱이 저장한 로그 (store:true로 실행한 작업)</h2><button class="icon-btn" id="reloadLocal" title="새로고침">↻</button></div>
+    <div class="table-wrap"><table class="logs" id="localTable"></table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>OpenAI 배치 파일</h2><button class="btn small" id="loadOaBatches">불러오기</button></div>
+    <div class="purge-row">
+      <textarea id="purgeIds" rows="2" placeholder="배치 ID로 삭제 — batch_… (OpenAI) 또는 batches/… (Gemini), 여러 개는 줄바꿈/쉼표로 구분"></textarea>
+      <button class="btn small danger" id="purgeBtn">배치 파일 삭제</button>
+    </div>
+    <p class="hint-muted">OpenAI: 입력/출력/에러 파일을 삭제합니다 (배치 기록 자체는 API로 삭제 불가). Gemini: 입력 파일과 배치 작업을 삭제합니다 (출력 파일은 배치와 함께 삭제).</p>
+    <div id="purgeResult"></div>
+    <div id="oaBatches" class="muted">불러오기를 누르세요</div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Gemini 배치 · 파일</h2><button class="btn small" id="loadGemini">불러오기</button></div>
+    <div id="gmList" class="muted">불러오기를 누르세요</div>
+  </div>
+</section>
+</main>
+
+<!-- ============================== VIEWER ============================== -->
+<div class="viewer" id="viewer" hidden>
+  <div class="viewer-top">
+    <div class="vt-left">
+      <div class="seg small" id="viewMode">
+        <button class="active" data-v="flip" title="F">플립</button>
+        <button data-v="slider" title="S">슬라이더</button>
+        <button data-v="side" title="B">나란히</button>
+        <button data-v="diff" title="D">차이</button>
+      </div>
+      <label class="ab">A <select id="selA"></select></label>
+      <label class="ab">B <select id="selB"></select></label>
+    </div>
+    <div class="vt-right">
+      <label class="auto"><input type="checkbox" id="autoFlip"> 자동 전환 <input type="range" id="flipSpeed" min="200" max="2000" step="100" value="700"></label>
+      <button class="btn small" id="zoomFit">맞춤</button>
+      <button class="btn small" id="zoom100">100%</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="icon-btn" id="closeViewer" title="닫기 (Esc)">✕</button>
+    </div>
+  </div>
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stageA"><div class="canvas" id="canvasA"></div><span class="tag" id="tagA"></span></div>
+    <div class="stage" id="stageB" hidden><div class="canvas" id="canvasB"></div><span class="tag" id="tagB"></span></div>
+  </div>
+  <div class="viewer-bottom">
+    <div id="viewerMeta" class="viewer-meta"></div>
+    <div class="kbd-help"><kbd>Space</kbd> A/B 전환 <kbd>←</kbd><kbd>→</kbd> B 변경 <kbd>F</kbd><kbd>S</kbd><kbd>B</kbd><kbd>D</kbd> 모드 <kbd>0</kbd> 맞춤 <kbd>1</kbd> 100% · 휠 확대 · 드래그 이동</div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

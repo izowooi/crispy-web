@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# coverloc launcher — keeps your current directory so relative image paths work
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" exec "$ROOT/.venv/bin/python" -m coverloc "$@"
