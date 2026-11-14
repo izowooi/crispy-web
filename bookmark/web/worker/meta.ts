@@ -116,8 +116,28 @@ export async function parseMeta(res: Response, pageUrl: string): Promise<PageMet
   };
 }
 
+/** YouTube는 데이터센터 IP에 동의/봇 확인 페이지를 주어 OG 태그가 없으므로 공개 oEmbed를 쓴다. */
+async function fetchYouTubeMeta(url: string): Promise<PageMeta | null> {
+  const res = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!res.ok) return null;
+  const data = await res.json<{ title?: string; author_name?: string; thumbnail_url?: string }>();
+  return {
+    title: clean(data.title, 300),
+    description: clean(data.author_name, 500),
+    image: absolute(data.thumbnail_url, url),
+    siteName: "YouTube",
+    favicon: "https://www.youtube.com/favicon.ico",
+  };
+}
+
 export async function fetchMeta(url: string): Promise<PageMeta | null> {
   if (!isPublicHttpUrl(url)) return null;
+  if (/^(www\.|m\.|music\.)?(youtube\.com|youtu\.be)$/.test(new URL(url).hostname)) {
+    const meta = await fetchYouTubeMeta(url).catch(() => null);
+    if (meta) return meta;
+  }
   const res = await fetch(url, {
     redirect: "follow",
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
