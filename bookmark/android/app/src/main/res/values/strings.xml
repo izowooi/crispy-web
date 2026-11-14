@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">ZKeep</string>
+
+    <string name="signed_out_explain">웹 페이지를 공유하면 바로 저장되고, 나중에 웹이나 앱에서 모아 볼 수 있어요.</string>
+    <string name="sign_in_google">Google로 로그인</string>
+    <string name="sign_in_failed_retry">로그인에 실패했습니다. 다시 시도해 주세요.</string>
+    <string name="sign_out">로그아웃</string>
+    <string name="open_web">웹에서 보기</string>
+    <string name="account">계정</string>
+
+    <string name="share_saved">저장됨</string>
+    <string name="share_undone">저장을 취소했습니다</string>
+    <string name="share_need_login">로그인이 필요합니다</string>
+    <string name="share_need_login_detail">항목은 기기에 보관되어 있고, 로그인하면 자동으로 업로드됩니다.</string>
+    <string name="share_nothing">공유할 내용이 없습니다</string>
+    <string name="shortcut_save_short">ZKeep에 저장</string>
+    <string name="shortcut_save_long">ZKeep에 나중에 볼 링크로 저장</string>
+
+    <string name="action_undo">실행취소</string>
+    <string name="action_retry">다시 시도</string>
+    <string name="search_hint">검색</string>
+    <string name="search_clear">검색어 지우기</string>
+    <string name="filter_all">전체</string>
+    <string name="filter_unread">안읽음</string>
+    <string name="pending_banner">업로드 대기 중인 항목 %1$d개 — 네트워크가 연결되면 자동으로 올라갑니다.</string>
+
+    <string name="empty_all">저장한 항목이 없습니다.\n다른 앱에서 공유 → ZKeep을 선택해 보세요.</string>
+    <string name="empty_unread">안 읽은 항목이 없습니다.</string>
+    <string name="empty_search">검색 결과가 없습니다.</string>
+
+    <string name="more">더보기</string>
+    <string name="mark_read">읽음으로 표시</string>
+    <string name="mark_unread">안읽음으로 표시</string>
+    <string name="copy_link">링크 복사</string>
+    <string name="link_copied">링크를 복사했습니다</string>
+    <string name="share">공유</string>
+    <string name="delete">삭제</string>
+    <string name="deleted">삭제됨</string>
+
+    <string name="error_network">네트워크에 연결할 수 없습니다.</string>
+    <string name="error_server">서버 오류가 발생했습니다.</string>
+    <string name="error_signed_out">로그인이 만료되었습니다. 다시 로그인해 주세요.</string>
+</resources>

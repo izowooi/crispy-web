@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env*
+!.dev.vars.example
+*.key
+*.pem
+*.log
+public/*.apk
+.playwright-mcp/
+.bootstrap-key

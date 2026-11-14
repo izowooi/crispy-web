@@ -1,0 +1,12 @@
+{
+  "name": "ZKeep",
+  "short_name": "ZKeep",
+  "description": "나중에 읽을 링크를 모아 두고 하나씩 정리하는 받은편지함",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

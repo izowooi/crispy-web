@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zkeep",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/auth/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zkeep",
+      "database_id": "897882af-cd7c-4c5c-a9f6-c3c24c9a74c8",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "routes": [{ "pattern": "keep.zowoo.uk", "custom_domain": true }],
+  "workers_dev": false,
+  "triggers": { "crons": ["17 19 * * *"] },
+  "observability": { "enabled": true },
+  "vars": {
+    // Google OAuth "웹 애플리케이션" client ID (공개 값). 비어 있으면 로그인 화면에 설정 안내가 뜬다.
+    "GOOGLE_CLIENT_ID": "",
+    // "first-user": 첫 가입자(+ALLOWED_EMAILS)만 허용, "open": 누구나 가입
+    "SIGNUP_MODE": "first-user"
+  }
+}

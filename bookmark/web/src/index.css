@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo",
+    "Malgun Gothic", "맑은 고딕", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+@keyframes zk-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes zk-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+@keyframes zk-shimmer {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.zk-enter {
+  animation: zk-in 180ms ease-out;
+}
+
+/* 행이 빠질 때 높이까지 접어서 아래 항목이 부드럽게 올라오게 한다. */
+.zk-row-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 200ms ease,
+    opacity 140ms ease;
+}
+
+.zk-row-wrap > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.zk-row-wrap.zk-leaving {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.zk-toast {
+  animation: zk-toast-in 160ms ease-out;
+}
+
+.zk-skeleton {
+  animation: zk-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

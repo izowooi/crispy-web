@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>ZKeep</title>
+    <meta name="description" content="나중에 읽을 링크를 모아 두고 하나씩 정리하는 받은편지함" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#030712" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>(function(){try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}var o={credentials:"same-origin",headers:{accept:"application/json"}};function f(u){var p=fetch(u,o);p.catch(function(){});return p}window.__zkPre={"/api/me":f("/api/me"),"/api/bookmarks?limit=50&filter=unread":f("/api/bookmarks?limit=50&filter=unread")}})()</script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
